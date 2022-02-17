@@ -5,6 +5,7 @@ from .base import *
 
 ########## Load external config ##########
 SETTINGS_PATH = Path(__file__).parent.absolute()
+django_external_config_path = os.getenv('DJANGO_EXTERNAL_CONFIG_PATH', '') or EXTERNAL_CONFIG_PATH
 try:
     from .external import *
 except (ImportError, FileNotFoundError):
@@ -18,7 +19,7 @@ except (ImportError, FileNotFoundError):
               f'as --settings option\n')
         sys.exit(1)
 except Exception:
-    print('!!!PLEASE CHECK!!! Invalid external setting file or json: [{}].'.format(EXTERNAL_CONFIG_PATH))
+    print('!!!PLEASE CHECK!!! Invalid external setting file or json: [{}].'.format(django_external_config_path))
     traceback.print_exc()
     sys.exit(2)
 
