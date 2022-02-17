@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% block title %}WRH-Organization{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  {% block extra_head_meta %}{% endblock extra_head_meta %}
+
+  {% block main_css %}
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  {% endblock main_css %}
+  {% block extra_css %}{% endblock extra_css %}
+</head>
+<body>
+  <div id="app">
+
+    <v-app>
+      {% block main %}
+      <v-main>
+        <v-container>
+          {% block content %}
+          {% endblock content %}
+        </v-container>
+      </v-main>
+      {% block footer %}
+      <v-footer app>
+      <v-col
+        class="text-center"
+        cols="12"
+      >
+        <span>
+          COPYRIGHT &copy; 2022 <a href="#" class="text-decoration-none">WeRaceHere</a>
+          <span class="d-none d-md-inline">, All rights Reserved</span>
+        </span>
+      </v-col>
+      </v-footer>
+      {% endblock footer %}
+    {% endblock main %}
+    </v-app>
+  </div>
+
+  {% block main_js %}
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    {% block runtime_js %}
+
+    <script>
+      new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+      })
+    </script>
+    {% endblock runtime_js %}
+  {% endblock main_js %}
+
+  {% block extra_js %}
+  {% endblock extra_js %}
+
+</body>
+</html>

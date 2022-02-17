@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% load util_tags %}
+
+{% block content %}
+<v-card>
+  <v-card-title>Activate your account!</v-card-title>
+  <v-card-text>
+    <p>Hi {{ new_user }},</p>
+
+    <p>Welcome to wrh-organization!</p>
+
+    <p>You are going to activate your account. </p>
+    <p>Please click on the following button to activate your account:</p>
+    <form action="." method="post">
+      <v-btn class="mr-4" type="submit" color="error">Activate</v-btn>
+    </form>
+  </v-card-text>
+</v-card>
+{% endblock content %}

@@ -1,0 +1,3 @@
+[submodule "wrh_organization/FRONTEND/wrh_organization_ui/dist"]
+	path = wrh_organization/FRONTEND/wrh_organization_ui/dist
+	url = https://github.com/we-race-here/wrh-organization-frontend-dist.git
