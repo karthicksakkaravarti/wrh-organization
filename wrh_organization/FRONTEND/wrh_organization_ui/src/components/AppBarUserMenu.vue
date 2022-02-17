@@ -23,7 +23,7 @@
           class="v-avatar-light-bg primary--text"
           v-on="on"
         >
-          <v-img :src="require('@/assets/images/avatars/1.png')"></v-img>
+          <v-img :src="$store.state.currentUser.avatar || require('@/assets/images/avatars/1.png')"></v-img>
         </v-avatar>
       </v-badge>
     </template>
@@ -43,7 +43,7 @@
             color="primary"
             class="v-avatar-light-bg primary--text"
           >
-            <v-img :src="require('@/assets/images/avatars/1.png')"></v-img>
+            <v-img :src="$store.state.currentUser.avatar || require('@/assets/images/avatars/1.png')"></v-img>
           </v-avatar>
         </v-badge>
         <div

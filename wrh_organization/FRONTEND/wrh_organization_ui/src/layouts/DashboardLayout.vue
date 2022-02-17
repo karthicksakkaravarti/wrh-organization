@@ -28,6 +28,7 @@
 
         <!-- Right Content: I18n, Light/Dark, Notification & User Dropdown -->
         <div class="d-flex align-center right-row">
+          <app-bar-theme-switcher></app-bar-theme-switcher>
           <app-bar-user-menu></app-bar-user-menu>
         </div>
       </div>
@@ -61,6 +62,7 @@ import navMenuItems from '@/navigation/vertical'
 // App Bar Components
 import AppBarSearch from '@core/layouts/components/app-bar/AppBarSearch.vue'
 import AppBarUserMenu from '@/components/AppBarUserMenu.vue'
+import AppBarThemeSwitcher from "@core/layouts/components/app-bar/AppBarThemeSwitcher";
 
 import { mdiMenu, mdiHeartOutline } from '@mdi/js'
 
@@ -73,6 +75,7 @@ import { ref, watch } from '@vue/composition-api'
 
 export default {
   components: {
+    AppBarThemeSwitcher,
     LayoutContentVerticalNav,
 
     // App Bar Components

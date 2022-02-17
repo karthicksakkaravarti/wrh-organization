@@ -83,7 +83,7 @@ www/
 */*/settings/external_config*.py
 */*/settings/local.py
 collected_static/
-wrh_organizations/media/
+wrh_organization/media/
 
 # celery beat schedule file
 celerybeat-schedule
