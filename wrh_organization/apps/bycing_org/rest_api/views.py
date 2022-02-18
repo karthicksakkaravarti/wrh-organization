@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from apps.bycing_org.models import Member, Organization, User
 from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter
 from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationSerializer, SignupUserSerializer, \
-    ActivationEmailSerializer
+    ActivationEmailSerializer, MyMemberSerializer
 from wrh_organization.helpers.utils import account_activation_token
 
 
@@ -27,6 +27,7 @@ class UserRegistrationView(viewsets.ViewSet):
 
     @action(detail=False, methods=['GET', 'POST'], permission_classes=(permissions.AllowAny,),
             url_path='activate/(?P<uid>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$')
+    @transaction.atomic()
     def activate(self, request, *args, **kwargs):
         uid = kwargs.get('uid')
         token = kwargs.get('token')
@@ -47,6 +48,11 @@ class UserRegistrationView(viewsets.ViewSet):
 
         user.is_active = True
         user.save()
+        member = getattr(user, 'member', None)
+        if member:
+            member.email_verified = True
+            member.save(update_fields=['email_verified'])
+
         login(request, user)
         next = request.GET.get('redirect') or settings.SIGNUP_ACTIVATION_REDIRECT_URL
         return redirect(settings.SIGNUP_ACTIVATION_REDIRECT_URL)
@@ -86,6 +92,7 @@ class UserRegistrationView(viewsets.ViewSet):
         user = serializer.save(is_active=False)
         self._send_activation_email(user)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
     create = post
 
 
@@ -97,7 +104,8 @@ class MemberView(viewsets.ModelViewSet):
     ordering_fields = '__all__'
     ordering = ('id',)
 
-    @action(detail=False, methods=['GET', 'PUT', 'PATCH'], permission_classes=(permissions.IsAuthenticated,))
+    @action(detail=False, methods=['GET', 'PUT', 'PATCH'], permission_classes=(permissions.IsAuthenticated,),
+            serializer_class=MyMemberSerializer)
     def me(self, request, *args, **kwargs):
         user = request.user
         member = getattr(user, 'member', None)
@@ -106,8 +114,7 @@ class MemberView(viewsets.ModelViewSet):
         if not member:
             member = Member(first_name=user.first_name, last_name=user.last_name, gender=user.gender,
                                  birth_date=user.birth_date, user=user)
-        serializer = MemberSerializer(data=request.data, instance=member, context={'request': request},
-                                      partial=request.method == 'PATCH')
+        serializer = self.get_serializer(data=request.data, instance=member, partial=request.method == 'PATCH')
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

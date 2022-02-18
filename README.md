@@ -1,10 +1,10 @@
 # We Race Here
 
 Load USA Events:
-``python manage.py USAEventSynch``
+``python manage.py usac_event_sync``
 
 Load USA Clubs:
-``python manage.py USACyclingClub``
+``python manage.py usac_club_import``
 
 To Load USA Rider:
 Import CSV file directly into DB table

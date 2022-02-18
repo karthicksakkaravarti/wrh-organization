@@ -15,6 +15,13 @@ class MemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer
         read_only_fields = ('user',)
 
 
+class MyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = "__all__"
+        read_only_fields = ('user', 'phone_verified', 'email_verified')
+
+
 class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Organization
