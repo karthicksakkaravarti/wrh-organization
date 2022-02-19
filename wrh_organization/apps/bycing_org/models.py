@@ -1,7 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from phonenumber_field.modelfields import PhoneNumberField
 
 User = get_user_model()
@@ -12,14 +10,33 @@ class OrganizationMember(models.Model):
     member = models.ForeignKey('Member', on_delete=models.CASCADE)
     is_admin = models.BooleanField(default=False)
     membership_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    is_valid = models.BooleanField(default=True, null=True)
     datetime = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (('organization', 'member', 'is_valid'),)
+
+    def save(self, *args, **kwargs):
+        if not self.is_valid:
+            self.is_valid = None
+        return super().save(*args, **kwargs)
 
 
 class OrganizationMemberOrg(models.Model):
     organization = models.ForeignKey('Organization', related_name='organizaton_member_orgs', on_delete=models.CASCADE)
-    top_organization = models.ForeignKey('Organization', related_name='top_organizaton_member_orgs', on_delete=models.CASCADE)
+    top_organization = models.ForeignKey('Organization', related_name='top_organizaton_member_orgs',
+                                         on_delete=models.CASCADE)
     membership_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    is_valid = models.BooleanField(default=True, null=True)
     datetime = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (('organization', 'top_organization', 'is_valid'),)
+
+    def save(self, *args, **kwargs):
+        if not self.is_valid:
+            self.is_valid = None
+        return super().save(*args, **kwargs)
 
 
 class Organization(models.Model):
@@ -67,15 +84,3 @@ class Member(models.Model):
     state = models.CharField(max_length=128, blank=True, null=True)
     zipcode = models.CharField(max_length=10, blank=True, null=True)
     user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='member', null=True)
-
-
-# @receiver(post_save, sender=User)
-# def new_user_created(sender, instance, **kwargs):
-#     if kwargs.get('created') and not instance.is_superuser:
-#         Member.objects.update_or_create(
-#             defaults=dict(
-#                 first_name=instance.first_name, last_name=instance.last_name, gender=instance.gender,
-#                 birth_date=instance.birth_date, user=instance
-#             ),
-#             email=instance.email
-#         )

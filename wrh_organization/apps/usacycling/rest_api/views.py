@@ -14,7 +14,6 @@ from rest_framework import viewsets, filters, generics
 class USAEventView(viewsets.ModelViewSet):
     serializer_class = serializers.USAEventSerializer
     queryset = models.USAEvent.objects.all()
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     filterset_class = filter.USAEventFilterFilter
     search_fields = ['event_id', 'name', 'dates__address__city', 'dates__address__postal',
                      'dates__address__friendly_address']
@@ -47,7 +46,6 @@ class USAEventView(viewsets.ModelViewSet):
 class AddressView(viewsets.ModelViewSet):
     serializer_class = serializers.AddressSerializer
     queryset = models.Address.objects.all()
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     ordering = ('pk',)
 
     @action(methods=['get'], detail=False)
@@ -58,7 +56,6 @@ class AddressView(viewsets.ModelViewSet):
 class USACyclingClubsView(viewsets.ModelViewSet):
     serializer_class = serializers.USACyclingClubsSerializers
     queryset = models.USACyclingClubs.objects.all()
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     search_fields = ['club_name']
     filterset_class = filter.USACyclingClubFilter
     ordering = ('pk',)
@@ -72,7 +69,6 @@ class USACyclingClubsView(viewsets.ModelViewSet):
 class USARiderView(viewsets.ModelViewSet):
     serializer_class = serializers.USARiderSerializers
     queryset = models.USARider.objects.all()
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     search_fields = ['lastname', 'firstname', 'license']
     ordering = ('pk',)
 
