@@ -43,17 +43,10 @@ INSTALLED_APPS = [
     'django_filters',
     'storages',
     'rest_framework',
-    # 'django_otp',
-    # 'django_otp.plugins.otp_totp',
-    # Custom Apps
+    # Project Apps
     'apps.account',
     'apps.bycing_org',
     'apps.usacycling'
-    # 'apps.auth',
-    # 'apps.services',
-    # 'apps.teams',
-    # 'apps.social_media',
-    # 'apps.organizations'
 ]
 
 MIDDLEWARE = [
@@ -302,19 +295,6 @@ AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
 
-# # Twilio SendGrid
-# EMAIL_HOST = '<EMAIL_HOST>'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER =   '<EMAIL_HOST_USER>'
-# EMAIL_HOST_PASSWORD = '<EMAIL_HOST_PASSWORD>'
-#
-#
-# # SMS  - Twilio
-# TWILIO_ACCOUNT = '<Twilio_Account>'
-# TWILIO_TOKEN = '<Twilio_Token>'
-# TWILIO_FROM = '<Twilio_From>'
-
 # email setting
 EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 ANYMAIL = {
@@ -329,8 +309,12 @@ SENDSMS_TWILIO_ACCOUNT_SID = 'SIDXXXXXXXXXXXXXXX'
 SENDSMS_TWILIO_AUTH_TOKEN = 'ATXXXXXXXXXXXXXXX'
 SMS_DEFAULT_FROM_PHONE = 'NNNNNNNNNN'
 
-
+# project setting
 PAGINATION_DEFAULT_PAGINATION = 10
 PAGINATION_MAX_SIZE = 200
-
 SIGNUP_ACTIVATION_REDIRECT_URL = '/'
+
+OTP_MEMBER_VERIFY_KEY = '<OTP_MEMBER_VERIFY_KEY>'
+OTP_MEMBER_VERIFY_CODE_LENGTH = 6
+OTP_MEMBER_VERIFY_INTERVAL = 120
+OTP_MEMBER_VERIFY_VALID_WINDOW = 1

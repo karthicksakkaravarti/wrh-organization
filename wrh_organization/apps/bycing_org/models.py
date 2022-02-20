@@ -57,6 +57,9 @@ class Organization(models.Model):
     members = models.ManyToManyField('Member', related_name='organizations', through=OrganizationMember)
     member_orgs = models.ManyToManyField('Organization', related_name='organizations', through=OrganizationMemberOrg)
 
+    def __str__(self):
+        return f'{self.name}'
+
 
 class Member(models.Model):
     GENDER_MALE = 'm'
@@ -84,3 +87,23 @@ class Member(models.Model):
     state = models.CharField(max_length=128, blank=True, null=True)
     zipcode = models.CharField(max_length=10, blank=True, null=True)
     user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='member', null=True)
+
+    def generate_verify_code(self, type='email'):
+        '''
+        :param type: can be "email" or "phone"
+        :return: str of numbers
+        '''
+        from wrh_organization.helpers.utils import get_member_verify_otp
+        return get_member_verify_otp(self, salt=type).now()
+
+    def check_verify_code(self, code, type='email', valid_window=0):
+        '''
+        :param code: str of numbers
+        :param type: can be "email" or "phone"
+        :return: True if verified else False
+        '''
+        from wrh_organization.helpers.utils import get_member_verify_otp
+        return get_member_verify_otp(self, salt=type).verify(code, valid_window=valid_window)
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'

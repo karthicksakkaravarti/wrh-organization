@@ -53,7 +53,12 @@ class SignupUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'password', 'first_name', 'last_name', 'birth_date', 'gender', 'member')
-        extra_kwargs = {'password': {'write_only': True, 'required': True, 'style': {'input_type': 'password'}}}
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': True, 'style': {'input_type': 'password'}},
+            'first_name': {'required': True, 'allow_null': False, 'allow_blank': False},
+            'last_name': {'required': True, 'allow_null': False, 'allow_blank': False},
+            'birth_date': {'required': True, 'allow_null': False},
+        }
 
     @transaction.atomic()
     def create(self, validated_data):
@@ -74,3 +79,7 @@ class SignupUserSerializer(serializers.ModelSerializer):
             email=user.email
         )
         return user
+
+
+class MemberOTPVerifySerializer(serializers.Serializer):
+    code = serializers.RegexField('[0-9]+', max_length=12, required=True, allow_null=False)

@@ -2,19 +2,20 @@ import datetime
 import itertools
 from datetime import timedelta
 
-from apps.usacycling import models
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.usacycling import models
 from . import (serializers, filter)
-from rest_framework import viewsets, filters, generics
 
 
-class USAEventView(viewsets.ModelViewSet):
+class USAEventView(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.USAEventSerializer
     queryset = models.USAEvent.objects.all()
     filterset_class = filter.USAEventFilterFilter
+    permission_classes = (IsAuthenticated,)
     search_fields = ['event_id', 'name', 'dates__address__city', 'dates__address__postal',
                      'dates__address__friendly_address']
     ordering = ('pk',)
@@ -43,8 +44,9 @@ class USAEventView(viewsets.ModelViewSet):
             models.USAEvent.objects.exclude(labels=None).values_list('labels', flat=True)))))
 
 
-class AddressView(viewsets.ModelViewSet):
+class AddressView(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.AddressSerializer
+    permission_classes = (IsAuthenticated,)
     queryset = models.Address.objects.all()
     ordering = ('pk',)
 
@@ -53,8 +55,9 @@ class AddressView(viewsets.ModelViewSet):
         return Response(list(set(models.Address.objects.exclude(state=None).values_list('state', flat=True))))
 
 
-class USACyclingClubsView(viewsets.ModelViewSet):
+class USACyclingClubsView(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.USACyclingClubsSerializers
+    permission_classes = (IsAuthenticated,)
     queryset = models.USACyclingClubs.objects.all()
     search_fields = ['club_name']
     filterset_class = filter.USACyclingClubFilter
@@ -66,8 +69,9 @@ class USACyclingClubsView(viewsets.ModelViewSet):
             list(set(models.USACyclingClubs.objects.values_list('club_aff_type__aff_type_description', flat=True))))
 
 
-class USARiderView(viewsets.ModelViewSet):
+class USARiderView(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.USARiderSerializers
+    permission_classes = (IsAuthenticated,)
     queryset = models.USARider.objects.all()
     search_fields = ['lastname', 'firstname', 'license']
     ordering = ('pk',)

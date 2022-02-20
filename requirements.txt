@@ -19,3 +19,4 @@ django-storages==1.12.3
 django-sendsms==0.5
 boto3==1.20.41
 awscli==1.22.41
+pyotp==2.6.0

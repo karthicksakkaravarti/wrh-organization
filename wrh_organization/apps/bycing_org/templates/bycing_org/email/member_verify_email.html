@@ -1,0 +1,8 @@
+{% load util_tags %}
+
+<p>Hi {{ member.first_name }},</p>
+<p>You are going to verify your email in WRH-Organization.</p>
+<p>Verification code is:</p>
+<p><strong>{{ code }}</strong></p>
+<p></p>
+<p>Notice: this code will be expired after {{ expiry }} seconds!</p>

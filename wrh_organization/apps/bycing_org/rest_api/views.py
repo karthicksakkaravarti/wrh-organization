@@ -8,13 +8,14 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import viewsets, permissions, generics, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.bycing_org.models import Member, Organization, User
 from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter
 from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationSerializer, SignupUserSerializer, \
-    ActivationEmailSerializer, MyMemberSerializer
-from wrh_organization.helpers.utils import account_activation_token
+    ActivationEmailSerializer, MyMemberSerializer, MemberOTPVerifySerializer
+from wrh_organization.helpers.utils import account_activation_token, send_sms
 
 
 class UserRegistrationView(viewsets.ViewSet):
@@ -23,9 +24,9 @@ class UserRegistrationView(viewsets.ViewSet):
     serializer_class = SignupUserSerializer
 
     def _activate_get(self, request, user, *args, **kwargs):
-        return render(request, 'bycing_org/user_activation_confirm.html', context={'new_user': user})
+        return render(request, 'bycing_org/email/user_activation_confirm.html', context={'new_user': user})
 
-    @action(detail=False, methods=['GET', 'POST'], permission_classes=(permissions.AllowAny,),
+    @action(detail=False, methods=['GET', 'POST'],
             url_path='activate/(?P<uid>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$')
     @transaction.atomic()
     def activate(self, request, *args, **kwargs):
@@ -57,7 +58,7 @@ class UserRegistrationView(viewsets.ViewSet):
         next = request.GET.get('redirect') or settings.SIGNUP_ACTIVATION_REDIRECT_URL
         return redirect(settings.SIGNUP_ACTIVATION_REDIRECT_URL)
 
-    @action(detail=False, methods=['POST'], permission_classes=(permissions.AllowAny,),
+    @action(detail=False, methods=['POST'],
             serializer_class=ActivationEmailSerializer)
     def resend_activation_email(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data, context={'request': request})
@@ -74,7 +75,7 @@ class UserRegistrationView(viewsets.ViewSet):
 
     def _send_activation_email(self, user):
         subject = 'Activate Your Account'
-        message = render_to_string('email/user_activation.html', {
+        message = render_to_string('bycing_org/email/user_activation.html', {
             'user': user,
             'uid': urlsafe_base64_encode(force_bytes(user.pk)),
             'token': account_activation_token.make_token(user),
@@ -104,7 +105,23 @@ class MemberView(viewsets.ModelViewSet):
     ordering_fields = '__all__'
     ordering = ('id',)
 
-    @action(detail=False, methods=['GET', 'PUT', 'PATCH'], permission_classes=(permissions.IsAuthenticated,),
+    def _verify(self, request, member, type):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        code = serializer.validated_data.get('code')
+        verified = member.check_verify_code(code, type=type, valid_window=settings.OTP_MEMBER_VERIFY_VALID_WINDOW)
+        if not verified:
+            return Response({'error': 'invalide code'}, status=status.HTTP_400_BAD_REQUEST)
+        if type == 'phone':
+            member.phone_verified = True
+            member.save(update_fields=['phone_verified'])
+        elif type == 'email':
+            member.email_verified = True
+            member.save(update_fields=['email_verified'])
+
+        return Response(status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['GET', 'PUT', 'PATCH'], permission_classes=(IsAuthenticated,),
             serializer_class=MyMemberSerializer)
     def me(self, request, *args, **kwargs):
         user = request.user
@@ -113,11 +130,75 @@ class MemberView(viewsets.ModelViewSet):
             return Response(self.get_serializer(instance=member).data)
         if not member:
             member = Member(first_name=user.first_name, last_name=user.last_name, gender=user.gender,
-                                 birth_date=user.birth_date, user=user)
+                            birth_date=user.birth_date, user=user)
+        data = request.data
+
+        if member.email and member.email_verified:
+            data.pop('email', None)
+        if member.phone and member.phone_verified:
+            data.pop('phone', None)
+
         serializer = self.get_serializer(data=request.data, instance=member, partial=request.method == 'PATCH')
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    @action(detail=False, methods=['POST'], url_path='me/send_email_verify_code', permission_classes=(IsAuthenticated,))
+    def send_email_verify_code(self, request, *args, **kwargs):
+        me = getattr(request.user, 'member', None)
+        if (not me) or (not me.email):
+            return Response({'error': 'email not set in your profile'}, status=status.HTTP_404_NOT_FOUND)
+
+        code = me.generate_verify_code(type='email')
+        subject = 'Verify Your Email'
+        expiry = settings.OTP_MEMBER_VERIFY_INTERVAL
+        message = render_to_string('bycing_org/email/member_verify_email.html', {
+            'member': me,
+            'code': code,
+            'expiry': expiry,
+            'request': self.request
+        })
+
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [me.email], html_message=message,
+                  fail_silently=False)
+        return Response({'expiry': expiry}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['POST'], url_path='me/send_phone_verify_code',
+            permission_classes=(IsAuthenticated,))
+    def send_phone_verify_code(self, request, *args, **kwargs):
+        me = getattr(request.user, 'member', None)
+        if (not me) or (not me.phone):
+            return Response({'error': 'phone number not set in your profile'}, status=status.HTTP_404_NOT_FOUND)
+        code = me.generate_verify_code(type='phone')
+        expiry = settings.OTP_MEMBER_VERIFY_INTERVAL
+        message = render_to_string('bycing_org/sms/member_verify_phone.html', {
+            'member': me,
+            'code': code,
+            'expiry': expiry,
+            'request': self.request
+        })
+        send_sms(message, str(me.phone), fail_silently=False)
+        return Response({'expiry': expiry}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['POST'], url_path='me/email_verify',
+            permission_classes=(IsAuthenticated,), serializer_class=MemberOTPVerifySerializer)
+    def email_verify(self, request, *args, **kwargs):
+        me = getattr(request.user, 'member', None)
+        if (not me) or (not me.email):
+            return Response({'error': 'email not set in your profile'}, status=status.HTTP_404_NOT_FOUND)
+        if me.email_verified:
+            return Response({'error': 'email is already verified'}, status=status.HTTP_409_CONFLICT)
+        return self._verify(request, me, 'email')
+
+    @action(detail=False, methods=['POST'], url_path='me/phone_verify',
+            permission_classes=(IsAuthenticated,), serializer_class=MemberOTPVerifySerializer)
+    def phone_verify(self, request, *args, **kwargs):
+        me = getattr(request.user, 'member', None)
+        if (not me) or (not me.phone):
+            return Response({'error': 'phone number not set in your profile'}, status=status.HTTP_404_NOT_FOUND)
+        if me.phone_verified:
+            return Response({'error': 'phone is already verified'}, status=status.HTTP_409_CONFLICT)
+        return self._verify(request, me, 'phone')
 
 
 class OrganizationView(viewsets.ModelViewSet):
@@ -128,6 +209,6 @@ class OrganizationView(viewsets.ModelViewSet):
     ordering_fields = '__all__'
     ordering = ('id',)
 
-    @action(detail=True, methods=['POST'], permission_classes=(permissions.IsAuthenticated,))
+    @action(detail=True, methods=['POST'], permission_classes=(IsAuthenticated,))
     def join(self, request, *args, **kwargs):
         raise NotImplementedError

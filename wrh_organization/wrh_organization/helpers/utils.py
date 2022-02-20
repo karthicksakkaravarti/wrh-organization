@@ -11,6 +11,8 @@ import uuid
 from functools import wraps
 
 import json
+
+import pyotp
 from django import forms
 from django.conf import settings
 from django.contrib import messages
@@ -950,3 +952,34 @@ def ex_reverse(viewname, **kwargs):
         scheme = '{}://'.format(scheme) if (scheme and scheme != 'auto') else ''
 
     return '{0}{1}{2}'.format(scheme, host, rel_path)
+
+
+def generate_otp_code(otp_key, length=6, interval=120, salt=None):
+    if salt:
+        otp_key = f'{otp_key}-{salt}'
+
+    b32_key = base64.b32encode(otp_key.encode('u8')).decode('u8')
+    otp = pyotp.TOTP(b32_key, digits=length, interval=interval)
+    return otp.now()
+
+
+def verify_otp_code(code, otp_key, salt=None, length=6, interval=120, valid_window=0):
+    if salt:
+        otp_key = f'{otp_key}-{salt}'
+
+    b32_key = base64.b32encode(otp_key.encode('u8')).decode('u8')
+    otp = pyotp.TOTP(b32_key, digits=length, interval=interval)
+    return otp.verify(code, valid_window=valid_window)
+
+
+def get_member_verify_otp(member, salt=None):
+    from django.conf import settings
+    otp_key = settings.OTP_MEMBER_VERIFY_KEY
+    length = settings.OTP_MEMBER_VERIFY_CODE_LENGTH
+    interval = settings.OTP_MEMBER_VERIFY_INTERVAL
+    if salt:
+        otp_key = f'{otp_key}-{salt}'
+
+    otp_key = f'{otp_key}-{member.pk}'
+    b32_key = base64.b32encode(otp_key.encode('u8')).decode('u8')
+    return pyotp.TOTP(b32_key, digits=length, interval=interval)
