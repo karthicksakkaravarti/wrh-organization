@@ -148,6 +148,8 @@ class MemberView(viewsets.ModelViewSet):
         me = getattr(request.user, 'member', None)
         if (not me) or (not me.email):
             return Response({'error': 'email not set in your profile'}, status=status.HTTP_404_NOT_FOUND)
+        if me.email_verified:
+            return Response({'error': 'email is already verified'}, status=status.HTTP_409_CONFLICT)
 
         code = me.generate_verify_code(type='email')
         subject = 'Verify Your Email'
@@ -169,6 +171,9 @@ class MemberView(viewsets.ModelViewSet):
         me = getattr(request.user, 'member', None)
         if (not me) or (not me.phone):
             return Response({'error': 'phone number not set in your profile'}, status=status.HTTP_404_NOT_FOUND)
+        if me.phone_verified:
+            return Response({'error': 'phone is already verified'}, status=status.HTTP_409_CONFLICT)
+
         code = me.generate_verify_code(type='phone')
         expiry = settings.OTP_MEMBER_VERIFY_INTERVAL
         message = render_to_string('bycing_org/sms/member_verify_phone.html', {
