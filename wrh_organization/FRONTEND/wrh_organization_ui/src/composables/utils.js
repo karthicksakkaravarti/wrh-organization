@@ -1,5 +1,12 @@
 import moment from "moment";
+import { createToastInterface } from "vue-toastification";
 
+
+export const toast = createToastInterface({
+  transition: "Vue-Toastification__fade",
+  maxToasts: 20,
+  newestOnTop: true
+});
 
 export const getQueryParams = (params, url) => {
   let href = url;
@@ -101,3 +108,110 @@ export const formatTime = (value, fmt, _default) => {
   return moment.utc(`2000-01-01T${value}Z`).format(fmt);
 };
 
+export const closeAllNotify = () => {
+  toast.clear();
+};
+
+export const notifyMessage = (msg, opts) => {
+  opts = Object.assign({
+    position: "top-center",
+    timeout: 5000,
+    closeOnClick: true,
+    pauseOnFocusLoss: true,
+    pauseOnHover: true,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: false,
+    hideProgressBar: true,
+    closeButton: "button",
+    icon: true,
+    rtl: false
+  },opts || {});
+  toast(msg, opts);
+};
+
+export const notifySuccess = (msg, duration, opts) => {
+  notifyMessage(msg, Object.assign({
+    type: "success",
+    timeout: duration !== undefined ? duration : 5000
+  }, opts || {}));
+};
+
+export const notifyError = (msg, duration, opts) => {
+  notifyMessage(msg, Object.assign({
+    type: "error",
+    timeout: duration !== undefined ? duration : 5000
+  }, opts || {}));
+};
+
+export const notifyWarn = (msg, duration, opts) => {
+  notifyMessage(msg, Object.assign({
+    type: "warning",
+    timeout: duration !== undefined ? duration : 5000
+  }, opts || {}));
+};
+
+export const notifyInfo = (msg, duration, opts) => {
+  notifyMessage(msg, Object.assign({
+    type: "info",
+    timeout: duration !== undefined ? duration : 5000
+  }, opts || {}));
+};
+
+export const notifyDefaultServerSuccess = (response, duration) => {
+  duration = duration !== undefined ? duration : 5000;
+  var defaultMsg = "Operation done successfully";
+  notifySuccess(response.statusText || defaultMsg, duration);
+};
+
+export const notifyDefaultServerError = (error, showDetail, duration, extra_message) => {
+  var response = error.response || error.request;
+  var msg;
+  if (response.status === 401) {
+    return;
+  }
+  if (response.status === 502) {
+    msg = `<strong class="text-dark">Server Temporary Unavailable!</strong>&nbsp; Down for maintenance! We will be back shortly.`
+    return notifyError(msg, duration || 0);
+  }
+  duration = duration !== undefined ? duration : 50000;
+  showDetail = showDetail !== undefined ? showDetail : true;
+  notifyError({
+    render: (h) => {
+      var els = [];
+      if (!response || response.status <= 0) {
+        els.push(h('strong', 'Server Connection Error'));
+      } else {
+        els.push(h('strong', `${response.status}: ${response.statusText} | `));
+        var jData = safeFromJson(response.data);
+        if (showDetail && jData) {
+          els.push(h('p', prettifyError(response.data)));
+        }
+        if (extra_message) {
+          els.push(h('p', extra_message));
+        }
+      }
+      return h('div', els);
+    }
+  }, duration);
+};
+
+export const safeFromJson = (s, nullIfFail) => {
+  if (typeof s === "object") {
+    return s;
+  }
+  nullIfFail = nullIfFail === undefined;
+  try {
+    return JSON.parse(s);
+  } catch (e) {
+    return nullIfFail ? null : s;
+  }
+
+};
+
+export const prettifyError = (data) => {
+  return JSON.stringify(data)
+    .replace(/\[|\]|\}|\{/g, "")
+    .replace(/\\"/g, '"')
+    .replace('"non_field_errors":', "");
+};

@@ -2,31 +2,19 @@ import appConfigStoreModule from '@core/@app-config/appConfigStoreModule'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import app from './app'
-import axiosInstance from "@/axios";
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
     currentUser: {
+    },
+    currentMember: {
     }
   },
   mutations: {
-    currentUser: function (state, payload) {
-      state.currentUser = payload.currentUser;
-    }
   },
   actions: {
-    checkSession: function (context) {
-      return axiosInstance.get("account/session").then(
-        function (response) {
-          context.commit({type: "currentUser", currentUser: response.data});
-        },
-        function () {
-          context.commit({type: "currentUser", currentUser: {}});
-        }
-      );
-    }
   },
   getters: {
     isStaffUser: function (state) {
@@ -61,13 +49,23 @@ export default new Vuex.Store({
     },
     userDisplayName: function (state) {
       if (state.currentUser.id) {
-        var name = (state.currentUser.firstname || state.currentUser.username);
+        var name = (state.currentUser.first_name || state.currentUser.username);
         return name.charAt(0).toUpperCase() + name.slice(1);
       }
       return "";
     },
     currentUserId: function (state) {
       return state.currentUser.id;
+    },
+    memberDisplayName: function (state) {
+      if (state.currentMember.id) {
+        var name = (state.currentMember.first_name || null);
+        return name && (name.charAt(0).toUpperCase() + name.slice(1));
+      }
+      return "";
+    },
+    currentMemberId: function (state) {
+      return state.currentMember.id;
     },
   },
   modules: {

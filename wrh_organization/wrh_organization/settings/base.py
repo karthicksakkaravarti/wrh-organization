@@ -58,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'wrh_organization.helpers.middleware.InjectUiVersionInHeadersMiddleware',
 ]
 
 ROOT_URLCONF = 'wrh_organization.urls'
@@ -139,6 +140,7 @@ USE_I18N = True
 
 USE_TZ = True
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50 MB
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
@@ -296,8 +298,13 @@ AWS_S3_OBJECT_PARAMETERS = {
 }
 
 # email setting
-EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
+# EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
+EMAIL_BACKEND = 'anymail.backends.sendgrid.EmailBackend'
 ANYMAIL = {
+    # sendgrid
+    'SENDGRID_API_KEY': '<SENDGRID_API_KEY>',
+
+    # mailgun
     'MAILGUN_SENDER_DOMAIN': '<MAILGUN_SENDER_DOMAIN>',
     'MAILGUN_API_KEY': '<MAILGUN_API_KEY>',
 }
@@ -310,6 +317,7 @@ SENDSMS_TWILIO_AUTH_TOKEN = 'ATXXXXXXXXXXXXXXX'
 SMS_DEFAULT_FROM_PHONE = 'NNNNNNNNNN'
 
 # project setting
+IMAGE_UPLOAD_MAX_SIZE = 2 * 1024 * 1024  # 2 MB
 PAGINATION_DEFAULT_PAGINATION = 10
 PAGINATION_MAX_SIZE = 200
 SIGNUP_ACTIVATION_REDIRECT_URL = '/'

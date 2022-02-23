@@ -33,6 +33,7 @@ import DashboardLayout from '@/layouts/DashboardLayout'
 // Dynamic vh
 import useDynamicVh from '@core/utils/useDynamicVh'
 import Login from "@/views/Login";
+import {notifyDefaultServerError} from "@/composables/utils";
 
 export default {
   components: {
@@ -52,9 +53,18 @@ export default {
         (response) => {
           store.state.currentUser = response.data;
         }, (error) => {
-          alert('Error: ' + error);
+          notifyDefaultServerError(error, true);
         }
       );
+      // axios.get("bycing_org/member/me").then(
+      //   (response) => {
+      //     store.state.currentMember = response.data;
+      //   },
+      //   (error) => {
+      //     notifyDefaultServerError(error, true);
+      //   }
+      // );
+
     };
     const onSessionExpired = () => {
       store.state.currentUser = {};

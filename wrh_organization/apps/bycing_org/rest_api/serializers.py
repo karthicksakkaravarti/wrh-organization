@@ -4,8 +4,8 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from apps.bycing_org.models import Member, Organization, User
-from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin
+from apps.bycing_org.models import Member, Organization, User, OrganizationMember
+from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField
 
 
 class MemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -15,17 +15,56 @@ class MemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer
         read_only_fields = ('user',)
 
 
+class UserMyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    avatar = Base64ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'avatar', 'username')
+        read_only_fields = ('id', 'username')
+
+
 class MyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    user = UserMyMemberSerializer(allow_null=True, required=False)
+
     class Meta:
         model = Member
         fields = "__all__"
         read_only_fields = ('user', 'phone_verified', 'email_verified')
 
+    @transaction.atomic()
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', {})
+        if user_data:
+            user = instance.user
+            for k, v in user_data.items():
+                setattr(user, k, v)
+            user.save(update_fields=list(user_data.keys()))
+        return super().update(instance, validated_data)
+
+
+class NestedMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ('id', 'first_name', 'last_name', 'gender', 'email')
+
+
+class OrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    _member = NestedMemberSerializer(read_only=True, source='member')
+
+    class Meta:
+        model = OrganizationMember
+        fields = "__all__"
+        read_only_fields = ('is_master_admin', 'organization')
+
 
 class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    members = NestedMemberSerializer(read_only=True, many=True)
+
     class Meta:
         model = Organization
         fields = "__all__"
+        read_only_fields = ('verified', 'members', 'member_orgs',)
 
 
 class SignupMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):

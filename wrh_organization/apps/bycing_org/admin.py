@@ -1,6 +1,8 @@
 from django.contrib import admin
-from .models import Member, Organization
+from . import models
 
 
-admin.site.register(Member)
-admin.site.register(Organization)
+admin.site.register(models.Member)
+admin.site.register(models.Organization)
+admin.site.register(models.OrganizationMember)
+admin.site.register(models.OrganizationMemberOrg)

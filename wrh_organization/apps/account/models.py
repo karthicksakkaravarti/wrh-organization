@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -6,7 +6,7 @@ from django.db import models
 
 def avatar_file_path_func(instance, filename):
     from wrh_organization.helpers.utils import get_random_upload_path
-    return get_random_upload_path(os.path.join('uploads', 'user', 'avatar'), filename)
+    return get_random_upload_path(str(Path('uploads', 'account', 'user', 'avatar')), filename)
 
 
 class User(AbstractUser):

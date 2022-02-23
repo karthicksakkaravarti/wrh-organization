@@ -62,7 +62,7 @@
       <v-divider></v-divider>
 
       <!-- Profile -->
-      <v-list-item href="#" disabled>
+      <v-list-item :to="{name: $rns.DASHBOARD_USER_PROFILE}" disabled>
         <v-list-item-icon class="me-2">
           <v-icon size="22">
             {{ icons.mdiAccountOutline }}
@@ -70,6 +70,18 @@
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title>Profile</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <!-- Settings -->
+      <v-list-item :to="{name: $rns.DASHBOARD_ACCOUNT_SETTINGS}">
+        <v-list-item-icon class="me-2">
+          <v-icon size="22">
+            {{ icons.mdiCogOutline }}
+          </v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>Settings</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
 
@@ -86,18 +98,6 @@
       </v-list-item>
 
       <v-divider class="my-2"></v-divider>
-
-      <!-- Settings -->
-      <v-list-item href="#" disabled>
-        <v-list-item-icon class="me-2">
-          <v-icon size="22">
-            {{ icons.mdiCogOutline }}
-          </v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Settings</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
 
       <!-- Pricing -->
       <v-list-item href="#" disabled>

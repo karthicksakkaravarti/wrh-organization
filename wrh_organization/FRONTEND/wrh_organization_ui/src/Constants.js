@@ -1,3 +1,5 @@
+const countryList = require('country-list');
+
 export const UI_VERSION_HEADER_NAME = "x-ui-version";
 
 export const GENDER_OPTIONS = [
@@ -11,3 +13,8 @@ GENDER_OPTIONS.forEach(function(v) {
   GENDER_MAP[v.value] = v;
 });
 
+export const COUNTRY_OPTIONS = countryList.getData();
+export const COUNTRY_MAP = {};
+COUNTRY_OPTIONS.forEach(function(v) {
+  COUNTRY_MAP[v.code] = v;
+});

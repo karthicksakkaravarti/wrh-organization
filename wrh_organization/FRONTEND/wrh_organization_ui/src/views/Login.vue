@@ -182,6 +182,7 @@ import { ref } from '@vue/composition-api'
 import themeConfig from '@themeConfig'
 import axios from "@/axios";
 import store from "@/store";
+import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 
 export default {
   setup() {
@@ -222,11 +223,10 @@ export default {
       axios.post("account/session", {username: username.value, password: password.value}).then((response) => {
         store.state.currentUser = response.data;
         logining.value = false;
-        // this.showSuccess("Welcome to WRH!", 5000);
+        notifySuccess("Welcome to WRH!", 5000);
       }, (error) => {
         logining.value = false;
-        // this.showDefaultServerError(error, true)
-        alert("Error: " + error);
+        notifyDefaultServerError(error, true);
       });
     }
 

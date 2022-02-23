@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 export const routeNames = {
   ROOT: "root",
@@ -14,6 +14,9 @@ export const routeNames = {
   DASHBOARD_EVENTS: "dashboard_events",
   DASHBOARD_CLUB: "dashboard_club",
   DASHBOARD_RIDER: "dashboard_rider",
+  DASHBOARD_ACCOUNT_SETTINGS: "dashboard_account_settings",
+  DASHBOARD_USER_PROFILE: "dashboard_user_profile",
+
 };
 
 Vue.prototype.$rns = routeNames;
@@ -36,6 +39,14 @@ const routes = [
     path: '/dashboard/home',
     name: routeNames.DASHBOARD_HOME,
     component: () => import('@/views/dashboard/DashboardHome.vue'),
+    meta: {
+      layout: 'DashboardLayout',
+    },
+  },
+  {
+    path: '/dashboard/account-settings',
+    name: routeNames.DASHBOARD_ACCOUNT_SETTINGS,
+    component: () => import('@/views/dashboard/accountSettings/AccountSettings.vue'),
     meta: {
       layout: 'DashboardLayout',
     },

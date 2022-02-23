@@ -2,20 +2,22 @@ from django.conf import settings
 from django.contrib.auth import login
 from django.core.mail import send_mail
 from django.db import transaction
-from django.shortcuts import redirect, render
+from django.db.models import Q
+from django.shortcuts import redirect, render, get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from rest_framework import viewsets, permissions, generics, status
+from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.bycing_org.models import Member, Organization, User
-from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter
+from apps.bycing_org.models import Member, Organization, User, OrganizationMember
+from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter, OrganizationMemberFilter
 from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationSerializer, SignupUserSerializer, \
-    ActivationEmailSerializer, MyMemberSerializer, MemberOTPVerifySerializer
-from wrh_organization.helpers.utils import account_activation_token, send_sms
+    ActivationEmailSerializer, MyMemberSerializer, MemberOTPVerifySerializer, OrganizationMemberSerializer
+from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
+    IsAdminOrganizationOrReadOnlyPermission
 
 
 class UserRegistrationView(viewsets.ViewSet):
@@ -128,9 +130,9 @@ class MemberView(viewsets.ModelViewSet):
         member = getattr(user, 'member', None)
         if request.method == 'GET':
             return Response(self.get_serializer(instance=member).data)
+
         if not member:
-            member = Member(first_name=user.first_name, last_name=user.last_name, gender=user.gender,
-                            birth_date=user.birth_date, user=user)
+            member = Member(user=user, **{f: getattr(user, f) for f in Member.USER_SHARED_FIELDS})
         data = request.data
 
         if member.email and member.email_verified:
@@ -141,6 +143,14 @@ class MemberView(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data, instance=member, partial=request.method == 'PATCH')
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        user_update_fields = []
+        for f in Member.USER_SHARED_FIELDS:
+            v = getattr(member, f)
+            if getattr(user, f) != v:
+                setattr(user, f, v)
+                user_update_fields.append(f)
+        if user_update_fields:
+            user.save(update_fields=user_update_fields)
         return Response(serializer.data)
 
     @action(detail=False, methods=['POST'], url_path='me/send_email_verify_code', permission_classes=(IsAuthenticated,))
@@ -163,7 +173,7 @@ class MemberView(viewsets.ModelViewSet):
 
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [me.email], html_message=message,
                   fail_silently=False)
-        return Response({'expiry': expiry}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'expiry': expiry}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['POST'], url_path='me/send_phone_verify_code',
             permission_classes=(IsAuthenticated,))
@@ -183,7 +193,7 @@ class MemberView(viewsets.ModelViewSet):
             'request': self.request
         })
         send_sms(message, str(me.phone), fail_silently=False)
-        return Response({'expiry': expiry}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'expiry': expiry}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['POST'], url_path='me/email_verify',
             permission_classes=(IsAuthenticated,), serializer_class=MemberOTPVerifySerializer)
@@ -208,12 +218,56 @@ class MemberView(viewsets.ModelViewSet):
 
 class OrganizationView(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
+    permission_classes = (IsMemberVerifiedPermission, IsAdminOrganizationOrReadOnlyPermission)
     serializer_class = OrganizationSerializer
     filterset_class = OrganizationFilter
     search_fields = '__all__'
     ordering_fields = '__all__'
     ordering = ('id',)
 
-    @action(detail=True, methods=['POST'], permission_classes=(IsAuthenticated,))
-    def join(self, request, *args, **kwargs):
-        raise NotImplementedError
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('members')
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        OrganizationMember.objects.create(organization=serializer.instance, is_master_admin=True,
+                                          member=self.request.user.member)
+
+
+class OrganizationMemberView(viewsets.ModelViewSet):
+    org_id_kwarg = 'org_id'
+    queryset = OrganizationMember.objects.all()
+    permission_classes = (IsMemberVerifiedPermission, IsAdminOrganizationOrReadOnlyPermission)
+    serializer_class = OrganizationMemberSerializer
+    filterset_class = OrganizationMemberFilter
+    search_fields = '__all__'
+    ordering_fields = '__all__'
+    ordering = ('id',)
+
+    _current_org = None
+
+    def get_organization_object_permission(self, obj):
+        return obj.organization
+
+    def has_organization_permission(self):
+        org = self.get_current_org()
+        if OrganizationMember.objects.filter(member=self.request.user.member, organization=org, is_valid=True
+                                             ).filter(Q(is_admin=True) | Q(is_master_admin=True)).exists():
+            return True
+        return self.request.method in permissions.SAFE_METHODS
+
+    def get_current_org(self):
+        if not self._current_org:
+            org_id = self.kwargs.get(self.org_id_kwarg)
+            assert org_id, f'{self.org_id_kwarg} is not specified in url pattern'
+            member = self.request.user.member
+            self._current_org = get_object_or_404(Organization.objects.filter(pk=org_id).filter(
+                organizationmember__is_valid=True, organizationmember__member=member).distinct())
+        return self._current_org
+
+    def get_queryset(self):
+        organization = self.get_current_org()
+        return super().get_queryset().filter(organization=organization).select_related('member')
+
+    def perform_create(self, serializer):
+        serializer.save(organization=self.get_current_org())

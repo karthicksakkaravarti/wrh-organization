@@ -10,6 +10,16 @@ import EventBus from "./EventBus";
 import * as Constants from "./Constants";
 import {Config} from "@/Config";
 import { version as AppVersion } from "../package.json";
+import Toast from "vue-toastification";
+import * as utils from "@/composables/utils"
+
+import "vue-toastification/dist/index.css";
+
+Vue.use(Toast, {
+  transition: "Vue-Toastification__fade",
+  maxToasts: 20,
+  newestOnTop: true
+});
 
 Vue.config.productionTip = false;
 
@@ -36,11 +46,23 @@ let app = new Vue({
         }
       }
     );
+    // axios.get("bycing_org/member/me").then(
+    //   (response) => {
+    //     store.state.currentMember = response.data;
+    //   },
+    //   (error) => {
+    //     if (401 !== (error.response && error.response.status)) {
+    //       alert(error);
+    //     }
+    //   }
+    // );
   }
 }).$mount('#app');
 
 
-/********************** public vars ************************/
+/********************** public vars(mostly for testing shall be delete!) ************************/
+window.Vue = Vue;
 window.app = app;
 window.router = router;
 window.store = store;
+window.utils = utils;

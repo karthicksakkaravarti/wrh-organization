@@ -24,7 +24,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 from django.core.mail.backends.filebased import EmailBackend
 from django.db import IntegrityError
-from django.db.models import ProtectedError
+from django.db.models import ProtectedError, Q
 from django.http import Http404, QueryDict, HttpResponseForbidden
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -38,7 +38,7 @@ from django.utils.translation import gettext_lazy as _
 from django_filters import OrderingFilter
 from django_filters.filters import EMPTY_VALUES
 from phonenumber_field.phonenumber import PhoneNumber
-from rest_framework import status, parsers, serializers
+from rest_framework import status, parsers, serializers, permissions
 from rest_framework.exceptions import APIException
 from rest_framework.filters import OrderingFilter as OrderingFilterBackend
 from rest_framework.pagination import PageNumberPagination, _positive_int
@@ -49,6 +49,8 @@ from sendsms.backends.base import BaseSmsBackend
 from storages.backends.s3boto3 import S3Boto3Storage, SpooledTemporaryFile
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client as TwilioRestClient
+
+from apps.bycing_org.models import OrganizationMember
 
 print = functools.partial(print, flush=True)
 
@@ -743,6 +745,83 @@ class ExplicitPermissions(BasePermission):
         return True if not perms else request.user.has_perms(perms)
 
 
+class IsOwnerPermission(permissions.BasePermission):
+
+    @staticmethod
+    def __discover_owner_value(obj, owner_field_name):
+        value = obj
+        for f in owner_field_name.split('.'):
+            if not value:
+                break
+            value = getattr(value, f, None)
+        return value
+
+    def has_object_permission(self, request, view, obj):
+        has_owner_permission_func = getattr(view, 'has_owner_permission', None)
+        if has_owner_permission_func:
+            return view.has_owner_permission(obj)
+        owner_field = getattr(view, 'owner_permission_field', 'owner')
+        owner_object_func = getattr(view, 'get_owner_permission_object', None)
+        owner_object = owner_object_func() if owner_object_func else request.user
+        return self.__discover_owner_value(obj, owner_field) == owner_object
+
+
+class IsOwnerOrReadOnlyPermission(IsOwnerPermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return super().has_object_permission(request, view, obj)
+
+
+class IsMemberVerifiedPermission(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        member = getattr(request.user, 'member', None)
+        return bool(member) and member.is_verified
+
+
+class IsMemberVerifiedOrReadOnlyPermission(IsMemberVerifiedPermission):
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return super().has_permission(request, view)
+
+
+class IsAdminOrganizationPermission(permissions.BasePermission):
+    """ custom class to check permissions for sessions """
+
+    def get_object(self, view, obj):
+        get_organization_object_permission = getattr(view, 'get_organization_object_permission', None)
+        if get_organization_object_permission:
+            obj = get_organization_object_permission(obj)
+        return obj
+
+    def has_permission(self, request, view):
+        has_organization_permission = getattr(view, 'has_organization_permission', None)
+        if has_organization_permission:
+            return has_organization_permission()
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        obj = self.get_object(view, obj)
+        return OrganizationMember.objects.filter(member=request.user.member, organization=obj, is_valid=True
+                                                 ).filter(Q(is_admin=True) | Q(is_master_admin=True)).exists()
+
+
+class IsAdminOrganizationOrReadOnlyPermission(IsAdminOrganizationPermission):
+    """ custom class to check permissions for sessions """
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            # obj = self.get_object(view, obj)
+            # return OrganizationMember.objects.filter(
+            #     member=request.user.member, organization=obj, is_valid=True).exists()
+            return True
+        return super().has_object_permission(request, view, obj)
+
+
 class NestedMultipartParser(parsers.MultiPartParser):
 
     def parse(self, stream, media_type=None, parser_context=None):
@@ -828,6 +907,10 @@ class CustomPagination(PageNumberPagination):
 
 
 class Base64ImageField(serializers.ImageField):
+    def __init__(self, *args, **kwargs):
+        self.max_size = kwargs.pop('max_size', settings.IMAGE_UPLOAD_MAX_SIZE)
+        super().__init__(**kwargs)
+
     def to_internal_value(self, data):
         if isinstance(data, list):
             data = data[0] if data else None
@@ -839,6 +922,10 @@ class Base64ImageField(serializers.ImageField):
                 ext = fmt.split('/')[-1]  # guess file extension
                 uid = uuid.uuid4()
                 data = ContentFile(base64.b64decode(imgstr), name=uid.urn[9:] + '.' + ext)
+
+        if self.max_size and data.size > self.max_size:
+            raise ValidationError(f"Max file size is {self.max_size}B")
+
         return super(Base64ImageField, self).to_internal_value(data)
 
 

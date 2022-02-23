@@ -1,10 +1,14 @@
 from django.urls import include, path, re_path
 from rest_framework import routers
 
-from .views import MemberView, OrganizationView, UserRegistrationView
+from . import views
 
 rest_router = routers.DefaultRouter()
 rest_router.trailing_slash = "/?"  # added to support both / and slashless
-rest_router.register(r'member', MemberView)
-rest_router.register(r'organization', OrganizationView)
-rest_router.register(r'users/registration', UserRegistrationView, basename='user_registration')
+rest_router.register(r'member', views.MemberView)
+# rest_router.register(r'organization_member', views.OrganizationMemberView)
+rest_router.register(r'organization', views.OrganizationView)
+rest_router.register(r'organization/(?P<org_id>[^/.]+)/members', views.OrganizationMemberView,
+                     basename='organization_members')
+# rest_router.register(r'my_organization', views.MyOrganizationView, basename='my_organization')
+rest_router.register(r'users/registration', views.UserRegistrationView, basename='user_registration')

@@ -1,15 +1,23 @@
+from pathlib import Path
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
 User = get_user_model()
 
+def organization_logo_file_path_func(instance, filename):
+    from wrh_organization.helpers.utils import get_random_upload_path
+    return get_random_upload_path(str(Path('uploads', 'bycing_org', 'organization', 'logo')), filename)
+
 
 class OrganizationMember(models.Model):
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
     member = models.ForeignKey('Member', on_delete=models.CASCADE)
     is_admin = models.BooleanField(default=False)
+    is_master_admin = models.BooleanField(default=False)
     membership_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    member_fields = models.JSONField(null=True)
     is_valid = models.BooleanField(default=True, null=True)
     datetime = models.DateTimeField(auto_now_add=True)
 
@@ -19,7 +27,12 @@ class OrganizationMember(models.Model):
     def save(self, *args, **kwargs):
         if not self.is_valid:
             self.is_valid = None
+        if self.is_master_admin:
+            self.is_admin = True
         return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.organization} - {self.member}'
 
 
 class OrganizationMemberOrg(models.Model):
@@ -38,6 +51,9 @@ class OrganizationMemberOrg(models.Model):
             self.is_valid = None
         return super().save(*args, **kwargs)
 
+    def __str__(self):
+        return f'{self.top_organization} - {self.organization}'
+
 
 class Organization(models.Model):
     TYPE_REGIONAL = 'regional'
@@ -52,8 +68,10 @@ class Organization(models.Model):
     type = models.CharField(max_length=32, choices=TYPE_CHOICES)
     social_media = models.JSONField(null=True, blank=True)
     about = models.TextField(null=True, blank=True)
-    logo = models.ImageField(null=True, blank=True)
+    logo = models.ImageField(null=True, blank=True, upload_to=organization_logo_file_path_func)
     signup_config = models.JSONField(null=True)
+    member_fields_schema = models.JSONField(null=True)
+    verified = models.BooleanField(default=False)
     members = models.ManyToManyField('Member', related_name='organizations', through=OrganizationMember)
     member_orgs = models.ManyToManyField('Organization', related_name='organizations', through=OrganizationMemberOrg)
 
@@ -62,6 +80,8 @@ class Organization(models.Model):
 
 
 class Member(models.Model):
+    USER_SHARED_FIELDS = ('first_name', 'last_name', 'birth_date', 'gender')
+
     GENDER_MALE = 'm'
     GENDER_FEMALE = 'f'
     GENDER_OTHER = 'o'
@@ -88,6 +108,10 @@ class Member(models.Model):
     zipcode = models.CharField(max_length=10, blank=True, null=True)
     user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='member', null=True)
 
+    @property
+    def is_verified(self):
+        return self.email_verified or self.phone_verified
+
     def generate_verify_code(self, type='email'):
         '''
         :param type: can be "email" or "phone"
@@ -104,6 +128,11 @@ class Member(models.Model):
         '''
         from wrh_organization.helpers.utils import get_member_verify_otp
         return get_member_verify_otp(self, salt=type).verify(code, valid_window=valid_window)
+
+    def save(self, *args, **kwargs):
+        if not self.phone:
+            self.phone = None
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
