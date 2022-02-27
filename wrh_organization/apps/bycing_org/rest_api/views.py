@@ -108,7 +108,7 @@ class UserRegistrationView(viewsets.ViewSet):
         if not user:
             return Response({'error': 'User with this email does not exists!'}, status=status.HTTP_404_NOT_FOUND)
 
-        subject = 'Activate Your Account'
+        subject = 'Reset Your Password'
         message = render_to_string('bycing_org/email/user_recover_password.html', {
             'user': user,
             'uid': urlsafe_base64_encode(force_bytes(user.pk)),
@@ -129,7 +129,7 @@ class UserRegistrationView(viewsets.ViewSet):
     def recover_password(self, request, *args, **kwargs):
         uid = kwargs.get('uid')
         token = kwargs.get('token')
-        invalid_msg = 'Activation link is invalid or expired'
+        invalid_msg = 'Reset link is invalid or expired'
         try:
             uid = urlsafe_base64_decode(uid)
             user = User.objects.get(pk=uid)
