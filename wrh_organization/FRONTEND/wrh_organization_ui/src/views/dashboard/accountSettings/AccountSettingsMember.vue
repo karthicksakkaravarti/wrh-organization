@@ -9,7 +9,7 @@
         size="120"
         class="me-6"
       >
-        <v-img :src="avatarChosenFileData || accountData.user.avatar || require('@/assets/images/avatars/1.png')"></v-img>
+        <v-img :src="avatarChosenFileData || accountData.user.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
       </v-avatar>
 
       <!-- upload photo -->
@@ -220,7 +220,8 @@
             <v-btn color="primary" class="me-3 mt-4" @click.prevent="save()" type="submit">
               Save changes
             </v-btn>
-            <v-btn color="secondary" outlined class="mt-4" type="reset" @click.prevent="getAccountData()">
+            <v-btn color="secondary" outlined class="mt-4" type="reset"
+                   @click.prevent="loadAccountData(); clearChosenAvatar()">
               Cancel
             </v-btn>
           </v-col>
@@ -263,7 +264,7 @@ export default {
         return data;
     };
 
-    const getAccountData = () => {
+    const loadAccountData = () => {
       loading.value = true;
       axios.get("bycing_org/member/me").then((response) => {
         accountDataOrig.value = response.data;
@@ -317,8 +318,8 @@ export default {
     };
 
     const verifyDialogSuccessed = (type, to) => {
-      notifySuccess(`${type} verified successfully.`)
-      getAccountData();
+      notifySuccess(`${type} verified successfully.`);
+      loadAccountData();
     };
 
     const verifyDialogFailed = (type, to) => {
@@ -326,7 +327,7 @@ export default {
     };
 
     onMounted(() => {
-      getAccountData();
+      loadAccountData();
     });
 
     return {
@@ -334,7 +335,7 @@ export default {
       accountDataOrig,
       loading,
       saving,
-      getAccountData,
+      loadAccountData,
       clearChosenAvatar,
       avatarChosenFile,
       avatarChosenFileData,

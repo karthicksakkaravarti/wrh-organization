@@ -46,7 +46,7 @@
     {% block runtime_js %}
 
     <script>
-      new Vue({
+      window.app = new Vue({
         el: '#app',
         vuetify: new Vuetify(),
       })

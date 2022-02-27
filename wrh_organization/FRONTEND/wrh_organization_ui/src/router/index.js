@@ -15,7 +15,8 @@ export const routeNames = {
   DASHBOARD_CLUB: "dashboard_club",
   DASHBOARD_RIDER: "dashboard_rider",
   DASHBOARD_ACCOUNT_SETTINGS: "dashboard_account_settings",
-  DASHBOARD_USER_PROFILE: "dashboard_user_profile",
+  DASHBOARD_MEMBER_PROFILE: "dashboard_member_profile",
+  DASHBOARD_ORGANIZATION_PROFILE: "dashboard_organization_profile",
 
 };
 
@@ -47,6 +48,22 @@ const routes = [
     path: '/dashboard/account-settings',
     name: routeNames.DASHBOARD_ACCOUNT_SETTINGS,
     component: () => import('@/views/dashboard/accountSettings/AccountSettings.vue'),
+    meta: {
+      layout: 'DashboardLayout',
+    },
+  },
+  {
+    path: '/dashboard/member-profile',
+    name: routeNames.DASHBOARD_MEMBER_PROFILE,
+    component: () => import('@/views/dashboard/memberProfile/MemberProfile.vue'),
+    meta: {
+      layout: 'DashboardLayout',
+    },
+  },
+  {
+    path: '/dashboard/organization-profile/:record_id/',
+    name: routeNames.DASHBOARD_ORGANIZATION_PROFILE,
+    component: () => import('@/views/dashboard/organizationProfile/OrganizationProfile.vue'),
     meta: {
       layout: 'DashboardLayout',
     },

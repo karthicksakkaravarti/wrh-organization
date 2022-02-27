@@ -29,6 +29,7 @@ Vue.prototype.$publicPath = process.env.BASE_URL;
 Vue.prototype.$appVersion = AppVersion;
 Vue.prototype.$const = Constants;
 Vue.prototype.$conf = Config;
+Vue.prototype.$utils = utils;
 
 let app = new Vue({
   router,

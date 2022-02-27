@@ -806,7 +806,7 @@ class IsAdminOrganizationPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         obj = self.get_object(view, obj)
-        return OrganizationMember.objects.filter(member=request.user.member, organization=obj, is_valid=True
+        return OrganizationMember.objects.filter(member=request.user.member, organization=obj, is_active=True
                                                  ).filter(Q(is_admin=True) | Q(is_master_admin=True)).exists()
 
 
@@ -817,7 +817,7 @@ class IsAdminOrganizationOrReadOnlyPermission(IsAdminOrganizationPermission):
         if request.method in permissions.SAFE_METHODS:
             # obj = self.get_object(view, obj)
             # return OrganizationMember.objects.filter(
-            #     member=request.user.member, organization=obj, is_valid=True).exists()
+            #     member=request.user.member, organization=obj, is_active=True).exists()
             return True
         return super().has_object_permission(request, view, obj)
 
@@ -1003,11 +1003,13 @@ class CreateListMixin:
 
 
 class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
+    key_salt = 'AccountActivationTokenGenerator'
     def _make_hash_value(self, user, timestamp):
         return f'{user.pk}{timestamp}{user.is_active}'
 
 
 account_activation_token = AccountActivationTokenGenerator()
+account_password_reset_token = PasswordResetTokenGenerator()
 
 
 def ex_reverse(viewname, **kwargs):

@@ -13,6 +13,7 @@
     <p>You are going to activate your account. </p>
     <p>Please click on the following button to activate your account:</p>
     <form action="." method="post">
+      {% csrf_token %}
       <v-btn class="mr-4" type="submit" color="error">Activate</v-btn>
     </form>
   </v-card-text>

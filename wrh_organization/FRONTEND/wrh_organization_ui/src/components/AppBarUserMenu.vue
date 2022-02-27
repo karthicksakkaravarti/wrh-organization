@@ -23,7 +23,7 @@
           class="v-avatar-light-bg primary--text"
           v-on="on"
         >
-          <v-img :src="$store.state.currentUser.avatar || require('@/assets/images/avatars/1.png')"></v-img>
+          <v-img :src="$store.state.currentUser.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
         </v-avatar>
       </v-badge>
     </template>
@@ -43,7 +43,7 @@
             color="primary"
             class="v-avatar-light-bg primary--text"
           >
-            <v-img :src="$store.state.currentUser.avatar || require('@/assets/images/avatars/1.png')"></v-img>
+            <v-img :src="$store.state.currentUser.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
           </v-avatar>
         </v-badge>
         <div
@@ -62,7 +62,7 @@
       <v-divider></v-divider>
 
       <!-- Profile -->
-      <v-list-item :to="{name: $rns.DASHBOARD_USER_PROFILE}" disabled>
+      <v-list-item :to="{name: $rns.DASHBOARD_MEMBER_PROFILE}">
         <v-list-item-icon class="me-2">
           <v-icon size="22">
             {{ icons.mdiAccountOutline }}

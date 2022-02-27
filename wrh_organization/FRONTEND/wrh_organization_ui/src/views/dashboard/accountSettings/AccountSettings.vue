@@ -2,11 +2,11 @@
   <v-card id="account-setting-card">
     <!-- tabs -->
     <v-tabs v-model="tab" show-arrows>
-      <v-tab v-for="tab in tabs" :key="tab.title">
+      <v-tab v-for="t in tabs" :key="t.title">
         <v-icon size="20" class="me-3">
-          {{ tab.icon }}
+          {{ t.icon }}
         </v-icon>
-        <span>{{ tab.title }}</span>
+        <span>{{ t.title }}</span>
       </v-tab>
     </v-tabs>
 
@@ -17,6 +17,9 @@
       </v-tab-item>
       <v-tab-item>
         <account-settings-security></account-settings-security>
+      </v-tab-item>
+      <v-tab-item>
+        <account-settings-connections></account-settings-connections>
       </v-tab-item>
       <v-tab-item>
         <account-settings-notification></account-settings-notification>
@@ -32,7 +35,8 @@ import {
   mdiInformationOutline,
   mdiBookmarkOutline,
   mdiBellOutline,
-  mdiBike
+  mdiBike,
+  mdiLinkVariant,
 } from '@mdi/js'
 import { ref } from '@vue/composition-api'
 
@@ -40,9 +44,11 @@ import { ref } from '@vue/composition-api'
 import AccountSettingsMember from './AccountSettingsMember'
 import AccountSettingsSecurity from './AccountSettingsSecurity'
 import AccountSettingsNotification from './AccountSettingsNotification'
+import AccountSettingsConnections from './AccountSettingsConnections';
 
 export default {
   components: {
+    AccountSettingsConnections,
     AccountSettingsMember,
     AccountSettingsSecurity,
     AccountSettingsNotification,
@@ -54,6 +60,7 @@ export default {
     const tabs = [
       { title: 'Member Account', icon: mdiAccountOutline },
       { title: 'Security', icon: mdiLockOpenOutline },
+      { title: 'Connections', icon: mdiLinkVariant },
       { title: 'Notifications', icon: mdiBellOutline },
     ];
 

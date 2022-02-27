@@ -9,7 +9,7 @@
       mode="out-in"
       appear
     >
-      <Login v-if="loginRequired"></Login>
+      <Auth v-if="loginRequired"></Auth>
       <router-view v-else></router-view>
     </transition>
   </component>
@@ -32,12 +32,12 @@ import DashboardLayout from '@/layouts/DashboardLayout'
 
 // Dynamic vh
 import useDynamicVh from '@core/utils/useDynamicVh'
-import Login from "@/views/Login";
+import Auth from "@/views/auth/Auth";
 import {notifyDefaultServerError} from "@/composables/utils";
 
 export default {
   components: {
-    Login,
+    Auth,
     BlankLayout,
     PublicLayout,
     DashboardLayout,

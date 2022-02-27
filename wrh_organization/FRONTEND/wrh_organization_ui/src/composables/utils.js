@@ -215,3 +215,24 @@ export const prettifyError = (data) => {
     .replace(/\\"/g, '"')
     .replace('"non_field_errors":', "");
 };
+
+export const ageFormat = (birth_date, showLabel, decimalCount) => {
+  showLabel = showLabel === undefined ? true : showLabel;
+  var age = moment().diff(birth_date, "years", !!decimalCount);
+  age = decimalCount? this.removeTrailingZero(age, decimalCount): Math.floor(age);
+  return `${age}${
+    showLabel ? " years" : ""
+  }`;
+};
+
+export const refineVTableOptions = (options) => {
+  const newOpt = Object.assign({}, options);
+  newOpt.page_size = newOpt.itemsPerPage;
+  newOpt.order_by = (newOpt.sortBy || []).map((o, i) => {
+    return ((newOpt.sortDesc || [])[i]? '-': '') + o;
+  });
+  ["itemsPerPage", "sortBy", "sortDesc", "groupBy", "groupDesc", "mustSort", "multiSort"].forEach(o => {
+    delete newOpt[o];
+  });
+  return newOpt;
+};

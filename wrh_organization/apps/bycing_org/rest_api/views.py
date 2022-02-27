@@ -9,15 +9,18 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.bycing_org.models import Member, Organization, User, OrganizationMember
 from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter, OrganizationMemberFilter
 from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationSerializer, SignupUserSerializer, \
-    ActivationEmailSerializer, MyMemberSerializer, MemberOTPVerifySerializer, OrganizationMemberSerializer
+    ActivationEmailSerializer, MyMemberSerializer, MemberOTPVerifySerializer, OrganizationMemberSerializer, \
+    NestedMemberSerializer, UserSendRecoverPasswordSerializer, UserRecoverPasswordSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
-    IsAdminOrganizationOrReadOnlyPermission
+    IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token
 
 
 class UserRegistrationView(viewsets.ViewSet):
@@ -34,17 +37,18 @@ class UserRegistrationView(viewsets.ViewSet):
     def activate(self, request, *args, **kwargs):
         uid = kwargs.get('uid')
         token = kwargs.get('token')
+        invalid_msg = 'Activation link is invalid or expired'
         try:
             uid = urlsafe_base64_decode(uid)
             user = User.objects.get(pk=uid)
         except(TypeError, ValueError, OverflowError):
-            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': invalid_msg}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             return Response({'error': 'User with uid does not exists'}, status=status.HTTP_404_NOT_FOUND)
         if user.is_active:
-            return Response({'error': 'Activation link is invalid'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': invalid_msg}, status=status.HTTP_400_BAD_REQUEST)
         if not account_activation_token.check_token(user, token):
-            return Response({'error': 'Activation token'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': invalid_msg}, status=status.HTTP_400_BAD_REQUEST)
 
         if request.method == 'GET':
             return self._activate_get(request, user, *args, **kwargs)
@@ -58,7 +62,7 @@ class UserRegistrationView(viewsets.ViewSet):
 
         login(request, user)
         next = request.GET.get('redirect') or settings.SIGNUP_ACTIVATION_REDIRECT_URL
-        return redirect(settings.SIGNUP_ACTIVATION_REDIRECT_URL)
+        return redirect(next)
 
     @action(detail=False, methods=['POST'],
             serializer_class=ActivationEmailSerializer)
@@ -95,6 +99,60 @@ class UserRegistrationView(viewsets.ViewSet):
         user = serializer.save(is_active=False)
         self._send_activation_email(user)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['POST'], serializer_class=UserSendRecoverPasswordSerializer)
+    def send_recover_password(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = User.objects.filter(is_active=True, email=serializer.validated_data.get('email')).first()
+        if not user:
+            return Response({'error': 'User with this email does not exists!'}, status=status.HTTP_404_NOT_FOUND)
+
+        subject = 'Activate Your Account'
+        message = render_to_string('bycing_org/email/user_recover_password.html', {
+            'user': user,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': account_password_reset_token.make_token(user),
+            'request': self.request
+        })
+
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message,
+                  fail_silently=False)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+    def _recover_password_get(self, request, user, *args, **kwargs):
+        return render(request, 'bycing_org/email/user_recover_password_confirm.html', context={'new_user': user})
+
+    @action(detail=False, methods=['GET', 'POST'], serializer_class=UserRecoverPasswordSerializer,
+            url_path='recover_password/(?P<uid>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$')
+    def recover_password(self, request, *args, **kwargs):
+        uid = kwargs.get('uid')
+        token = kwargs.get('token')
+        invalid_msg = 'Activation link is invalid or expired'
+        try:
+            uid = urlsafe_base64_decode(uid)
+            user = User.objects.get(pk=uid)
+        except(TypeError, ValueError, OverflowError):
+            return Response({'error': invalid_msg}, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({'error': 'User with uid does not exists'}, status=status.HTTP_404_NOT_FOUND)
+        if not user.is_active:
+            return Response({'error': 'This user is inactive!'}, status=status.HTTP_400_BAD_REQUEST)
+        if not account_password_reset_token.check_token(user, token):
+            return Response({'error': invalid_msg}, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.method == 'GET':
+            return self._recover_password_get(request, user, *args, **kwargs)
+
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user.set_password(serializer.validated_data.get('new_password'))
+        user.save()
+        next = request.GET.get('next') or settings.LOGIN_URL
+        if request.GET.get('redirect') == 'true':
+            return redirect(next)
+        return Response({'next': next}, status=status.HTTP_200_OK)
 
     create = post
 
@@ -215,13 +273,24 @@ class MemberView(viewsets.ModelViewSet):
             return Response({'error': 'phone is already verified'}, status=status.HTTP_409_CONFLICT)
         return self._verify(request, me, 'phone')
 
+    @action(detail=False, methods=['GET'], permission_classes=(IsAuthenticated,),
+            serializer_class=NestedMemberSerializer, filter_backends=(SearchFilter,),
+            search_fields=['email', 'first_name', 'last_name'])
+    def find(self, request, *args, **kwargs):
+        search = request.GET.get('search') or ''
+        if not search or len(search) < 3:
+            raise ValidationError('Insufficient search keyword!')
+        qs = self.filter_queryset(self.get_queryset())[:5]
+        return Response({'results': self.get_serializer(qs, many=True).data})
+
+
 
 class OrganizationView(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
     permission_classes = (IsMemberVerifiedPermission, IsAdminOrganizationOrReadOnlyPermission)
     serializer_class = OrganizationSerializer
     filterset_class = OrganizationFilter
-    search_fields = '__all__'
+    search_fields = ('name', 'about', 'type', 'website')
     ordering_fields = '__all__'
     ordering = ('id',)
 
@@ -240,7 +309,7 @@ class OrganizationMemberView(viewsets.ModelViewSet):
     permission_classes = (IsMemberVerifiedPermission, IsAdminOrganizationOrReadOnlyPermission)
     serializer_class = OrganizationMemberSerializer
     filterset_class = OrganizationMemberFilter
-    search_fields = '__all__'
+    search_fields = ('member__first_name', 'member__last_name', 'member__email')
     ordering_fields = '__all__'
     ordering = ('id',)
 
@@ -251,7 +320,7 @@ class OrganizationMemberView(viewsets.ModelViewSet):
 
     def has_organization_permission(self):
         org = self.get_current_org()
-        if OrganizationMember.objects.filter(member=self.request.user.member, organization=org, is_valid=True
+        if OrganizationMember.objects.filter(member=self.request.user.member, organization=org, is_active=True
                                              ).filter(Q(is_admin=True) | Q(is_master_admin=True)).exists():
             return True
         return self.request.method in permissions.SAFE_METHODS
@@ -262,7 +331,7 @@ class OrganizationMemberView(viewsets.ModelViewSet):
             assert org_id, f'{self.org_id_kwarg} is not specified in url pattern'
             member = self.request.user.member
             self._current_org = get_object_or_404(Organization.objects.filter(pk=org_id).filter(
-                organizationmember__is_valid=True, organizationmember__member=member).distinct())
+                organizationmember__is_active=True, organizationmember__member=member).distinct())
         return self._current_org
 
     def get_queryset(self):
@@ -271,3 +340,18 @@ class OrganizationMemberView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(organization=self.get_current_org())
+
+    def perform_destroy(self, instance):
+        if instance.is_master_admin:
+            raise ValidationError({'detail': 'cannot delete a master_admin record'})
+
+        instance.delete()
+
+    def perform_update(self, serializer):
+        if serializer.instance.is_master_admin:
+            org = self.get_current_org()
+            if not OrganizationMember.objects.filter(member=self.request.user.member, organization=org, is_active=True
+                                                     ).filter(is_master_admin=True).exists():
+                raise ValidationError({'detail': 'cannot update a master_admin record'})
+
+        serializer.save(member=serializer.instance.member)

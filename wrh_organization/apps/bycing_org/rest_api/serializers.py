@@ -43,10 +43,18 @@ class MyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializ
         return super().update(instance, validated_data)
 
 
+class NestedUserAvatarSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'avatar')
+
+
 class NestedMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    _user = NestedUserAvatarSerializer(source='user', read_only=True)
+
     class Meta:
         model = Member
-        fields = ('id', 'first_name', 'last_name', 'gender', 'email')
+        fields = ('id', 'first_name', 'last_name', 'gender', 'email', '_user')
 
 
 class OrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -55,15 +63,16 @@ class OrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.Mod
     class Meta:
         model = OrganizationMember
         fields = "__all__"
-        read_only_fields = ('is_master_admin', 'organization')
+        read_only_fields = ('is_master_admin', 'organization', 'membership_price')
 
 
 class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-    members = NestedMemberSerializer(read_only=True, many=True)
+    # members = NestedMemberSerializer(read_only=True, many=True)
+    logo = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Organization
-        fields = "__all__"
+        exclude = ('members', 'member_orgs')
         read_only_fields = ('verified', 'members', 'member_orgs',)
 
 
@@ -71,15 +80,6 @@ class SignupMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
     class Meta:
         model = Member
         fields = ('phone', 'address1', 'address2', 'country', 'city', 'state', 'zipcode')
-        extra_kwargs = {
-            # 'phone': {'validators': []}
-        }
-
-    def __init__(self, *args, **kwargs):
-        self.fields['phone'].validators = [
-            v for v in self.fields['phone'].validators if not isinstance(v, UniqueValidator)
-        ]
-        super().__init__(*args, **kwargs)
 
 
 class ActivationEmailSerializer(serializers.Serializer):
@@ -122,3 +122,18 @@ class SignupUserSerializer(serializers.ModelSerializer):
 
 class MemberOTPVerifySerializer(serializers.Serializer):
     code = serializers.RegexField('[0-9]+', max_length=12, required=True, allow_null=False)
+
+
+class UserSendRecoverPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True, allow_null=False, allow_blank=False)
+
+
+class UserRecoverPasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(style={'input_type': 'password'})
+
+    def validate_new_password(self, new_password):
+        try:
+            validate_password(new_password, self.context['request'].user)
+        except ValidationError as e:
+            raise serializers.ValidationError({'new_password': list(e.messages)})
+        return new_password

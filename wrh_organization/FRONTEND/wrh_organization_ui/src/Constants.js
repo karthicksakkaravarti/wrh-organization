@@ -18,3 +18,14 @@ export const COUNTRY_MAP = {};
 COUNTRY_OPTIONS.forEach(function(v) {
   COUNTRY_MAP[v.code] = v;
 });
+
+export const ORGANIZATION_TYPE_OPTIONS = [
+  { value: "regional", title: "Regional", css: "success" },
+  { value: "team", title: "Team", css: "primary" },
+  { value: "advocacy_volunteer", title: "Advocacy, Volunteer", css: "info" },
+];
+export const ORGANIZATION_TYPE_MAP = {};
+ORGANIZATION_TYPE_OPTIONS.forEach(function(v) {
+  ORGANIZATION_TYPE_MAP[v.value] = v;
+});
+

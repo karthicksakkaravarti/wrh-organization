@@ -6,7 +6,7 @@
       </v-card-title>
       <div v-show="stage == 'send'">
         <v-card-text>
-          <p>To verify your {{verifyType}}, we are going to send a code to <strong>{{to}}</strong>.</p>
+          <p>We are going to send a code to <strong>{{to}}</strong> to verify your {{verifyType}}.</p>
           <p><strong>Are you sure?</strong></p>
         </v-card-text>
         <v-card-actions>

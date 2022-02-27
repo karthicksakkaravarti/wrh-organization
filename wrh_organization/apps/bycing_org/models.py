@@ -18,15 +18,15 @@ class OrganizationMember(models.Model):
     is_master_admin = models.BooleanField(default=False)
     membership_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     member_fields = models.JSONField(null=True)
-    is_valid = models.BooleanField(default=True, null=True)
+    is_active = models.BooleanField(default=True, null=True)
     datetime = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = (('organization', 'member', 'is_valid'),)
+        unique_together = (('organization', 'member', 'is_active'),)
 
     def save(self, *args, **kwargs):
-        if not self.is_valid:
-            self.is_valid = None
+        if not self.is_active:
+            self.is_active = None
         if self.is_master_admin:
             self.is_admin = True
         return super().save(*args, **kwargs)
@@ -40,15 +40,15 @@ class OrganizationMemberOrg(models.Model):
     top_organization = models.ForeignKey('Organization', related_name='top_organizaton_member_orgs',
                                          on_delete=models.CASCADE)
     membership_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
-    is_valid = models.BooleanField(default=True, null=True)
+    is_active = models.BooleanField(default=True, null=True)
     datetime = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = (('organization', 'top_organization', 'is_valid'),)
+        unique_together = (('organization', 'top_organization', 'is_active'),)
 
     def save(self, *args, **kwargs):
-        if not self.is_valid:
-            self.is_valid = None
+        if not self.is_active:
+            self.is_active = None
         return super().save(*args, **kwargs)
 
     def __str__(self):
@@ -67,6 +67,7 @@ class Organization(models.Model):
     name = models.CharField(max_length=256, unique=True)
     type = models.CharField(max_length=32, choices=TYPE_CHOICES)
     social_media = models.JSONField(null=True, blank=True)
+    website = models.URLField(null=True, blank=True)
     about = models.TextField(null=True, blank=True)
     logo = models.ImageField(null=True, blank=True, upload_to=organization_logo_file_path_func)
     signup_config = models.JSONField(null=True)
@@ -96,7 +97,7 @@ class Member(models.Model):
     last_name = models.CharField(max_length=256)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default=GENDER_UNKNOWN)
     birth_date = models.DateField(null=True, blank=True)
-    phone = PhoneNumberField(max_length=50, unique=True, null=True, blank=True)
+    phone = PhoneNumberField(max_length=50, null=True, blank=True)
     phone_verified = models.BooleanField(default=False)
     email = models.EmailField(null=True, unique=True, blank=True)
     email_verified = models.BooleanField(default=False)
@@ -106,6 +107,7 @@ class Member(models.Model):
     city = models.CharField(max_length=128, blank=True, null=True)
     state = models.CharField(max_length=128, blank=True, null=True)
     zipcode = models.CharField(max_length=10, blank=True, null=True)
+    social_media = models.JSONField(null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='member', null=True)
 
     @property

@@ -145,6 +145,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50 MB
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 VUE_STATIC_INDEX = '/static/vue/index.html'
+LOGIN_URL = f'{VUE_STATIC_INDEX}#/dashboard/home'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "collected_static"
