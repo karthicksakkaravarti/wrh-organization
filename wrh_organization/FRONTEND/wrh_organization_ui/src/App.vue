@@ -12,6 +12,8 @@
       <Auth v-if="loginRequired"></Auth>
       <router-view v-else></router-view>
     </transition>
+    <app-version-alert v-if="mismatchVersion" :new-version="newAppVersion">
+    </app-version-alert>
   </component>
 </template>
 
@@ -34,9 +36,11 @@ import DashboardLayout from '@/layouts/DashboardLayout'
 import useDynamicVh from '@core/utils/useDynamicVh'
 import Auth from "@/views/auth/Auth";
 import {notifyDefaultServerError} from "@/composables/utils";
+import AppVersionAlert from "@/components/AppVersionAlert";
 
 export default {
   components: {
+    AppVersionAlert,
     Auth,
     BlankLayout,
     PublicLayout,

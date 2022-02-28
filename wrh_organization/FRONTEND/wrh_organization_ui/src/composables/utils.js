@@ -279,7 +279,6 @@ export const internationalPhoneMask = function(rawValue) {
       codesDigit.push(/\d/);
       i++;
     }
-    console.log(countryCode)
     if (!countryCode) {
       codesDigit = ["+", /\d/];
     }
