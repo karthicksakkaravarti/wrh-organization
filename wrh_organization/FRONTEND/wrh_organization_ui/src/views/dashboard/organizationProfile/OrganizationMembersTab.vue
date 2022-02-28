@@ -90,17 +90,6 @@
               <span>Edit</span>
             </v-tooltip>
 
-            <v-tooltip bottom>
-              <template #activator="{ on, attrs }">
-                <v-btn icon small v-bind="attrs" v-on="on">
-                  <v-icon size="18">
-                    {{ icons.mdiEyeOutline }}
-                  </v-icon>
-                </v-btn>
-              </template>
-              <span>View</span>
-            </v-tooltip>
-
           </div>
         </template>
 

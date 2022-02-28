@@ -1,4 +1,4 @@
-const countryList = require('country-list');
+import {countries} from "@/composables/countries";
 
 export const UI_VERSION_HEADER_NAME = "x-ui-version";
 
@@ -13,7 +13,7 @@ GENDER_OPTIONS.forEach(function(v) {
   GENDER_MAP[v.value] = v;
 });
 
-export const COUNTRY_OPTIONS = countryList.getData();
+export const COUNTRY_OPTIONS = countries;
 export const COUNTRY_MAP = {};
 COUNTRY_OPTIONS.forEach(function(v) {
   COUNTRY_MAP[v.code] = v;

@@ -1,5 +1,18 @@
 import moment from "moment";
 import { createToastInterface } from "vue-toastification";
+import {Config} from "@/Config";
+import {conformToMask} from 'text-mask-core';
+import {countries} from "@/composables/countries";
+
+
+export const countryPhoneCodes = {};
+countries.forEach(v => {
+  if (!v.phone_code) return;
+  var codes = v.phone_code.split(",");
+  codes.forEach(c => {
+    countryPhoneCodes[c] = v.code;
+  })
+});
 
 
 export const toast = createToastInterface({
@@ -216,6 +229,19 @@ export const prettifyError = (data) => {
     .replace('"non_field_errors":', "");
 };
 
+export const removeTrailingZero = (n, decimalPoint) => {
+  if (n === undefined || n === null) {
+    return n;
+  }
+  if (typeof n === "number" && decimalPoint !== undefined) {
+    n = n.toFixed(decimalPoint);
+  }
+  if (typeof n !== "string") {
+    n = n + "";
+  }
+  return n.replace(/(\.[0-9]*[1-9])0+$|\.0*$/, "$1");
+};
+
 export const ageFormat = (birth_date, showLabel, decimalCount) => {
   showLabel = showLabel === undefined ? true : showLabel;
   var age = moment().diff(birth_date, "years", !!decimalCount);
@@ -235,4 +261,68 @@ export const refineVTableOptions = (options) => {
     delete newOpt[o];
   });
   return newOpt;
+};
+
+export const internationalPhoneMask = function(rawValue) {
+  var number = (rawValue || "").replace(/\D/g, ""),
+    codesDigit = ["+", /\d/];
+  if (!rawValue.startsWith("+")) {
+    codesDigit = (Config.DEFAULT_PHONE_COUNTRY_CODE || "+1").split("");
+  } else if (number) {
+    var countryCode,
+      i = 1;
+    while (i <= number.length && i <= 5) {
+      countryCode = countryPhoneCodes[number.slice(0, i)];
+      if (countryCode) {
+        break;
+      }
+      codesDigit.push(/\d/);
+      i++;
+    }
+    console.log(countryCode)
+    if (!countryCode) {
+      codesDigit = ["+", /\d/];
+    }
+  }
+  return codesDigit.concat([" ", "(", /[1-9]/, /\d/, /\d/, ")", " ", /\d/, /\d/, /\d/, "-", /\d/, /\d/, /\d/, /\d/]);
+};
+
+export const internationalPhoneFormat = (number, options) => {
+  options = options || {};
+  if (!number.startsWith("+")) {
+    number = Config.DEFAULT_PHONE_COUNTRY_CODE + number;
+  }
+  if (!options.isRaw) {
+    number = "+" + number.replace(/\D/g, "");
+  }
+  return number + (options.ext ? `,${options.ext}` : "");
+};
+
+export const formatPhone = (phone, options) => {
+  options = options || {};
+  var humanize = options.humanize === undefined ? true : options.humanize;
+  var unmasked = conformToMask(phone, internationalPhoneMask(phone), {
+    guide: !humanize
+  });
+  if (!humanize) {
+    return unmasked.conformedValue;
+  }
+  var newPhone = unmasked.conformedValue;
+  if (options.compact) {
+    newPhone = newPhone.replace(/ \(|\) /g, "-");
+  }
+  if (newPhone.endsWith("-")) {
+    newPhone = newPhone.slice(0, -1);
+  }
+  if (newPhone.startsWith(Config.DEFAULT_PHONE_COUNTRY_CODE)) {
+    newPhone = newPhone.slice(Config.DEFAULT_PHONE_COUNTRY_CODE.length);
+  }
+  if (newPhone.startsWith("-")) {
+    newPhone = newPhone.slice(1);
+  }
+  newPhone = newPhone.trim();
+  if (options.ext) {
+    newPhone = `${newPhone}x${options.ext}`;
+  }
+  return newPhone;
 };

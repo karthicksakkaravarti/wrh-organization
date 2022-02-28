@@ -120,6 +120,7 @@
           <v-col cols="12" md="6">
             <v-text-field
               v-model="accountData.phone"
+              v-mask="phoneMask"
               outlined
               dense
               :disabled="accountDataOrig.phone && accountDataOrig.phone_verified"
@@ -238,10 +239,15 @@
 
 <script>
 import { mdiAlertOutline, mdiCloudUploadOutline, mdiEmailSend } from '@mdi/js'
-import {onMounted, ref} from '@vue/composition-api'
+import {nextTick, onMounted, ref} from '@vue/composition-api'
 import axios from "@/axios";
 import store from "@/store";
-import {notifyDefaultServerError, notifySuccess, notifyError} from "@/composables/utils";
+import {
+  notifyDefaultServerError,
+  notifySuccess,
+  notifyError,
+  internationalPhoneMask
+} from "@/composables/utils";
 import EventBus from "@/EventBus";
 import VerifyDialog from "@/views/dashboard/accountSettings/VerifyDialog";
 
@@ -257,6 +263,7 @@ export default {
     const avatarChosenFile = ref(null);
     const avatarChosenFileData = ref(null);
     const avatarImageRef = ref(null);
+    const phoneMask = ref(null);
 
     const cloneData = () => {
         var data = Object.assign({}, accountDataOrig.value);
@@ -266,9 +273,13 @@ export default {
 
     const loadAccountData = () => {
       loading.value = true;
+      phoneMask.value = null;
       axios.get("bycing_org/member/me").then((response) => {
         accountDataOrig.value = response.data;
         accountData.value = cloneData();
+        nextTick(() => {
+          phoneMask.value = internationalPhoneMask;
+        });
         loading.value = false;
       }, (error) => {
         loading.value = false;
@@ -344,6 +355,7 @@ export default {
       verifyDialogSuccessed,
       verifyDialogFailed,
       save,
+      phoneMask,
       icons: {
         mdiAlertOutline,
         mdiCloudUploadOutline,

@@ -1,7 +1,7 @@
 {
   "name": "materio-vuetify-vuejs-admin-template",
   "description": "Production Ready, Carefully Crafted, Extensive Vuetifty Admin Template",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -20,12 +20,13 @@
     "axios-mock-adapter": "^1.19.0",
     "chart.js": "2.9.4",
     "core-js": "^3.6.5",
-    "country-list": "^2.2.0",
     "jsonwebtoken": "^8.5.1",
     "leaflet": "^1.7.1",
     "lodash": "^4.17.21",
     "mitt": "^3.0.0",
     "prismjs": "^1.23.0",
+    "text-mask-core": "^5.1.2",
+    "v-mask": "^2.3.0",
     "vue": "^2.6.14",
     "vue-apexcharts": "^1.6.1",
     "vue-chartjs": "^3.5.1",

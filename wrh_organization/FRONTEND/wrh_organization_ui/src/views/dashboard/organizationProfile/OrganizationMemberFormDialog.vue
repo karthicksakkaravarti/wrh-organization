@@ -232,7 +232,7 @@ export default {
       isVisible.value = false;
     };
     const show = (r) => {
-      record.value = Object.assign({}, r);
+      record.value = Object.assign({is_active: true}, r);
       confirmDelete.value = false;
       deleting.value = false;
       saving.value = false;

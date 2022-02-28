@@ -55,6 +55,9 @@
               </v-select>
             </v-col>
             <v-col cols="12">
+              <v-text-field outlined v-model="record.website" label="Website" dense></v-text-field>
+            </v-col>
+            <v-col cols="12">
               <v-textarea outlined v-model="record.about" label="About" dense></v-textarea>
             </v-col>
           </v-row>

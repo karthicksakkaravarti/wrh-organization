@@ -4,40 +4,42 @@
       <v-card-title class="headline">
         Verify {{verifyType}}
       </v-card-title>
-      <div v-show="stage == 'send'">
-        <v-card-text>
-          <p>We are going to send a code to <strong>{{to}}</strong> to verify your {{verifyType}}.</p>
-          <p><strong>Are you sure?</strong></p>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="error" outlined @click="hide()">Cancel</v-btn>
-          <v-btn color="success" @click="sendVerifyCode()" :loading="sending">Yes, Send code</v-btn>
-        </v-card-actions>
-      </div>
-      <div v-show="stage == 'verify'">
-        <v-card-text align="center">
-          We have sent a code to {{to}}.<br>
-          Enter 6-digit numbers received on your {{verifyType}}:
-        </v-card-text>
-
-        <div class="ma-auto position-relative" style="max-width: 300px">
-          <v-otp-input v-model="code" :disabled="verifying" @finish="onFinishEnterCode" type="number" ref="otpInputRef">
-          </v-otp-input>
-          <v-overlay absolute :value="verifying">
-            <v-progress-circular
-              indeterminate
-              color="primary"
-            ></v-progress-circular>
-          </v-overlay>
+      <v-slide-x-transition :hide-on-leave="true">
+        <div key="send" v-if="stage == 'send'">
+          <v-card-text>
+            <p>We are going to send a code to <strong>{{to}}</strong> to verify your {{verifyType}}.</p>
+            <p><strong>Are you sure?</strong></p>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="error" outlined @click="hide()">Cancel</v-btn>
+            <v-btn color="success" @click="sendVerifyCode()" :loading="sending">Yes, Send code</v-btn>
+          </v-card-actions>
         </div>
-        <v-card-text align="center">{{expiryCounter}} seconds to expire code ...</v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="error" outlined @click="hide()">Cancel</v-btn>
-          <v-btn color="success" @click="stage = 'send'">Resend</v-btn>
-        </v-card-actions>
-      </div>
+        <div key="verify" v-else-if="stage == 'verify'">
+          <v-card-text align="center">
+            We have sent a code to {{to}}.<br>
+            Enter 6-digit numbers received on your {{verifyType}}:
+          </v-card-text>
+
+          <div class="ma-auto position-relative" style="max-width: 300px">
+            <v-otp-input v-model="code" :disabled="verifying" @finish="onFinishEnterCode" type="number" ref="otpInputRef">
+            </v-otp-input>
+            <v-overlay absolute :value="verifying">
+              <v-progress-circular
+                indeterminate
+                color="primary"
+              ></v-progress-circular>
+            </v-overlay>
+          </div>
+          <v-card-text align="center">{{expiryCounter}} seconds to expire code ...</v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="error" outlined @click="hide()">Cancel</v-btn>
+            <v-btn color="success" @click="stage = 'send'">Resend</v-btn>
+          </v-card-actions>
+        </div>
+      </v-slide-x-transition>
     </v-card>
   </v-dialog>
 </template>
@@ -59,6 +61,7 @@ export default {
     const code = ref('');
     const otpInputRef = ref(null);
     const expiryCounter = ref(0);
+    let counterTimerId = null;
 
     const hide = () => {
       isVisible.value = false;
@@ -71,16 +74,14 @@ export default {
       stage.value = 'send';
     };
     const startExpiryCounter = () => {
-      if (!isVisible.value) {
-        expiryCounter.value = 0;
-        return;
-      }
-      if(expiryCounter.value > 0) {
-        setTimeout(() => {
-          expiryCounter.value -= 1;
-          startExpiryCounter()
-        }, 1000)
-      }
+      clearInterval(counterTimerId);
+      counterTimerId = setInterval(() => {
+        if (expiryCounter.value <= 0 || !isVisible.value) {
+          clearInterval(counterTimerId);
+          return;
+        }
+        expiryCounter.value -= 1;
+      }, 1000);
     };
 
     const sendVerifyCode = () => {
@@ -88,6 +89,7 @@ export default {
       axios.post(`bycing_org/member/me/send_${verifyType.value}_verify_code`).then((response) => {
           sending.value = false;
           stage.value = 'verify';
+          clearTimeout(counterTimerId);
           expiryCounter.value = response.data.expiry;
           startExpiryCounter();
           setTimeout(() => {

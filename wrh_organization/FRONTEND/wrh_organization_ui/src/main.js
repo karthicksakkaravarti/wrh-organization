@@ -12,9 +12,10 @@ import {Config} from "@/Config";
 import { version as AppVersion } from "../package.json";
 import Toast from "vue-toastification";
 import * as utils from "@/composables/utils"
-
+import VueMask from 'v-mask'
 import "vue-toastification/dist/index.css";
 
+Vue.use(VueMask);
 Vue.use(Toast, {
   transition: "Vue-Toastification__fade",
   maxToasts: 20,

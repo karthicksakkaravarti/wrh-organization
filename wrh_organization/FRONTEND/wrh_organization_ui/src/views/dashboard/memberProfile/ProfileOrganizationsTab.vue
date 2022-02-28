@@ -24,7 +24,7 @@
 
           <v-switch hide-details class="mt-0" v-model="tableFiltering.my_adminated">
             <template #label>
-              <span class="text-sm ms-2">Only My Adminated</span>
+              <span class="text-sm ms-2">Managed by me</span>
             </template>
           </v-switch>
         </div>

@@ -140,6 +140,7 @@
 
         <v-text-field
             v-model="registerForm.member.phone"
+            v-mask="$utils.internationalPhoneMask"
             :append-icon="icons.mdiPhoneOutline"
             outlined
             dense
@@ -241,7 +242,6 @@ export default {
     const formValid = ref(false);
     const showBirthDateMenu = ref(false);
     const birthDatePickerRef = ref(null);
-
     const registerForm = ref({member: {}});
 
     const socialLink = [

@@ -349,6 +349,7 @@ class OrganizationMemberView(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         if serializer.instance.is_master_admin:
+            serializer.validated_data['is_active'] = True
             org = self.get_current_org()
             if not OrganizationMember.objects.filter(member=self.request.user.member, organization=org, is_active=True
                                                      ).filter(is_master_admin=True).exists():
