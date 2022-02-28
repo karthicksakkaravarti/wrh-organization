@@ -60,18 +60,7 @@
 
     <!-- Slot: footer -->
     <template #footer>
-      <div class="d-flex justify-space-between">
-        <span>COPYRIGHT &copy; {{ new Date().getFullYear() }} ThemeSelection, All rights Reserved</span>
-        <div class="d-flex align-center">
-          <span>Hand-crafted &amp; Made with</span>
-          <v-icon
-            color="error"
-            class="ms-2"
-          >
-            {{ icons.mdiHeartOutline }}
-          </v-icon>
-        </div>
-      </div>
+      <app-footer></app-footer>
     </template>
 
   </layout-content-horizontal-nav>
@@ -93,9 +82,11 @@ import { ref, watch } from '@vue/composition-api'
 
 import themeConfig from '@themeConfig'
 import { mdiHeartOutline, mdiLogin } from '@mdi/js'
+import AppFooter from "@/layouts/AppFooter";
 
 export default {
   components: {
+    AppFooter,
     LayoutContentHorizontalNav,
 
     // App Bar Components

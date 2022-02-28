@@ -36,21 +36,7 @@
 
     <!-- Slot: Footer -->
     <template #footer>
-      <div class="d-flex justify-space-between">
-        <span>COPYRIGHT &copy; {{ new Date().getFullYear() }} <a
-          href="https://themeselection.com"
-          class="text-decoration-none"
-        >ThemeSelection</a><span class="d-none d-md-inline">, All rights Reserved</span></span>
-        <div class="align-center d-none d-md-flex">
-          <span>Hand-crafted &amp; Made with</span>
-          <v-icon
-            color="error"
-            class="ms-2"
-          >
-            {{ icons.mdiHeartOutline }}
-          </v-icon>
-        </div>
-      </div>
+      <app-footer></app-footer>
     </template>
   </layout-content-vertical-nav>
 </template>
@@ -72,9 +58,11 @@ import { getVuetify } from '@core/utils'
 import appBarSearchData from '@/assets/app-bar-search-data'
 
 import { ref, watch } from '@vue/composition-api'
+import AppFooter from "./AppFooter";
 
 export default {
   components: {
+    AppFooter,
     AppBarThemeSwitcher,
     LayoutContentVerticalNav,
 
