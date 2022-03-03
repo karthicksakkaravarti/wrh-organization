@@ -430,6 +430,8 @@ class OrganizationMemberView(viewsets.ModelViewSet):
         if not member:
             org_member = OrganizationMember.objects.filter(
                 organization=org, org_member_uid=org_member_uid, is_active=True).first()
+            if org_member.is_admin or org_member.is_master_admin:
+                return
             update_fields = []
             if org_member:
                member = org_member.member
