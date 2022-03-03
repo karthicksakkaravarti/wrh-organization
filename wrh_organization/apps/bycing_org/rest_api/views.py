@@ -430,19 +430,25 @@ class OrganizationMemberView(viewsets.ModelViewSet):
         if not member:
             org_member = OrganizationMember.objects.filter(
                 organization=org, org_member_uid=org_member_uid, is_active=True).first()
+            update_fields = []
             if org_member:
                member = org_member.member
                org_member.is_active = False
                org_member.save()
             else:
                 member = Member()
-            update_fields = []
+                update_fields.append('id')
             for f in member_fields:
                 if (f == 'phone' and member.phone_verified) or (f == 'email' and member.email_verified):
                     continue
+                v = row.get(f, None)
+                if not v:
+                    continue
+                if f == 'gender':
+                    v = v.lower()
                 update_fields.append(f)
                 setattr(member, f, row.get(f, None))
-            member.save(update_fields=update_fields)
+            member.save()
         else:
             OrganizationMember.objects.filter(
                 Q(member=member, organization=org, is_active=True) |
