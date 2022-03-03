@@ -84,24 +84,25 @@
           {{item.org_member_uid || 'N/A'}}
         </template>
         <template #item.status="{item}">
-          <v-tooltip bottom v-if="(!item.status || item.status === 'accept')" color="success">
+          <v-tooltip bottom v-if="item.status == 'accept'" color="success">
             <template #activator="{ on, attrs }">
               <v-icon color="success" v-on="on">{{icons.mdiCheckCircleOutline}}</v-icon>
             </template>
             <span>Accepted</span>
           </v-tooltip>
-          <v-tooltip bottom v-else-if="item.status === 'reject'" color="error">
+          <v-tooltip bottom v-else-if="item.status == 'reject'" color="error">
             <template #activator="{ on, attrs }">
               <v-icon color="error" v-on="on">{{icons.mdiCloseCircleOutline}}</v-icon>
             </template>
             <span>Rejected</span>
           </v-tooltip>
-          <v-tooltip bottom v-else color="warning">
+          <v-tooltip bottom v-else-if="item.status == 'waiting'" color="warning">
             <template #activator="{ on, attrs }">
               <v-icon color="warning" v-on="on">{{icons.mdiSyncCircle}}</v-icon>
             </template>
             <span>Waiting for member review</span>
           </v-tooltip>
+          <span v-else>-</span>
         </template>
         <template #item.is_admin="{item}">
           <v-tooltip v-if="item.is_master_admin" bottom>
