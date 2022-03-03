@@ -3,12 +3,31 @@
     <v-card>
       <v-card-text class="d-flex align-center flex-wrap pb-0">
         <div class="d-flex align-center pb-5">
-          <v-btn small color="primary" class="me-3" @click="$refs.formDialogRef.show()">
-            <v-icon size="18" class="me-1">
-              {{ icons.mdiPlus }}
-            </v-icon>
-            <span>Add Member</span>
+          <v-btn fab x-small color="info" class="me-1" @click="loadRecords(1)">
+            <v-icon>{{icons.mdiRefresh}}</v-icon>
           </v-btn>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <v-btn v-bind="attrs" v-on="on" small color="primary" class="me-1" @click="$refs.formDialogRef.show()">
+                <v-icon size="18" class="me-1">
+                  {{ icons.mdiPlus }}
+                </v-icon>
+                <span>Member</span>
+              </v-btn>
+            </template>
+            <span>Add A Member To Organization</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <v-btn v-bind="attrs" v-on="on" small outlined color="info" class="me-1" @click="$refs.importDialogRef.show()">
+                <v-icon size="18" class="me-1">
+                  {{ icons.mdiFileExcelOutline }}
+                </v-icon>
+                <span>Import</span>
+              </v-btn>
+            </template>
+            <span>Import members from CSV file</span>
+          </v-tooltip>
         </div>
 
         <v-spacer></v-spacer>
@@ -41,9 +60,49 @@
         :item-class="tableRowClass"
       >
         <template #item.datetime="{item}">
-          {{$utils.formatDate(item.datetime)}}
+          <span class="pr-1">{{$utils.formatDate(item.datetime, 'M/D/YY')}}</span>
+          <span class="text-caption">{{$utils.formatDate(item.datetime, 'HH:mm')}}</span>
         </template>
-
+        <template #item.start_date="{item}">
+          <v-tooltip bottom v-if="item.start_date">
+            <template #activator="{ on, attrs }">
+              <span v-on="on">{{$utils.formatDate(item.start_date, 'M/D/YY', 'N/A')}}</span>
+            </template>
+            <span>{{$utils.formatDate(item.start_date, 'MMM D, YYYY', 'N/A')}}</span>
+          </v-tooltip>
+          <span v-else>N/A</span>
+          -
+          <v-tooltip bottom v-if="item.exp_date">
+            <template #activator="{ on, attrs }">
+              <span v-on="on">{{$utils.formatDate(item.exp_date, 'M/D/YY', 'N/A')}}</span>
+            </template>
+            <span>{{$utils.formatDate(item.exp_date, 'MMM D, YYYY', 'N/A')}}</span>
+          </v-tooltip>
+          <span v-else>N/A</span>
+        </template>
+        <template #item.org_member_uid="{item}">
+          {{item.org_member_uid || 'N/A'}}
+        </template>
+        <template #item.status="{item}">
+          <v-tooltip bottom v-if="(!item.status || item.status === 'accept')" color="success">
+            <template #activator="{ on, attrs }">
+              <v-icon color="success" v-on="on">{{icons.mdiCheckCircleOutline}}</v-icon>
+            </template>
+            <span>Accepted</span>
+          </v-tooltip>
+          <v-tooltip bottom v-else-if="item.status === 'reject'" color="error">
+            <template #activator="{ on, attrs }">
+              <v-icon color="error" v-on="on">{{icons.mdiCloseCircleOutline}}</v-icon>
+            </template>
+            <span>Rejected</span>
+          </v-tooltip>
+          <v-tooltip bottom v-else color="warning">
+            <template #activator="{ on, attrs }">
+              <v-icon color="warning" v-on="on">{{icons.mdiSyncCircle}}</v-icon>
+            </template>
+            <span>Waiting for member review</span>
+          </v-tooltip>
+        </template>
         <template #item.is_admin="{item}">
           <v-tooltip v-if="item.is_master_admin" bottom>
             <template v-slot:activator="{ on, attrs }">
@@ -70,7 +129,10 @@
             </v-avatar>
 
             <div class="d-flex flex-column ms-3">
-              <span class="d-block text--success  font-weight-semibold text-truncate">{{ item._member.first_name }} {{ item._member.last_name }}</span>
+              <span class="d-block text--success  font-weight-semibold text-truncate">
+                <v-icon small>{{item._member._user.id? icons.mdiAccountCheck: icons.mdiAccountCancel}}</v-icon>
+                {{ item._member.first_name }} {{ item._member.last_name }}
+              </span>
               <span class="text-xs">{{ item._member.email || '-' }}</span>
             </div>
           </div>
@@ -98,6 +160,9 @@
     <organization-member-form-dialog ref="formDialogRef" :organization="organization"
                                      @save-successed="loadRecords(1)" @delete-successed="loadRecords(1)">
     </organization-member-form-dialog>
+    <organization-imoprt-members-dialog ref="importDialogRef" :organization="organization"
+                                        @import-successed="loadRecords(1)">
+    </organization-imoprt-members-dialog>
   </div>
 </template>
 
@@ -109,7 +174,13 @@ import {
   mdiAccountGroupOutline,
   mdiAccountMultipleOutline,
   mdiAccountCheck,
+  mdiAccountCancel,
   mdiAccountCheckOutline,
+  mdiFileExcelOutline,
+  mdiSyncCircle,
+  mdiCheckCircleOutline,
+  mdiCloseCircleOutline,
+  mdiRefresh,
 } from '@mdi/js'
 
 import { ref, reactive, watch, onMounted } from '@vue/composition-api'
@@ -118,9 +189,10 @@ import axios from "@/axios";
 import {notifyDefaultServerError, refineVTableOptions} from "@/composables/utils";
 import {avatarText} from "@core/utils/filter";
 import OrganizationMemberFormDialog from "./OrganizationMemberFormDialog";
+import OrganizationImoprtMembersDialog from "@/views/dashboard/organizationProfile/OrganizationImoprtMembersDialog";
 
 export default {
-  components: {OrganizationMemberFormDialog},
+  components: {OrganizationImoprtMembersDialog, OrganizationMemberFormDialog},
   props: {
     organization: {
       type: Object,
@@ -136,7 +208,10 @@ export default {
     const tableColumns = [
       {text: 'NAME', value: 'name'},
       {text: 'ADMIN?', value: 'is_admin'},
-      {text: 'JOINED AT', value: 'datetime'},
+      {text: 'UID', value: 'org_member_uid'},
+      {text: 'START/EXP DATE', value: 'start_date'},
+      {text: 'CREATED AT', value: 'datetime'},
+      {text: 'STATUS', value: 'status'},
       {text: 'ACTIONS', value: 'actions', align: 'end', sortable: false,},
     ];
 
@@ -189,6 +264,12 @@ export default {
         mdiAccountMultipleOutline,
         mdiAccountCheck,
         mdiAccountCheckOutline,
+        mdiFileExcelOutline,
+        mdiSyncCircle,
+        mdiCheckCircleOutline,
+        mdiCloseCircleOutline,
+        mdiAccountCancel,
+        mdiRefresh,
       },
     }
   },

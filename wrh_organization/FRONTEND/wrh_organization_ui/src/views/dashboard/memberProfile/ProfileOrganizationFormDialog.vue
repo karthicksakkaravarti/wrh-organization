@@ -45,22 +45,24 @@
       </v-card-text>
       <v-form @submit.prevent="save">
         <v-card-text>
-          <v-row>
-            <v-col cols="12">
-              <v-text-field outlined v-model="record.name" label="Name" dense></v-text-field>
-            </v-col>
-            <v-col cols="12">
-              <v-select outlined v-model="record.type" :items="$const.ORGANIZATION_TYPE_OPTIONS"
-                        item-text="title" item-value="value" label="Type" dense>
-              </v-select>
-            </v-col>
-            <v-col cols="12">
-              <v-text-field outlined v-model="record.website" label="Website" dense></v-text-field>
-            </v-col>
-            <v-col cols="12">
-              <v-textarea outlined v-model="record.about" label="About" dense></v-textarea>
-            </v-col>
-          </v-row>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field v-model="record.name" label="Name" dense></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-select v-model="record.type" :items="$const.ORGANIZATION_TYPE_OPTIONS"
+                          item-text="title" item-value="value" label="Type" dense>
+                </v-select>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field v-model="record.website" label="Website" dense></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-textarea outlined v-model="record.about" label="About" dense></v-textarea>
+              </v-col>
+            </v-row>
+          </v-container>
         </v-card-text>
 
         <v-card-text v-if="confirmDelete">

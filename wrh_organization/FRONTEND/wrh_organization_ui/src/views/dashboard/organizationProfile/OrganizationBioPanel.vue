@@ -93,7 +93,11 @@
 
             <v-list-item dense class="px-0 mb-n2">
               <span class="font-weight-medium text-no-wrap me-2">Website:</span>
-              <span class="text--secondary">{{ organization.website || '-' }}</span>
+              <span class="text--secondary">
+                <a v-if="organization.website" :href="organization.website" target="_blank"
+                   class="text-decoration-none">{{organization.website}}</a>
+                <span v-else>-</span>
+              </span>
             </v-list-item>
 
             <v-list-item dense class="px-0 mb-n2">

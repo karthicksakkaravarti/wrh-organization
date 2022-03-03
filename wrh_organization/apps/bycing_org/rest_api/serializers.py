@@ -1,5 +1,6 @@
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -56,14 +57,11 @@ class NestedMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
         model = Member
         fields = ('id', 'first_name', 'last_name', 'gender', 'email', '_user')
 
-
-class OrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-    _member = NestedMemberSerializer(read_only=True, source='member')
-
-    class Meta:
-        model = OrganizationMember
-        fields = "__all__"
-        read_only_fields = ('is_master_admin', 'organization', 'membership_price')
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        if not res['_user']:
+            res['_user'] = {}
+        return res
 
 
 class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -74,6 +72,35 @@ class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
         model = Organization
         exclude = ('members', 'member_orgs')
         read_only_fields = ('verified', 'members', 'member_orgs',)
+
+
+class OrganizationMemberImportFromFileSerializer(serializers.Serializer):
+    file = serializers.FileField(required=True, validators=[FileExtensionValidator(allowed_extensions=['csv'])])
+
+
+class OrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    _member = NestedMemberSerializer(read_only=True, source='member')
+    org_member_uid = serializers.CharField(required=True, allow_null=False, allow_blank=False)
+
+    def validate(self, attrs):
+        start_date = attrs.get('start_date') or (self.instance and self.instance.start_date)
+        exp_date = attrs.get('exp_date') or (self.instance and self.instance.exp_date)
+        if start_date and exp_date and (start_date > exp_date):
+            raise serializers.ValidationError({"exp_date": "Exp date must be after start date"})
+        return attrs
+
+    class Meta:
+        model = OrganizationMember
+        fields = "__all__"
+        read_only_fields = ('is_master_admin', 'organization', 'membership_price', 'status')
+
+
+class OrganizationMemberMyRequestsSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    _organization = OrganizationSerializer(read_only=True, source='organization')
+
+    class Meta:
+        model = OrganizationMember
+        fields = "__all__"
 
 
 class SignupMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -104,19 +131,20 @@ class SignupUserSerializer(serializers.ModelSerializer):
         member_data = validated_data.pop('member', {})
         password = validated_data.pop('password')
         validated_data['username'] = validated_data.get('email')
-        user = super().create(validated_data)
         try:
-            validate_password(password, self.context['request'].user)
+            validate_password(password)
         except ValidationError as e:
             raise serializers.ValidationError({'password': list(e.messages)})
+        user = super().create(validated_data)
         user.set_password(password)
         user.save()
         member_data.update(first_name=user.first_name, last_name=user.last_name, gender=user.gender,
-                           birth_date=user.birth_date, user=user)
-        member = Member.objects.update_or_create(
-            defaults=member_data,
-            email=user.email
-        )
+                           birth_date=user.birth_date, user=user, email=user.email)
+        Member.objects.create(**member_data)
+        # member = Member.objects.update_or_create(
+        #     defaults=member_data,
+        #     email=user.email
+        # )
         return user
 
 

@@ -12,17 +12,20 @@ class MemberFilter(filters.FilterSet):
 
 class OrganizationFilter(filters.FilterSet):
     my = filters.BooleanFilter(method='my_method')
-    my_adminated = filters.BooleanFilter(method='my_adminated_method')
+    managed_by_me = filters.BooleanFilter(method='managed_by_me_method')
 
     def my_method(self, queryset, name, value):
         user = self.request and self.request.user
         member = user and getattr(user, 'member', None)
         if value and user and user.is_authenticated and member:
-            queryset = queryset.filter(members=member, organizationmember__is_active=True).distinct()
+            ids = OrganizationMember.objects.filter(is_active=True, member=member).exclude(
+                status__in=(OrganizationMember.STATUS_REJECT, OrganizationMember.STATUS_WAITING)
+            ).values_list('organization', flat=True)
+            queryset = queryset.filter(id__in=list(ids))
 
         return queryset
 
-    def my_adminated_method(self, queryset, name, value):
+    def managed_by_me_method(self, queryset, name, value):
         user = self.request and self.request.user
         member = user and getattr(user, 'member', None)
         if value and user and user.is_authenticated and member:

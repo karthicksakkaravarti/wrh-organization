@@ -9,110 +9,142 @@
         <span class="headline">{{isEditMode? `Edit Member of Organization: #${record.id}`: 'Add Member to Organization'}}</span>
       </v-card-title>
       <v-form @submit.prevent="save">
-        <v-card-text class="mb-1">
-          <v-row>
-            <v-col cols="12">
-              <v-menu
-                v-if="isEditMode"
-                bottom
-                right
-                transition="scale-transition"
-                origin="top left"
-              >
-                <template v-slot:activator="{ on }">
-                  <v-chip pill v-on="on">
-                    <v-avatar left>
-                      <v-img :src="record._member._user.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
-                    </v-avatar>
-                    {{ `${record._member.first_name} ${record._member.last_name}` }}
-                  </v-chip>
-                </template>
-                <v-card width="300">
-                  <v-list dark>
-                    <v-list-item>
-                      <v-list-item-avatar>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-menu
+                  v-if="isEditMode"
+                  bottom
+                  right
+                  transition="scale-transition"
+                  origin="top left"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-chip pill v-on="on">
+                      <v-avatar left>
                         <v-img :src="record._member._user.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
-                      </v-list-item-avatar>
-                      <v-list-item-content>
-                        <v-list-item-title>{{ `${record._member.first_name} ${record._member.last_name}` }}</v-list-item-title>
-
-                      </v-list-item-content>
-                    </v-list-item>
-                  </v-list>
-                  <v-list>
-                    <v-list-item>
-                      <v-list-item-title>
-                        <v-chip small class="v-chip-light-bg">
-                          {{($const.GENDER_MAP[record._member.gender] || {}).title || record._member.gender}}
-                        </v-chip>
-                        {{record._member.email || '[NO E-MAIL]'}}
-                      </v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-card>
-              </v-menu>
-              <v-autocomplete
-                  v-else
-                  v-model="record._member"
-                  :search-input.sync="memberSearchInput"
-                  :loading="findingMembers"
-                  :items="members"
-                  no-data-text="Enter part of name or email."
-                  chips
-                  hide-details
-                  label="Member"
-                  item-text="first_name"
-                  item-value="id"
-                  :menu-props="{contentClass:'list-style'}"
-                  return-object
-              >
-                <template #selection="data">
-                  <v-chip
-                      v-bind="data.attrs"
-                      :input-value="data.selected"
-                      close
-                      @click="data.select"
-                      @click:close="record._member = null"
-                  >
-                    <v-avatar left>
-                      <v-img :src="data.item._user.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
-                    </v-avatar>
-                    <div class="d-flex flex-column ms-3">
-                      <span class="d-block text--success font-weight-semibold text-truncate">
-                        {{ `${data.item.first_name} ${data.item.last_name}` }}
-                      </span>
-                      <span class="text-xs">{{ data.item.email || '[NO E-MAIL]' }}</span>
-                    </div>
-                  </v-chip>
-                </template>
-
-                <template #item="data">
-                  <template>
-                    <v-list-item-avatar>
-                      <v-img :src="data.item._user.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
-                    </v-list-item-avatar>
-
-                    <v-list-item-content>
-                      <v-list-item-title>
-                        {{ `${data.item.first_name} ${data.item.last_name}` }}
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        {{ data.item.email || '[NO E-MAIL]' }}
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
+                      </v-avatar>
+                      <v-icon>{{record._member._user.id? icons.mdiAccountCheck: icons.mdiAccountCancel}}</v-icon>
+                      {{ `${record._member.first_name} ${record._member.last_name}` }}
+                    </v-chip>
                   </template>
-                </template>
-              </v-autocomplete>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-switch v-model="record.is_admin" label="Is Admin?" color="primary" hide-details></v-switch>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-switch v-model="record.is_active" label="Is Active?" color="primary" hide-details></v-switch>
-            </v-col>
-          </v-row>
-        </v-card-text>
+                  <v-card width="300">
+                    <v-list dark>
+                      <v-list-item>
+                        <v-list-item-avatar>
+                          <v-img :src="record._member._user.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title>
+                            <v-icon>{{record._member._user.id? icons.mdiAccountCheck: icons.mdiAccountCancel}}</v-icon>
+                            {{ `${record._member.first_name} ${record._member.last_name}` }}
+                          </v-list-item-title>
 
+                        </v-list-item-content>
+                      </v-list-item>
+                    </v-list>
+                    <v-list>
+                      <v-list-item>
+                        <v-list-item-title>
+                          <v-chip small class="v-chip-light-bg">
+                            {{($const.GENDER_MAP[record._member.gender] || {}).title || record._member.gender}}
+                          </v-chip>
+                          {{record._member.email || '[NO E-MAIL]'}}
+                        </v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-card>
+                </v-menu>
+                <v-autocomplete
+                    v-else
+                    v-model="record._member"
+                    :search-input.sync="memberSearchInput"
+                    :loading="findingMembers"
+                    :items="members"
+                    no-data-text="Enter part of name or email."
+                    chips
+                    hide-details
+                    label="Member"
+                    item-text="first_name"
+                    item-value="id"
+                    :menu-props="{contentClass:'list-style'}"
+                    return-object
+                >
+                  <template #selection="data">
+                    <v-chip
+                        v-bind="data.attrs"
+                        :input-value="data.selected"
+                        close
+                        @click="data.select"
+                        @click:close="record._member = null"
+                    >
+                      <v-avatar left>
+                        <v-img :src="data.item._user.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
+                      </v-avatar>
+                      <div class="d-flex flex-column ms-3">
+                        <span class="d-block text--success font-weight-semibold text-truncate">
+                          {{ `${data.item.first_name} ${data.item.last_name}` }}
+                        </span>
+                        <span class="text-xs">{{ data.item.email || '[NO E-MAIL]' }}</span>
+                      </div>
+                    </v-chip>
+                  </template>
+
+                  <template #item="data">
+                    <template>
+                      <v-list-item-avatar>
+                        <v-img :src="data.item._user.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
+                      </v-list-item-avatar>
+
+                      <v-list-item-content>
+                        <v-list-item-title>
+                          {{ `${data.item.first_name} ${data.item.last_name}` }}
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                          {{ data.item.email || '[NO E-MAIL]' }}
+                        </v-list-item-subtitle>
+                      </v-list-item-content>
+                    </template>
+                  </template>
+                </v-autocomplete>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field v-model="record.org_member_uid" label="Member UID" dense></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-menu v-model="startDateMenu" :close-on-content-click="false"
+                    :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field class="pt-0 pb-0" v-model="record.start_date" label="Start Date"
+                                  :prepend-icon="icons.mdiCalendar" v-bind="attrs" v-on="on" readonly>
+                    </v-text-field>
+                  </template>
+                  <v-date-picker v-model="record.start_date" color="primary" @input="startDateMenu = false">
+                  </v-date-picker>
+                </v-menu>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-menu v-model="expDateMenu" :close-on-content-click="false"
+                    :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field class="pt-0 pb-0" v-model="record.exp_date" label="Exp Date"
+                                  :prepend-icon="icons.mdiCalendar" v-bind="attrs" v-on="on" readonly>
+                    </v-text-field>
+                  </template>
+                  <v-date-picker v-model="record.exp_date" color="primary" @input="expDateMenu = false">
+                  </v-date-picker>
+                </v-menu>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-switch v-model="record.is_admin" label="Is Admin?" color="primary" hide-details></v-switch>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-switch v-model="record.is_active" label="Is Active?" color="primary" hide-details></v-switch>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
         <v-card-text v-if="confirmDelete">
           <v-alert type="warning" dense text :icon="icons.mdiAlert">
             <p>If you delete this member, all related records will be deleted! Are you sure?</p>
@@ -141,6 +173,9 @@ import {
   mdiPlus,
   mdiDelete,
   mdiAlert,
+  mdiCalendar,
+  mdiAccountCheck,
+  mdiAccountCancel,
 } from '@mdi/js'
 import _ from 'lodash';
 import {ref, computed, watch} from '@vue/composition-api'
@@ -161,6 +196,8 @@ export default {
     const deleting = ref(false);
     const confirmDelete = ref(false);
     const findingMembers = ref(false);
+    const startDateMenu = ref(false);
+    const expDateMenu = ref(false);
     const members = ref([]);
     const memberSearchInput = ref('');
 
@@ -255,11 +292,16 @@ export default {
       findMembersDebounce,
       members,
       memberSearchInput,
+      startDateMenu,
+      expDateMenu,
       icons: {
         mdiPlus,
         mdiPencilOutline,
         mdiDelete,
         mdiAlert,
+        mdiCalendar,
+        mdiAccountCheck,
+        mdiAccountCancel,
       },
     }
   },

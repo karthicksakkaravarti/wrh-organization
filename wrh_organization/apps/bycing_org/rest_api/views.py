@@ -1,3 +1,7 @@
+import csv
+import io
+import traceback
+
 from django.conf import settings
 from django.contrib.auth import login
 from django.core.mail import send_mail
@@ -5,6 +9,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import redirect, render, get_object_or_404
 from django.template.loader import render_to_string
+from django.utils import dateparse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import viewsets, permissions, status
@@ -18,7 +23,8 @@ from apps.bycing_org.models import Member, Organization, User, OrganizationMembe
 from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter, OrganizationMemberFilter
 from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationSerializer, SignupUserSerializer, \
     ActivationEmailSerializer, MyMemberSerializer, MemberOTPVerifySerializer, OrganizationMemberSerializer, \
-    NestedMemberSerializer, UserSendRecoverPasswordSerializer, UserRecoverPasswordSerializer
+    NestedMemberSerializer, UserSendRecoverPasswordSerializer, UserRecoverPasswordSerializer, \
+    OrganizationMemberImportFromFileSerializer, OrganizationMemberMyRequestsSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
     IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token
 
@@ -57,8 +63,15 @@ class UserRegistrationView(viewsets.ViewSet):
         user.save()
         member = getattr(user, 'member', None)
         if member:
+            flt = Q(email=member.email)
+            update_fields = ['email_verified']
+            if member.phone:
+                flt = flt | Q(phone=member.phone)
+            if not Member.objects.exclude(user=user).filter(flt).exists():
+                member.is_verified = True
+                update_fields.append('is_verified')
             member.email_verified = True
-            member.save(update_fields=['email_verified'])
+            member.save(update_fields=update_fields)
 
         login(request, user)
         next = request.GET.get('redirect') or settings.SIGNUP_ACTIVATION_REDIRECT_URL
@@ -119,7 +132,6 @@ class UserRegistrationView(viewsets.ViewSet):
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message,
                   fail_silently=False)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
 
     def _recover_password_get(self, request, user, *args, **kwargs):
         return render(request, 'bycing_org/email/user_recover_password_confirm.html', context={'new_user': user})
@@ -284,10 +296,9 @@ class MemberView(viewsets.ModelViewSet):
         return Response({'results': self.get_serializer(qs, many=True).data})
 
 
-
 class OrganizationView(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
-    permission_classes = (IsMemberVerifiedPermission, IsAdminOrganizationOrReadOnlyPermission)
+    permission_classes = (IsAuthenticated, IsAdminOrganizationOrReadOnlyPermission,)
     serializer_class = OrganizationSerializer
     filterset_class = OrganizationFilter
     search_fields = ('name', 'about', 'type', 'website')
@@ -302,15 +313,52 @@ class OrganizationView(viewsets.ModelViewSet):
         OrganizationMember.objects.create(organization=serializer.instance, is_master_admin=True,
                                           member=self.request.user.member)
 
+    @action(detail=False, methods=['GET'], serializer_class=OrganizationMemberMyRequestsSerializer,
+            filterset_class=OrganizationMemberFilter,
+            queryset=OrganizationMember.objects.all(), permission_classes=(IsAuthenticated,))
+    def my_membership_requests(self, request, *args, **kwargs):
+        member = getattr(request.user, 'member', None)
+        results = []
+        qs = self.queryset.filter(member=member, status=OrganizationMember.STATUS_WAITING, is_active=True
+                                  ).select_related('organization')
+        qs = self.filter_queryset(qs)
+        qs = self.paginate_queryset(qs)
+        serializer = self.get_serializer(qs, many=True)
+        results = serializer.data
+        return self.get_paginated_response(results)
+
+    @action(detail=False, methods=['POST'], serializer_class=OrganizationMemberMyRequestsSerializer,
+            filterset_class=OrganizationMemberFilter,
+            queryset=OrganizationMember.objects.all(), permission_classes=(IsAuthenticated,),
+            url_path='my_membership_requests/(?P<org_member_id>[0-9]+)/(?P<review_action>accept|reject)'
+            )
+    def review_membership_request(self, request, *args, **kwargs):
+        member = getattr(request.user, 'member', None)
+        results = []
+        member_status = kwargs.get('review_action')
+        org_member_id = kwargs.get('org_member_id')
+        qs = self.queryset.filter(member=member, status=OrganizationMember.STATUS_WAITING, is_active=True)
+        r = get_object_or_404(qs, pk=org_member_id)
+        r.status = member_status
+        update_fields = ['status']
+        if member_status == OrganizationMember.STATUS_REJECT:
+            r.is_active = False
+            update_fields.append('is_active')
+        r.save(update_fields=update_fields)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class OrganizationMemberView(viewsets.ModelViewSet):
     org_id_kwarg = 'org_id'
     queryset = OrganizationMember.objects.all()
-    permission_classes = (IsMemberVerifiedPermission, IsAdminOrganizationOrReadOnlyPermission)
+    permission_classes = (IsAuthenticated, IsAdminOrganizationOrReadOnlyPermission,)
     serializer_class = OrganizationMemberSerializer
     filterset_class = OrganizationMemberFilter
-    search_fields = ('member__first_name', 'member__last_name', 'member__email')
+    search_fields = ('member__first_name', 'member__last_name', 'member__email', 'org_member_uid')
     ordering_fields = '__all__'
+    extra_ordering_fields = {
+        'name': ('member__first_name', 'member__last_name'),
+    }
     ordering = ('id',)
 
     _current_org = None
@@ -356,3 +404,85 @@ class OrganizationMemberView(viewsets.ModelViewSet):
                 raise ValidationError({'detail': 'cannot update a master_admin record'})
 
         serializer.save(member=serializer.instance.member)
+
+    @transaction.atomic()
+    def _import_csv_row(self, row):
+        member_fields = [
+            'first_name', 'last_name', 'gender', 'birth_date', 'phone', 'email', 'address1', 'address2', 'country',
+            'city', 'state', 'zipcode',
+        ]
+        row = {k: (v or None) for k, v in row.items()}
+        org_member_uid = row.pop('uuid', None)
+        assert org_member_uid, 'uuid is required'
+        start_date = dateparse.parse_date(row.pop('start_date', None) or '')
+        exp_date = dateparse.parse_date(row.pop('exp_date', None) or '')
+
+        org = self.get_current_org()
+        flt = Q()
+        member = None
+        if row.get('email'):
+            flt = flt | Q(email=row.get('email'), email_verified=True)
+        if row.get('phone'):
+            flt = flt | Q(email=row.get('phpne'), phone_verified=True)
+        if flt:
+            member = Member.objects.filter(flt).first()
+
+        if not member:
+            org_member = OrganizationMember.objects.filter(
+                organization=org, org_member_uid=org_member_uid, is_active=True).first()
+            if org_member:
+               member = org_member.member
+               org_member.is_active = False
+               org_member.save()
+            else:
+                member = Member()
+            update_fields = []
+            for f in member_fields:
+                if (f == 'phone' and member.phone_verified) or (f == 'email' and member.email_verified):
+                    continue
+                update_fields.append(f)
+                setattr(member, f, row.get(f, None))
+            member.save(update_fields=update_fields)
+        else:
+            OrganizationMember.objects.filter(
+                Q(member=member, organization=org, is_active=True) |
+                Q(org_member_uid=org_member_uid, organization=org, is_active=True)
+            ).update(is_active=None)
+        membership_status = OrganizationMember.STATUS_WAITING if member.user_id else None
+        org_member = OrganizationMember.objects.get_or_create(
+            member=member, organization=org, is_active=True,
+            defaults=dict(org_member_uid=org_member_uid, start_date=start_date, exp_date=exp_date, member_fields=row,
+                          status=membership_status)
+        )
+        return org_member
+
+    @staticmethod
+    def _unify_and_check_csv(csv_reader):
+        field_names = csv_reader.fieldnames
+        for i in range(len(field_names)):
+            f = field_names[i].lower().replace('-', ' ')
+            field_names[i] = '_'.join(f.split())
+        missed_fields = {'uuid', 'first_name', 'last_name'} - set(field_names)
+        if missed_fields:
+            return Response({'detail': f'missed this fields: {missed_fields}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['POST'], serializer_class=OrganizationMemberImportFromFileSerializer)
+    def import_from_csv(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        file = serializer.validated_data['file']
+        decoded_file = file.read().decode()
+        reader = csv.DictReader(io.StringIO(decoded_file))
+        self._unify_and_check_csv(reader)
+
+        failed = []
+        successed = 0
+        for row in reader:
+            try:
+                self._import_csv_row(row)
+                successed += 1
+            except Exception:
+                traceback.print_exc()
+                failed.append(row)
+
+        return Response({'successed': successed, 'failed': failed}, status=status.HTTP_200_OK)
