@@ -430,16 +430,14 @@ class OrganizationMemberView(viewsets.ModelViewSet):
         if not member:
             org_member = OrganizationMember.objects.filter(
                 organization=org, org_member_uid=org_member_uid, is_active=True).first()
-            if org_member.is_admin or org_member.is_master_admin:
+            if org_member and (org_member.is_admin or org_member.is_master_admin):
                 return
-            update_fields = []
             if org_member:
                member = org_member.member
                org_member.is_active = False
                org_member.save()
             else:
                 member = Member()
-                update_fields.append('id')
             for f in member_fields:
                 if (f == 'phone' and member.phone_verified) or (f == 'email' and member.email_verified):
                     continue
@@ -448,14 +446,15 @@ class OrganizationMemberView(viewsets.ModelViewSet):
                     continue
                 if f == 'gender':
                     v = v.lower()
-                update_fields.append(f)
                 setattr(member, f, row.get(f, None))
             member.save()
         else:
-            OrganizationMember.objects.filter(
+            old_org_members = OrganizationMember.objects.filter(
                 Q(member=member, organization=org, is_active=True) |
-                Q(org_member_uid=org_member_uid, organization=org, is_active=True)
-            ).update(is_active=None)
+                Q(org_member_uid=org_member_uid, organization=org, is_active=True))
+            if old_org_members.filter(Q(is_admin=True) | Q(is_master_admin=True)).exists():
+                return
+            old_org_members.update(is_active=None)
         membership_status = OrganizationMember.STATUS_WAITING if member.user_id else None
         org_member = OrganizationMember.objects.get_or_create(
             member=member, organization=org, is_active=True,
