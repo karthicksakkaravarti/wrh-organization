@@ -25,6 +25,9 @@
             <organization-members-tab :organization="organization"></organization-members-tab>
           </v-tab-item>
           <v-tab-item>
+            <organization-member-orgs-tab :organization="organization"></organization-member-orgs-tab>
+          </v-tab-item>
+          <v-tab-item>
             <organization-events-tab :organization="organization"></organization-events-tab>
           </v-tab-item>
 
@@ -41,7 +44,7 @@
 import { ref } from '@vue/composition-api'
 
 // eslint-disable-next-line object-curly-newline
-import { mdiAccountMultipleOutline, mdiCalendarMultiple, mdiHomeAccount } from '@mdi/js'
+import {mdiAccountMultipleOutline, mdiCalendarMultiple, mdiHomeAccount, mdiHomeGroup} from '@mdi/js'
 import OrganizationBioPanel from "./OrganizationBioPanel";
 import OrganizationOverviewTab from "./OrganizationOverviewTab";
 import axios from "@/axios";
@@ -51,9 +54,11 @@ import OrganizationMembersTab from "./OrganizationMembersTab";
 import OrganizationEventsTab from "./OrganizationEventsTab";
 import {useRouter} from "@core/utils";
 import ProfileOrganizationFormDialog from "@/views/dashboard/memberProfile/ProfileOrganizationFormDialog";
+import OrganizationMemberOrgsTab from "@/views/dashboard/organizationProfile/OrganizationMemberOrgsTab";
 
 export default {
   components: {
+    OrganizationMemberOrgsTab,
     ProfileOrganizationFormDialog,
     OrganizationEventsTab,
     OrganizationMembersTab,
@@ -67,6 +72,7 @@ export default {
     const tabs = [
       { icon: mdiHomeAccount, title: 'Overview' },
       { icon: mdiAccountMultipleOutline, title: 'Members' },
+      { icon: mdiHomeGroup, title: 'Member Orgs' },
       { icon: mdiCalendarMultiple, title: 'Events' },
     ];
     const organization = ref({user: {}});

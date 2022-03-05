@@ -76,7 +76,7 @@
                 color="error"
                 class="me-1"
               >
-                {{ icons.mdiFilePdf }}
+                {{ icons.mdiFilePdfBox }}
               </v-icon>
               <span class="text--primary font-weight-semibold text-sm">invoice.pdf</span>
             </span>
@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import { mdiDotsVertical, mdiFilePdf } from '@mdi/js'
+import { mdiDotsVertical, mdiFilePdfBox } from '@mdi/js'
 
 export default {
   components: { },
@@ -104,7 +104,7 @@ export default {
     return {
       icons: {
         mdiDotsVertical,
-        mdiFilePdf,
+        mdiFilePdfBox,
       },
     }
   },

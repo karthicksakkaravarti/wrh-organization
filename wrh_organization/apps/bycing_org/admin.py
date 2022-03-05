@@ -7,7 +7,24 @@ class OrganizationMemberAdmin(admin.ModelAdmin):
     list_filter = ('member', 'organization', 'status', 'is_active')
 
 
-admin.site.register(models.Member)
-admin.site.register(models.Organization)
+class OrganizationMemberOrgAdmin(admin.ModelAdmin):
+    list_display = ('id', 'member_org', 'organization', 'status', 'is_active', 'datetime')
+    list_filter = ('member_org', 'organization', 'status', 'is_active')
+
+
+class MemberAdmin(admin.ModelAdmin):
+    list_display = ('id', 'first_name', 'last_name', 'email', 'phone', 'user')
+    search_fields = ('first_name', 'last_name')
+    list_filter = ('email_verified', 'phone_verified')
+
+
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'type', 'website',)
+    search_fields = ('name', 'website', 'email', 'phone')
+    list_filter = ('type',)
+
+
+admin.site.register(models.Member, MemberAdmin)
+admin.site.register(models.Organization, OrganizationAdmin)
 admin.site.register(models.OrganizationMember, OrganizationMemberAdmin)
-admin.site.register(models.OrganizationMemberOrg)
+admin.site.register(models.OrganizationMemberOrg, OrganizationMemberOrgAdmin)

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -53,23 +54,40 @@ class OrganizationMember(models.Model):
 
 
 class OrganizationMemberOrg(models.Model):
-    organization = models.ForeignKey('Organization', related_name='organizaton_member_orgs', on_delete=models.CASCADE)
-    top_organization = models.ForeignKey('Organization', related_name='top_organizaton_member_orgs',
-                                         on_delete=models.CASCADE)
+    STATUS_ACCEPT = 'accept'
+    STATUS_REJECT = 'reject'
+    STATUS_WAITING = 'waiting'
+    STATUS_CHOICES = (
+        (STATUS_ACCEPT, 'Accept'),
+        (STATUS_REJECT, 'Reject'),
+        (STATUS_WAITING, 'Waiting'),
+    )
+    organization = models.ForeignKey('Organization', related_name='organizaton_member_orgs',
+                                     on_delete=models.CASCADE)
+    member_org = models.ForeignKey('Organization', related_name='member_organizaton_member_orgs', on_delete=models.CASCADE)
     membership_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     is_active = models.BooleanField(default=True, null=True)
+    start_date = models.DateField(null=True)
+    exp_date = models.DateField(null=True)
+    member_fields = models.JSONField(null=True)
+    status = models.CharField(max_length=16, null=True, choices=STATUS_CHOICES)
     datetime = models.DateTimeField(auto_now_add=True)
 
+
     class Meta:
-        unique_together = (('organization', 'top_organization', 'is_active'),)
+        unique_together = (('organization', 'member_org', 'is_active'),)
 
     def save(self, *args, **kwargs):
         if not self.is_active:
             self.is_active = None
+        org_id = (self.organization and self.organization.id) or self.organization_id
+        member_org_id = (self.member_org and self.member_org.id) or self.member_org_id
+        if org_id == member_org_id:
+            raise ValidationError({"member_org": "member_org cannot be same as organization"})
         return super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.top_organization} - {self.organization}'
+        return f'{self.organization} - {self.member_org}'
 
 
 class Organization(models.Model):
@@ -85,6 +103,15 @@ class Organization(models.Model):
     type = models.CharField(max_length=32, choices=TYPE_CHOICES)
     social_media = models.JSONField(null=True, blank=True)
     website = models.URLField(null=True, blank=True)
+    phone = PhoneNumberField(max_length=50, null=True, blank=True)
+    phone_verified = models.BooleanField(default=None, null=True)
+    email = models.EmailField(null=True, blank=True)
+    email_verified = models.BooleanField(default=None, null=True)
+    address = models.CharField(max_length=256, blank=True, null=True)
+    country = models.CharField(max_length=128, blank=True, null=True)
+    city = models.CharField(max_length=128, blank=True, null=True)
+    state = models.CharField(max_length=128, blank=True, null=True)
+    zipcode = models.CharField(max_length=10, blank=True, null=True)
     about = models.TextField(null=True, blank=True)
     logo = models.ImageField(null=True, blank=True, upload_to=organization_logo_file_path_func)
     signup_config = models.JSONField(null=True)

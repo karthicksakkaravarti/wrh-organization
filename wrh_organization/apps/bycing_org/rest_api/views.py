@@ -19,12 +19,14 @@ from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.bycing_org.models import Member, Organization, User, OrganizationMember
-from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter, OrganizationMemberFilter
+from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg
+from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter, OrganizationMemberFilter, \
+    OrganizationMemberOrgFilter
 from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationSerializer, SignupUserSerializer, \
     ActivationEmailSerializer, MyMemberSerializer, MemberOTPVerifySerializer, OrganizationMemberSerializer, \
     NestedMemberSerializer, UserSendRecoverPasswordSerializer, UserRecoverPasswordSerializer, \
-    OrganizationMemberImportFromFileSerializer, OrganizationMemberMyRequestsSerializer
+    CsvFileImportSerializer, OrganizationMemberMyRequestsSerializer, OrganizationMemberOrgSerializer, \
+    NestedOrganizationSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
     IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token
 
@@ -313,6 +315,16 @@ class OrganizationView(viewsets.ModelViewSet):
         OrganizationMember.objects.create(organization=serializer.instance, is_master_admin=True,
                                           member=self.request.user.member)
 
+    @action(detail=False, methods=['GET'], permission_classes=(IsAuthenticated,),
+            serializer_class=NestedOrganizationSerializer, filter_backends=(SearchFilter,),
+            search_fields=['name', 'type', 'website'])
+    def find(self, request, *args, **kwargs):
+        search = request.GET.get('search') or ''
+        if not search or len(search) < 3:
+            raise ValidationError('Insufficient search keyword!')
+        qs = self.filter_queryset(self.get_queryset())[:5]
+        return Response({'results': self.get_serializer(qs, many=True).data})
+
     @action(detail=False, methods=['GET'], serializer_class=OrganizationMemberMyRequestsSerializer,
             filterset_class=OrganizationMemberFilter,
             queryset=OrganizationMember.objects.all(), permission_classes=(IsAuthenticated,))
@@ -348,19 +360,9 @@ class OrganizationView(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class OrganizationMemberView(viewsets.ModelViewSet):
+class OrganizationMembershipMixin:
     org_id_kwarg = 'org_id'
-    queryset = OrganizationMember.objects.all()
     permission_classes = (IsAuthenticated, IsAdminOrganizationOrReadOnlyPermission,)
-    serializer_class = OrganizationMemberSerializer
-    filterset_class = OrganizationMemberFilter
-    search_fields = ('member__first_name', 'member__last_name', 'member__email', 'org_member_uid')
-    ordering_fields = '__all__'
-    extra_ordering_fields = {
-        'name': ('member__first_name', 'member__last_name'),
-    }
-    ordering = ('id',)
-
     _current_org = None
 
     def get_organization_object_permission(self, obj):
@@ -382,12 +384,24 @@ class OrganizationMemberView(viewsets.ModelViewSet):
                 organizationmember__is_active=True, organizationmember__member=member).distinct())
         return self._current_org
 
-    def get_queryset(self):
-        organization = self.get_current_org()
-        return super().get_queryset().filter(organization=organization).select_related('member')
-
     def perform_create(self, serializer):
         serializer.save(organization=self.get_current_org())
+
+
+class OrganizationMemberView(OrganizationMembershipMixin, viewsets.ModelViewSet):
+    queryset = OrganizationMember.objects.all()
+    serializer_class = OrganizationMemberSerializer
+    filterset_class = OrganizationMemberFilter
+    search_fields = ('member__first_name', 'member__last_name', 'member__email', 'org_member_uid')
+    ordering_fields = '__all__'
+    extra_ordering_fields = {
+        'name': ('member__first_name', 'member__last_name'),
+    }
+    ordering = ('id',)
+
+    def get_queryset(self):
+        organization = self.get_current_org()
+        return super().get_queryset().filter(organization=organization).select_related('member', 'member__user')
 
     def perform_destroy(self, instance):
         if instance.is_master_admin:
@@ -473,7 +487,7 @@ class OrganizationMemberView(viewsets.ModelViewSet):
         if missed_fields:
             return Response({'detail': f'missed this fields: {missed_fields}'}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['POST'], serializer_class=OrganizationMemberImportFromFileSerializer)
+    @action(detail=False, methods=['POST'], serializer_class=CsvFileImportSerializer)
     def import_from_csv(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -493,3 +507,28 @@ class OrganizationMemberView(viewsets.ModelViewSet):
                 failed.append(row)
 
         return Response({'successed': successed, 'failed': failed}, status=status.HTTP_200_OK)
+
+
+class OrganizationMemberOrgView(OrganizationMembershipMixin, viewsets.ModelViewSet):
+    queryset = OrganizationMemberOrg.objects.all()
+    permission_classes = (IsAuthenticated, IsAdminOrganizationOrReadOnlyPermission,)
+    serializer_class = OrganizationMemberOrgSerializer
+    filterset_class = OrganizationMemberOrgFilter
+    search_fields = ('member_org__name',)
+    ordering_fields = '__all__'
+    ordering = ('id',)
+    extra_ordering_fields = {
+        'member_org': 'member_org__name',
+    }
+
+    def get_queryset(self):
+        organization = self.get_current_org()
+        return super().get_queryset().filter(organization=organization).select_related('member_org')
+
+    def perform_update(self, serializer):
+        serializer.save(member_org=serializer.instance.member_org)
+
+
+    @action(detail=False, methods=['POST'], serializer_class=CsvFileImportSerializer)
+    def import_from_csv(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_501_NOT_IMPLEMENTED)

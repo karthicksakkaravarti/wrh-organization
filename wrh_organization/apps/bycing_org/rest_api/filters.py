@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django_filters import rest_framework as filters
 
-from ..models import Member, Organization, OrganizationMember
+from ..models import Member, Organization, OrganizationMember, OrganizationMemberOrg
 
 
 class MemberFilter(filters.FilterSet):
@@ -43,4 +43,10 @@ class OrganizationFilter(filters.FilterSet):
 class OrganizationMemberFilter(filters.FilterSet):
     class Meta:
         model = OrganizationMember
+        exclude = ['member_fields']
+
+
+class OrganizationMemberOrgFilter(filters.FilterSet):
+    class Meta:
+        model = OrganizationMemberOrg
         exclude = ['member_fields']

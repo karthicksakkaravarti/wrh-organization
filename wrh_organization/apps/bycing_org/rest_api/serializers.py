@@ -5,7 +5,7 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from apps.bycing_org.models import Member, Organization, User, OrganizationMember
+from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg
 from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField
 
 
@@ -64,6 +64,13 @@ class NestedMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
         return res
 
 
+class NestedOrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = Organization
+        exclude = ('members', 'member_orgs', 'member_fields_schema')
+
+
 class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     # members = NestedMemberSerializer(read_only=True, many=True)
     logo = Base64ImageField(required=False, allow_null=True)
@@ -74,7 +81,7 @@ class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
         read_only_fields = ('verified', 'members', 'member_orgs',)
 
 
-class OrganizationMemberImportFromFileSerializer(serializers.Serializer):
+class CsvFileImportSerializer(serializers.Serializer):
     file = serializers.FileField(required=True, validators=[FileExtensionValidator(allowed_extensions=['csv'])])
 
 
@@ -101,6 +108,22 @@ class OrganizationMemberMyRequestsSerializer(DynamicFieldsSerializerMixin, seria
     class Meta:
         model = OrganizationMember
         fields = "__all__"
+
+
+class OrganizationMemberOrgSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    _member_org = NestedOrganizationSerializer(read_only=True, source='member_org')
+
+    def validate(self, attrs):
+        start_date = attrs.get('start_date') or (self.instance and self.instance.start_date)
+        exp_date = attrs.get('exp_date') or (self.instance and self.instance.exp_date)
+        if start_date and exp_date and (start_date > exp_date):
+            raise serializers.ValidationError({"exp_date": "Exp date must be after start date"})
+        return attrs
+
+    class Meta:
+        model = OrganizationMemberOrg
+        fields = "__all__"
+        read_only_fields = ('organization', 'membership_price', 'status')
 
 
 class SignupMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):

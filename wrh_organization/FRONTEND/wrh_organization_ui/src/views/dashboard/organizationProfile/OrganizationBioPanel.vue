@@ -3,7 +3,7 @@
     <!-- user profile -->
     <v-col cols="12">
       <v-card class="pt-10">
-        <v-btn small text color="info" class="position-absolute back-org-btn" :to="{name: $rns.DASHBOARD_MEMBER_PROFILE, params: {tab: 1}}">
+        <v-btn small color="info" class="position-absolute back-org-btn" :to="{name: $rns.DASHBOARD_MEMBER_PROFILE, params: {tab: 1}}">
           <v-icon>{{icons.mdiKeyboardBackspace}}</v-icon>Organization List
         </v-btn>
         <v-card-title class="justify-center flex-column">
@@ -111,16 +111,6 @@
             </v-list-item>
 
             <v-list-item dense class="px-0 mb-n2">
-              <span class="font-weight-medium text-no-wrap me-2">Instagram:</span>
-              <span class="text--secondary">-</span>
-            </v-list-item>
-
-            <v-list-item dense class="px-0 mb-n2">
-              <span class="font-weight-medium text-no-wrap me-2">Youtube:</span>
-              <span class="text--secondary">-</span>
-            </v-list-item>
-
-            <v-list-item dense class="px-0 mb-n2">
               <span class="font-weight-medium me-2">Country:</span>
               <span class="text--secondary">{{($const.COUNTRY_MAP[organization.country] || {}).name || organization.country || '-'}}</span>
             </v-list-item>
@@ -138,6 +128,16 @@
             <v-list-item dense class="px-0 mb-n2">
               <span class="font-weight-medium me-2">Address:</span>
               <span class="text--secondary">{{ organization.address || '-' }}</span>
+            </v-list-item>
+
+            <v-list-item dense class="px-0 mb-n2">
+              <span class="font-weight-medium text-no-wrap me-2">Instagram:</span>
+              <span class="text--secondary">-</span>
+            </v-list-item>
+
+            <v-list-item dense class="px-0 mb-n2">
+              <span class="font-weight-medium text-no-wrap me-2">Youtube:</span>
+              <span class="text--secondary">-</span>
             </v-list-item>
 
           </v-list>
@@ -194,7 +194,7 @@ export default {
 .member-profile-bio-panel {
   .back-org-btn {
     top: 3px;
-    left: 2px;
+    left: 3px;
   }
 }
 </style>

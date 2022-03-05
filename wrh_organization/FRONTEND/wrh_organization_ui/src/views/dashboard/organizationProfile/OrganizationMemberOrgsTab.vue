@@ -1,5 +1,5 @@
 <template>
-  <div class="member-profile-organization-tab">
+  <div class="member-org-profile-organization-tab">
     <v-card>
       <v-card-text class="d-flex align-center flex-wrap pb-0">
         <div class="d-flex align-center pb-5">
@@ -10,12 +10,12 @@
             <template #activator="{ on, attrs }">
               <v-btn v-bind="attrs" v-on="on" small color="primary" class="me-1" @click="$refs.formDialogRef.show()">
                 <v-icon size="18" class="me-1">
-                  {{ icons.mdiAccountPlus }}
+                  {{ icons.mdiHomePlus }}
                 </v-icon>
-                <span>Member</span>
+                <span>Member Org</span>
               </v-btn>
             </template>
-            <span>Add A Member To Organization</span>
+            <span>Add A Member-Org To Organization</span>
           </v-tooltip>
           <v-tooltip bottom>
             <template #activator="{ on, attrs }">
@@ -26,7 +26,7 @@
                 <span>Import</span>
               </v-btn>
             </template>
-            <span>Import members from CSV file</span>
+            <span>Import member orgs from CSV file</span>
           </v-tooltip>
         </div>
 
@@ -80,9 +80,6 @@
           </v-tooltip>
           <span v-else>N/A</span>
         </template>
-        <template #item.org_member_uid="{item}">
-          {{item.org_member_uid || 'N/A'}}
-        </template>
         <template #item.status="{item}">
           <v-tooltip bottom v-if="item.status == 'accept'" color="success">
             <template #activator="{ on, attrs }">
@@ -104,37 +101,20 @@
           </v-tooltip>
           <span v-else>{{item.status || '-'}}</span>
         </template>
-        <template #item.is_admin="{item}">
-          <v-tooltip v-if="item.is_master_admin" bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon v-bind="attrs" v-on="on" color="success">{{icons.mdiAccountCheck}}</v-icon>
-            </template>
-            <span>Is Master Admin</span>
-          </v-tooltip>
-          <v-tooltip v-else-if="item.is_admin" bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon v-bind="attrs" v-on="on" color="success">{{icons.mdiAccountCheckOutline}}</v-icon>
-            </template>
-            <span>Is Admin</span>
-          </v-tooltip>
-          <span v-else>-</span>
-        </template>
-
-        <template #item.name="{item}">
+        <template #item.member_org="{item}">
           <div class="d-flex align-center">
             <v-avatar color="success" class="v-avatar-light-bg success--text" size="30">
-              <v-img v-if="item._member._user.avatar" :src="item._member._user.avatar"></v-img>
+              <v-img v-if="item._member_org.logo" :src="item._member_org.logo"></v-img>
               <span v-else class="font-weight-medium">
-                {{ avatarText(item._member.first_name) }}
+                {{ avatarText(item._member_org.name) }}
               </span>
             </v-avatar>
 
             <div class="d-flex flex-column ms-3">
               <span class="d-block text--success  font-weight-semibold text-truncate">
-                <v-icon small>{{item._member._user.id? icons.mdiAccountCheck: icons.mdiAccountCancel}}</v-icon>
-                {{ item._member.first_name }} {{ item._member.last_name }}
+                {{ item._member_org.name }}
               </span>
-              <span class="text-xs">{{ item._member.email || '-' }}</span>
+              <span class="text-xs" :class="`${($const.ORGANIZATION_TYPE_MAP[item._member_org.type] || {}).css}--text`">{{($const.ORGANIZATION_TYPE_MAP[item._member_org.type] || {}).title || item._member_org.type}}</span>
             </div>
           </div>
         </template>
@@ -158,18 +138,18 @@
 
       </v-data-table>
     </v-card>
-    <organization-member-form-dialog ref="formDialogRef" :organization="organization"
-                                     @save-successed="loadRecords(1)" @delete-successed="loadRecords(1)">
-    </organization-member-form-dialog>
-    <organization-imoprt-members-dialog ref="importDialogRef" :organization="organization"
-                                        @import-successed="loadRecords(1)">
-    </organization-imoprt-members-dialog>
+    <organization-member-org-form-dialog ref="formDialogRef" :organization="organization"
+                                         @save-successed="loadRecords(1)" @delete-successed="loadRecords(1)">
+    </organization-member-org-form-dialog>
+    <organization-imoprt-member-orgs-dialog ref="importDialogRef" :organization="organization"
+                                            @import-successed="loadRecords(1)">
+    </organization-imoprt-member-orgs-dialog>
   </div>
 </template>
 
 <script>
 import {
-  mdiAccountPlus,
+  mdiHomePlus,
   mdiPencilOutline,
   mdiEyeOutline,
   mdiAccountGroupOutline,
@@ -181,7 +161,7 @@ import {
   mdiSyncCircle,
   mdiCheckCircleOutline,
   mdiCloseCircleOutline,
-  mdiRefresh,
+  mdiRefresh, mdiAccountPlusOutline,
 } from '@mdi/js'
 
 import { ref, reactive, watch, onMounted } from '@vue/composition-api'
@@ -189,11 +169,15 @@ import store from '@/store'
 import axios from "@/axios";
 import {notifyDefaultServerError, refineVTableOptions} from "@/composables/utils";
 import {avatarText} from "@core/utils/filter";
-import OrganizationMemberFormDialog from "./OrganizationMemberFormDialog";
-import OrganizationImportMembersDialog from "@/views/dashboard/organizationProfile/OrganizationImportMembersDialog";
+import OrganizationMemberOrgFormDialog from "@/views/dashboard/organizationProfile/OrganizationMemberOrgFormDialog";
+import OrganizationImportMemberOrgsDialog
+  from "@/views/dashboard/organizationProfile/OrganizationImportMemberOrgsDialog";
 
 export default {
-  components: {OrganizationImportMembersDialog, OrganizationMemberFormDialog},
+  components: {
+    OrganizationImportMemberOrgsDialog,
+    OrganizationMemberOrgFormDialog
+  },
   props: {
     organization: {
       type: Object,
@@ -207,9 +191,7 @@ export default {
     const tableOptions = ref({});
     const tableFiltering = ref({is_active: true});
     const tableColumns = [
-      {text: 'NAME', value: 'name'},
-      {text: 'ADMIN?', value: 'is_admin'},
-      {text: 'UID', value: 'org_member_uid'},
+      {text: 'MEMBER-ORG', value: 'member_org'},
       {text: 'START/EXP DATE', value: 'start_date'},
       {text: 'CREATED AT', value: 'datetime'},
       {text: 'STATUS', value: 'status'},
@@ -217,7 +199,7 @@ export default {
     ];
 
     const tableRowClass = (item) => {
-      return `member-row${!item.is_active? ' inactive': ''}`
+      return `member-org-row${!item.is_active? ' inactive': ''}`
     };
 
     const loadRecords = (page) => {
@@ -229,7 +211,7 @@ export default {
         delete params.is_active;
       }
       loading.value = true;
-      axios.get(`bycing_org/organization/${props.organization.id}/members`, {params: params}).then((response) => {
+      axios.get(`bycing_org/organization/${props.organization.id}/member_orgs`, {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
         pagination.value = response.data.pagination;
@@ -258,7 +240,7 @@ export default {
       tableRowClass,
 
       icons: {
-        mdiAccountPlus,
+        mdiHomePlus,
         mdiPencilOutline,
         mdiEyeOutline,
         mdiAccountGroupOutline,
@@ -278,14 +260,11 @@ export default {
 </script>
 
 <style lang="scss">
-.member-profile-organization-tab {
+.member-org-profile-organization-tab {
   .organization-search {
     max-width: 10.625rem;
   }
-  .organization-list-actions {
-    max-width: 7.81rem;
-  }
-  table tr.member-row.inactive td:not(:last-child) {
+  table tr.member-org-row.inactive td:not(:last-child) {
     opacity: 0.5;
   }
 }

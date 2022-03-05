@@ -50,16 +50,44 @@
               <v-col cols="12">
                 <v-text-field v-model="record.name" label="Name" dense></v-text-field>
               </v-col>
-              <v-col cols="12">
+              <v-col cols="12" md="6">
                 <v-select v-model="record.type" :items="$const.ORGANIZATION_TYPE_OPTIONS"
                           item-text="title" item-value="value" label="Type" dense>
                 </v-select>
               </v-col>
-              <v-col cols="12">
+              <v-col cols="12" md="6">
                 <v-text-field v-model="record.website" label="Website" dense></v-text-field>
               </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="record.email" label="E-mail" dense :rules="[rules.emailValidator]"></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="record.phone" v-mask="phoneMask" dense label="Phone"></v-text-field>
+              </v-col>
+
+              <v-col cols="12" md="6">
+                <v-autocomplete v-model="record.country" dense label="Country" :items="$const.COUNTRY_OPTIONS"
+                                item-text="name" item-value="code"></v-autocomplete>
+              </v-col>
+    
+              <v-col cols="12" md="6">
+                <v-text-field v-model="record.state" dense label="State"></v-text-field>
+              </v-col>
+    
+              <v-col cols="12" md="6">
+                <v-text-field v-model="record.city" dense label="City"></v-text-field>
+              </v-col>
+    
+              <v-col cols="12" md="6">
+                <v-text-field v-model="record.zipcode" dense label="Zipcode"></v-text-field>
+              </v-col>
+    
               <v-col cols="12">
-                <v-textarea outlined v-model="record.about" label="About" dense></v-textarea>
+                <v-text-field v-model="record.address" dense label="Address"></v-text-field>
+              </v-col>
+
+              <v-col cols="12">
+                <v-textarea rows="2" v-model="record.about" label="About" dense></v-textarea>
               </v-col>
             </v-row>
           </v-container>
@@ -100,7 +128,9 @@ import {
 } from '@mdi/js'
 import {ref, computed} from '@vue/composition-api'
 import axios from "@/axios";
-import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
+import {internationalPhoneMask, notifyDefaultServerError, notifySuccess} from "@/composables/utils";
+import {emailValidator} from "@core/utils/validation";
+import {nextTick} from "@vue/composition-api/dist/vue-composition-api";
 
 export default {
   setup(props, context) {
@@ -112,6 +142,7 @@ export default {
     const logoChosenFile = ref(null);
     const logoChosenFileData = ref(null);
     const logoImageRef = ref(null);
+    const phoneMask = ref(null);
 
     const isEditMode = computed(() => !!record.value.id);
 
@@ -178,7 +209,11 @@ export default {
       isVisible.value = false;
     };
     const show = (r) => {
+      phoneMask.value = null;
       record.value = Object.assign({}, r);
+      nextTick(() => {
+        phoneMask.value = internationalPhoneMask;
+      });
       confirmDelete.value = false;
       deleting.value = false;
       saving.value = false;
@@ -202,6 +237,10 @@ export default {
       hide,
       show,
       save,
+      phoneMask,
+      rules: {
+        emailValidator
+      },
       icons: {
         mdiPlus,
         mdiPencilOutline,
