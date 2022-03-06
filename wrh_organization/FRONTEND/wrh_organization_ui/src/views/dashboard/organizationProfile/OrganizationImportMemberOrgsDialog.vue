@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="isVisible" persistent width="500">
-    <v-card class="org-import-members-card">
+    <v-card class="org-import-member-orgs-card">
       <v-form @submit.prevent="importCsv()">
         <v-card-title class="headline">
           Import Members From CSV
@@ -142,10 +142,10 @@ export default {
 </script>
 
 <style>
-.org-import-members-card .v-card .v-card__title {
+.org-import-member-orgs-card .v-card .v-card__title {
   padding: 10px !important;
 }
-.org-import-members-card pre.failed-records {
+.org-import-member-orgs-card pre.failed-records {
   max-height: 300px;
   overflow: auto;
 }

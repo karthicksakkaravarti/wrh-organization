@@ -29,3 +29,4 @@ ORGANIZATION_TYPE_OPTIONS.forEach(function(v) {
   ORGANIZATION_TYPE_MAP[v.value] = v;
 });
 
+export const DEFAULT_TABLE_PER_PAGE_OPTIONS = [5, 10, 25, 50, 100, -1];

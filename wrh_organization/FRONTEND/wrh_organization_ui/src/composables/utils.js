@@ -253,7 +253,7 @@ export const ageFormat = (birth_date, showLabel, decimalCount) => {
 
 export const refineVTableOptions = (options) => {
   const newOpt = Object.assign({}, options);
-  newOpt.page_size = newOpt.itemsPerPage;
+  newOpt.page_size = newOpt.itemsPerPage === -1? 0: newOpt.itemsPerPage;
   newOpt.order_by = (newOpt.sortBy || []).map((o, i) => {
     return ((newOpt.sortDesc || [])[i]? '-': '') + o;
   });

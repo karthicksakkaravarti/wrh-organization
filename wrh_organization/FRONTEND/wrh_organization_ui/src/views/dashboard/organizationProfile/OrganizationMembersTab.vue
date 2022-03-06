@@ -58,6 +58,7 @@
         :loading="loading"
         class="text-no-wrap"
         :item-class="tableRowClass"
+        :footer-props="{'items-per-page-options': $const.DEFAULT_TABLE_PER_PAGE_OPTIONS, 'show-current-page': true, 'show-first-last-page': true}"
       >
         <template #item.datetime="{item}">
           <span class="pr-1">{{$utils.formatDate(item.datetime, 'M/D/YY')}}</span>
@@ -161,9 +162,9 @@
     <organization-member-form-dialog ref="formDialogRef" :organization="organization"
                                      @save-successed="loadRecords(1)" @delete-successed="loadRecords(1)">
     </organization-member-form-dialog>
-    <organization-imoprt-members-dialog ref="importDialogRef" :organization="organization"
+    <organization-import-members-dialog ref="importDialogRef" :organization="organization"
                                         @import-successed="loadRecords(1)">
-    </organization-imoprt-members-dialog>
+    </organization-import-members-dialog>
   </div>
 </template>
 

@@ -85,6 +85,7 @@
         :server-items-length="pagination.total"
         :loading="loading"
         class="text-no-wrap"
+        :footer-props="{'items-per-page-options': $const.DEFAULT_TABLE_PER_PAGE_OPTIONS, 'show-current-page': true, 'show-first-last-page': true}"
       >
         <template #item.type="{item}">
           <v-chip small :color="($const.ORGANIZATION_TYPE_MAP[item.type] || {}).css"
