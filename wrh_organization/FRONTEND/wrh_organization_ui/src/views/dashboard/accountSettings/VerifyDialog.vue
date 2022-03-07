@@ -25,7 +25,7 @@
           <div class="ma-auto position-relative" style="max-width: 300px">
             <v-otp-input v-model="code" :disabled="verifying" @finish="onFinishEnterCode" type="number" ref="otpInputRef">
             </v-otp-input>
-            <v-overlay absolute :value="verifying">
+            <v-overlay absolute :value="verifying" opacity="0.3">
               <v-progress-circular
                 indeterminate
                 color="primary"

@@ -80,6 +80,22 @@
             </div>
           </div>
         </v-card-text>
+        <v-card-actions class="d-flex justify-center social-accounts">
+          <v-tooltip bottom v-for="s in $const.SOCIAL_ACCOUNTS" :key="s.name">
+            <template #activator="{ on, attrs }">
+              <span v-on="on" class="mr-1">
+                <v-btn :href="(memberData.social_media || {})[s.name]" :key="s.name" icon class="ms-1" fab x-large
+                       target="_blank"
+                       v-bind="attrs" :disabled="!(memberData.social_media || {})[s.name]">
+                  <v-avatar size="40" rounded>
+                    <v-img :src="require(`@/assets/images/logos/${s.img}`)"></v-img>
+                  </v-avatar>
+                </v-btn>
+              </span>
+            </template>
+            <span>{{s.title}}</span>
+          </v-tooltip>
+        </v-card-actions>
 
         <v-card-text>
           <h2 class="text-xl font-weight-semibold mb-2">
@@ -138,7 +154,6 @@
 
           </v-list>
         </v-card-text>
-
         <v-card-actions class="justify-center">
           <v-btn color="warning" outlined class="me-3" :to="{name: $rns.DASHBOARD_ACCOUNT_SETTINGS}">
             <v-icon dark left>
@@ -180,3 +195,9 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.social-accounts .v-btn--disabled {
+  opacity: 0.3;
+}
+</style>

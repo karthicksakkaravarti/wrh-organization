@@ -40,7 +40,7 @@
 
         </v-list>
       </v-card-text>
-      <v-overlay :value="reviewingMembership" :absolute="true">
+      <v-overlay :value="reviewingMembership" :absolute="true" opacity="0.3">
         <v-progress-circular indeterminate></v-progress-circular>
       </v-overlay>
     </v-card>

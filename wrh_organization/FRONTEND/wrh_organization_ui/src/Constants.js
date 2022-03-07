@@ -30,3 +30,57 @@ ORGANIZATION_TYPE_OPTIONS.forEach(function(v) {
 });
 
 export const DEFAULT_TABLE_PER_PAGE_OPTIONS = [5, 10, 25, 50, 100, -1];
+
+export const SOCIAL_ACCOUNTS = [
+  {
+    img: 'strava.png',
+    name: 'strava',
+    title: 'Strava',
+  },
+  {
+    img: 'zwift.png',
+    name: 'zwift',
+    title: 'Zwift',
+  },
+  {
+    img: 'zwiftpower.png',
+    name: 'zwiftpower',
+    title: 'Zwift Power',
+  },
+  {
+    img: 'youtube.png',
+    name: 'youtube',
+    title: 'Youtube',
+  },
+  {
+    img: 'instagram.png',
+    name: 'instagram',
+    title: 'Instagram',
+  },
+  {
+    img: 'facebook.png',
+    name: 'facebook',
+    title: 'Facebook',
+  },
+];
+
+export const CONNECTED_ACCOUNTS = [
+  {
+    img: 'google.png',
+    name: 'google',
+    title: 'Google',
+    text: 'Calendar and contacts',
+  },
+  {
+    img: 'zwift.png',
+    name: 'zwift',
+    title: 'Zwift',
+    text: 'Zwift events, races and results',
+  },
+  {
+    img: 'strava.png',
+    name: 'strava',
+    title: 'Strava',
+    text: 'Strava events, races and results',
+  },
+];

@@ -123,7 +123,7 @@
         </v-card-text>
       </div>
     </v-form>
-    <v-overlay :value="changingPassword" :absolute="true">
+    <v-overlay :value="changingPassword" :absolute="true" opacity="0.3">
       <v-progress-circular indeterminate></v-progress-circular>
     </v-overlay>
   </v-card>

@@ -1,7 +1,9 @@
 from pathlib import Path
 
+from cerberus import Validator
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -125,6 +127,27 @@ class Organization(models.Model):
 
 
 class Member(models.Model):
+    SOCIAL_MEDIA_SCHEMA = {
+        'zwift': {
+            'type': 'string', 'required': False, 'nullable': True, 'meta': {'title': 'Zwift'}
+        },
+        'zwiftpower': {
+            'type': 'string', 'required': False, 'nullable': True, 'meta': {'title': 'Zwift Power'}
+        },
+        'strava': {
+            'type': 'string', 'required': False, 'nullable': True, 'meta': {'title': 'Strava'}
+        },
+        'youtube': {
+            'type': 'string', 'required': False, 'nullable': True, 'meta': {'title': 'Youtube'}
+        },
+        'facebook': {
+            'type': 'string', 'required': False, 'nullable': True, 'meta': {'title': 'Facebook'}
+        },
+        'instagram': {
+            'type': 'string', 'required': False, 'nullable': True, 'meta': {'title': 'Instagram'}
+        },
+    }
+
     USER_SHARED_FIELDS = ('first_name', 'last_name', 'birth_date', 'gender')
 
     GENDER_MALE = 'm'
@@ -151,6 +174,11 @@ class Member(models.Model):
     city = models.CharField(max_length=128, blank=True, null=True)
     state = models.CharField(max_length=128, blank=True, null=True)
     zipcode = models.CharField(max_length=10, blank=True, null=True)
+    weight = models.DecimalField('Weight (kg)', max_digits=5, decimal_places=2, null=True, blank=True,
+                                 validators=[MinValueValidator(10), MaxValueValidator(300)])
+    height = models.DecimalField('Height (m)', max_digits=3, decimal_places=2, null=True, blank=True,
+                                 validators=[MinValueValidator(1), MaxValueValidator(3)])
+
     social_media = models.JSONField(null=True, blank=True)
     is_verified = models.BooleanField(default=None, null=True)
     user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='member', null=True)
@@ -183,6 +211,13 @@ class Member(models.Model):
             self.phone_verified = None
         if not self.is_verified:
             self.is_verified = None
+        if self.social_media:
+            v = Validator(self.SOCIAL_MEDIA_SCHEMA, allow_unknown=True)
+            if not v.validate(self.social_media):
+                raise ValidationError({'social_media': str(v.errors)})
+            self.social_media = v.document
+        else:
+            self.social_media = {}
         return super().save(*args, **kwargs)
 
     class Meta:

@@ -923,7 +923,8 @@ class Base64ImageField(serializers.ImageField):
                 uid = uuid.uuid4()
                 data = ContentFile(base64.b64decode(imgstr), name=uid.urn[9:] + '.' + ext)
 
-        if self.max_size and data.size > self.max_size:
+        is_link = isinstance(data, str) and (data.startswith('http://') or data.startswith('https://'))
+        if (not is_link) and self.max_size and (data.size > self.max_size):
             raise ValidationError(f"Max file size is {self.max_size}B")
 
         return super(Base64ImageField, self).to_internal_value(data)

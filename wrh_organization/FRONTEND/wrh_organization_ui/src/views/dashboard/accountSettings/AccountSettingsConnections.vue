@@ -1,7 +1,64 @@
 <template>
   <div class="user-tab-connection">
-    <!-- connected accounts -->
+    <!-- social accounts -->
     <v-card class="mb-1">
+      <v-card-title>
+        Social Accounts
+      </v-card-title>
+      <v-card-subtitle>
+        list of your social accounts
+      </v-card-subtitle>
+      <v-card-text>
+        <v-list
+          dense
+          class="py-0"
+        >
+          <v-list-item
+            v-for="(account,index) in $const.SOCIAL_ACCOUNTS"
+            :key="account.title"
+            :class="`px-0 ${index > 0 ?'mt-6':'mt-3'}`"
+          >
+            <v-img
+              max-width="35"
+              height="35"
+              contain
+              class="me-3"
+              :src="require(`@/assets/images/logos/${account.img}`)"
+            ></v-img>
+
+            <div>
+              <v-list-item-title class="text-sm">
+                {{ account.title }}
+              </v-list-item-title>
+              <v-list-item-subtitle v-if="socialMediaData[account.name]">
+                <a
+                  :href="socialMediaData[account.name]"
+                  target="_blank"
+                  rel="nofollow"
+                  class="text-decoration-none text-truncate"
+                >
+                  {{ socialMediaData[account.name] }}
+                </a>
+              </v-list-item-subtitle>
+              <v-list-item-subtitle v-else>
+                Not connected
+              </v-list-item-subtitle>
+            </div>
+
+            <v-spacer></v-spacer>
+
+            <v-btn color="secondary" outlined min-width="38" class="px-0" @click="$refs.socialDialogRef.show(socialMediaData, account.name, account.title, )">
+              <v-icon size="20">
+                {{ !socialMediaData[account.name]? icons.mdiLinkVariantPlus: icons.mdiPencilOutline }}
+              </v-icon>
+            </v-btn>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+    </v-card>
+
+    <!-- connected accounts -->
+    <v-card>
       <v-card-title>
         Connected Accounts
       </v-card-title>
@@ -15,7 +72,7 @@
           class="py-0"
         >
           <v-list-item
-            v-for="account in connectedAccounts"
+            v-for="account in $const.CONNECTED_ACCOUNTS"
             :key="account.title"
             class="px-0"
           >
@@ -38,133 +95,55 @@
 
               <v-spacer></v-spacer>
 
-              <v-switch v-model="account.connected"></v-switch>
+              <v-switch v-model="account.connected" disabled></v-switch>
             </div>
           </v-list-item>
         </v-list>
       </v-card-text>
     </v-card>
-
-    <!-- social accounts -->
-    <v-card>
-      <v-card-title>
-        Social Accounts
-      </v-card-title>
-      <v-card-subtitle>
-        list of yout social accounts
-      </v-card-subtitle>
-      <v-card-text>
-        <v-list
-          dense
-          class="py-0"
-        >
-          <v-list-item
-            v-for="(account,index) in socialAccounts"
-            :key="account.title"
-            :class="`px-0 ${index > 0 ?'mt-6':'mt-3'}`"
-          >
-            <v-img
-              max-width="35"
-              height="35"
-              contain
-              class="me-3"
-              :src="require(`@/assets/images/logos/${account.img}`)"
-            ></v-img>
-
-            <div>
-              <v-list-item-title class="text-sm">
-                {{ account.title }}
-              </v-list-item-title>
-              <v-list-item-subtitle v-if="account.connected">
-                <a
-                  :href="account.link"
-                  target="_blank"
-                  rel="nofollow"
-                  class="text-decoration-none text-truncate"
-                >
-                  {{ account.username }}
-                </a>
-              </v-list-item-subtitle>
-              <v-list-item-subtitle v-else>
-                Not connected
-              </v-list-item-subtitle>
-            </div>
-
-            <v-spacer></v-spacer>
-
-            <v-btn
-              color="secondary"
-              outlined
-              min-width="38"
-              class="px-0"
-            >
-              <v-icon size="20">
-                {{ account.connected ? icons.mdiClose:icons.mdiLinkVariant }}
-              </v-icon>
-            </v-btn>
-          </v-list-item>
-        </v-list>
-      </v-card-text>
-    </v-card>
+    <account-settings-connection-dialog ref="socialDialogRef" @save-successed="loadSocialMedia()"></account-settings-connection-dialog>
+    <v-overlay :value="loading" :absolute="true" opacity="0.3">
+      <v-progress-circular indeterminate></v-progress-circular>
+    </v-overlay>
   </div>
 </template>
 
 <script>
-import { mdiClose, mdiLinkVariant } from '@mdi/js'
+import { mdiPencilOutline, mdiLinkVariantPlus } from '@mdi/js'
+import axios from "@/axios";
+import {nextTick, ref} from "@vue/composition-api/dist/vue-composition-api";
+import {notifyDefaultServerError} from "@/composables/utils";
+import {onMounted} from "@vue/composition-api";
+import AccountSettingsConnectionDialog from "@/views/dashboard/accountSettings/AccountSettingsConnectionDialog";
 
 export default {
+  components: {AccountSettingsConnectionDialog},
   setup() {
-    const connectedAccounts = [
-      {
-        img: 'google.png',
-        title: 'Google',
-        text: 'Calendar and contacts',
-        connected: true,
-      },
-    ];
+    const socialMediaData = ref({});
+    const loading = ref(false);
 
-    const socialAccounts = [
-      {
-        img: 'youtube.png',
-        title: 'Youtube',
-        link: 'https://youtube.com/theme_selection',
-        username: '@Theme_Selection',
-        connected: true,
-      },
-      {
-        img: 'instagram.png',
-        title: 'Instagram',
-        link: 'https://instagram.com/theme_selection',
-        username: '@Theme_Selection',
-        connected: true,
-      },
-      {
-        img: 'facebook.png',
-        title: 'Facebook',
-        connected: false,
-      },
-      {
-        img: 'twitter.png',
-        title: 'Twitter',
-        link: 'https://twitter.com/theme_selection',
-        username: '@Theme_Selection',
-        connected: true,
-      },
-      {
-        img: 'linkedin.png',
-        title: 'Linkedin',
-        link: 'https://www.linkedin.com/company/themeselection',
-        username: '@ThemeSelection',
-        connected: true,
-      },
-    ];
+    const loadSocialMedia = () => {
+      loading.value = true;
+      axios.get("bycing_org/member/me", {params: {fields: 'social_media'}}).then((response) => {
+        socialMediaData.value = response.data.social_media || {};
+        loading.value = false;
+      }, (error) => {
+        loading.value = false;
+        notifyDefaultServerError(error, true)
+      });
+    };
+
+    onMounted(() => {
+      loadSocialMedia();
+    });
 
     return {
-      connectedAccounts,
-      socialAccounts,
+      socialMediaData,
+      loading,
+      loadSocialMedia,
       icons: {
-        mdiClose,
-        mdiLinkVariant,
+        mdiPencilOutline,
+        mdiLinkVariantPlus,
       },
     }
   },

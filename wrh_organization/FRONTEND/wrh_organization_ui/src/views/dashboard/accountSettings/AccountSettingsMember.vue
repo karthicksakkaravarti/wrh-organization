@@ -15,6 +15,7 @@
       <!-- upload photo -->
       <div>
         <v-btn
+          small
           color="primary"
           class="me-3 mt-5"
           @click="avatarImageRef.click()"
@@ -34,6 +35,7 @@
         />
 
         <v-btn
+          small
           color="warning"
           outlined
           class="mt-5 mr-2"
@@ -43,6 +45,7 @@
           Reset
         </v-btn>
         <v-btn
+          small
           color="error"
           outlined
           class="mt-5 mr-2"
@@ -138,7 +141,7 @@
             </v-text-field>
           </v-col>
 
-          <v-col cols="12">
+          <v-col cols="12" md="6">
             <p class="text--primary mt-n3 mb-2">
               Gender
             </p>
@@ -154,6 +157,13 @@
               >
               </v-radio>
             </v-radio-group>
+          </v-col>
+
+          <v-col cols="12" sm="6" md="3">
+            <v-text-field type="number" v-model="accountData.weight" outlined dense label="Weight" suffix="kg"></v-text-field>
+          </v-col>
+          <v-col cols="12" sm="6" md="3">
+            <v-text-field type="number" v-model="accountData.height" outlined dense label="Height" suffix="m"></v-text-field>
           </v-col>
 
           <v-col
@@ -229,7 +239,7 @@
         </v-row>
       </v-form>
     </v-card-text>
-    <v-overlay :value="saving || loading" :absolute="true">
+    <v-overlay :value="saving || loading" :absolute="true" opacity="0.3">
       <v-progress-circular indeterminate></v-progress-circular>
     </v-overlay>
     <verify-dialog ref="verifyDialogRef" @verify-successed="verifyDialogSuccessed" @verify-failed="verifyDialogFailed">
@@ -274,7 +284,7 @@ export default {
     const loadAccountData = () => {
       loading.value = true;
       phoneMask.value = null;
-      axios.get("bycing_org/member/me").then((response) => {
+      axios.get("bycing_org/member/me", {params: {xfields: "social_media"}}).then((response) => {
         accountDataOrig.value = response.data;
         accountData.value = cloneData();
         nextTick(() => {

@@ -27,6 +27,7 @@ class UserMyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
 
 class MyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     user = UserMyMemberSerializer(allow_null=True, required=False)
+    email = serializers.EmailField(allow_null=True, required=False)
 
     class Meta:
         model = Member
