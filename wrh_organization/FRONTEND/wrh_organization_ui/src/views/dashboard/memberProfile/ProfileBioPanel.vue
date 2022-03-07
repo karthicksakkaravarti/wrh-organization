@@ -128,6 +128,15 @@
             </v-list-item>
 
             <v-list-item dense class="px-0 mb-n2">
+              <span class="font-weight-medium me-2">Height:</span>
+              <span class="text--secondary">{{ memberData.height || '-' }} m</span>
+            </v-list-item>
+            <v-list-item dense class="px-0 mb-n2">
+              <span class="font-weight-medium me-2">Weight:</span>
+              <span class="text--secondary">{{ $utils.removeTrailingZero(memberData.weight) || '-' }} kg</span>
+            </v-list-item>
+
+            <v-list-item dense class="px-0 mb-n2">
               <span class="font-weight-medium me-2">Country:</span>
               <span class="text--secondary">{{($const.COUNTRY_MAP[memberData.country] || {}).name || memberData.country || '-'}}</span>
             </v-list-item>
