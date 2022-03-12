@@ -75,6 +75,17 @@ class NestedOrganizationSerializer(DynamicFieldsSerializerMixin, serializers.Mod
 class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     # members = NestedMemberSerializer(read_only=True, many=True)
     logo = Base64ImageField(required=False, allow_null=True)
+    my_level = serializers.SerializerMethodField()
+    extra_fields = ['member_fields_schema', 'my_level']
+
+    def get_my_level(self, obj):
+        request = self.context.get('request', None)
+        level = {'is_member': None, 'is_admin': None}
+        if request and request.user and getattr(request.user, 'member', None):
+            r = OrganizationMember.objects.filter(organization=obj, member=request.user.member, is_active=True).first()
+            level['is_member'] = True if r else False
+            level['is_admin'] = True if (r and r.is_admin) else False
+        return level
 
     class Meta:
         model = Organization

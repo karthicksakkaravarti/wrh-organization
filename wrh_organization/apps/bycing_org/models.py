@@ -42,6 +42,19 @@ class OrganizationMember(models.Model):
             ('organization', 'org_member_uid', 'is_active')
         )
 
+    def jsonify_entry_form(self):
+        for f in (self.organization.member_fields_schema or []):
+            name = f['name']
+            value = self.member_fields.get(name)
+            if not value:
+                continue
+            if f['type'] == 'time':
+                self.member_fields[name] = value.strftime('%H:%M:%S')
+            elif f['type'] == 'date':
+                self.member_fields[name] = value.strftime('%Y-%m-%d')
+            elif f['type'] == 'datetime':
+                self.member_fields[name] = value.isoformat()
+
     def save(self, *args, **kwargs):
         if not self.is_active:
             self.is_active = None
@@ -49,6 +62,12 @@ class OrganizationMember(models.Model):
             self.org_member_uid = None
         if self.is_master_admin:
             self.is_admin = True
+        if self.member_fields:
+            v = Validator(self.organization.normalized_member_fields_schema, allow_unknown=True)
+            if not v.validate(self.member_fields or {}):
+                raise ValidationError({'member_fields': str(v.errors)})
+            self.member_fields = v.document
+            self.jsonify_entry_form()
         return super().save(*args, **kwargs)
 
     def __str__(self):
@@ -93,6 +112,31 @@ class OrganizationMemberOrg(models.Model):
 
 
 class Organization(models.Model):
+    MEMBER_FIELDS_SCHEMA_VALIDATOR = {
+        'type': 'list', 'empty': True, 'required': False,
+        'schema': {
+            'type': 'dict', 'schema': {
+                'name': {'type': 'string', 'required': True, 'nullable': False, 'empty': False},
+                'title': {'type': 'string', 'required': True, 'nullable': False, 'empty': False},
+                'type': {
+                    'type': 'string', 'required': True, 'nullable': False, 'empty': False,
+                     'allowed': [
+                         'integer', 'float', 'number', 'string', 'text', 'boolean', 'percent', 'date', 'time', 'datetime'
+                     ]
+                 },
+                'required': {'type': 'boolean', 'required': False, 'default': False},
+                'choices': {
+                    'type': 'list', 'required': False, 'nullable': True, 'empty': True,
+                    'schema': {
+                        'type': 'dict', 'empty': False,
+                        'schema': {'title': {'type': 'string'}, 'value': {}}
+                    }
+                },
+                'multiple': {'type': 'boolean', 'required': False, 'default': False},
+            }
+        },
+    }
+
     TYPE_REGIONAL = 'regional'
     TYPE_TEAM = 'team'
     TYPE_ADVOCACY_VOLUNTEER = 'advocacy_volunteer'
@@ -121,6 +165,61 @@ class Organization(models.Model):
     verified = models.BooleanField(default=False)
     members = models.ManyToManyField('Member', related_name='organizations', through=OrganizationMember)
     member_orgs = models.ManyToManyField('Organization', related_name='organizations', through=OrganizationMemberOrg)
+
+    @property
+    def normalized_member_fields_schema(self):
+        from wrh_organization.helpers.utils import (date_coerce, time_coerce, datetime_coerce, float_safe_coerce,
+                                                    number_safe_coerce, integer_safe_coerce)
+        coerces = {
+            'integer': integer_safe_coerce,
+            'float': float_safe_coerce,
+            'number': number_safe_coerce,
+            'date':  date_coerce,
+            'time': time_coerce,
+            'datetime': datetime_coerce,
+        }
+        schema = {}
+        for f in (self.member_fields_schema or []):
+            d = dict(type=f.get('type'))
+
+            # type
+            if d['type'] == 'percent':
+                d['type'] = 'integer'
+                d['min'] = 0
+                d['max'] = 100
+            elif d['type'] == 'text':
+                d['type'] = 'string'
+            if d['type'] in coerces:
+                d['coerce'] = coerces[d['type']]
+
+            # required
+            required = f.get('required') is True
+            d['required'] = required
+            d['nullable'] = not required
+            d['empty'] = not required
+
+            # choices
+            choices = f.get('choices')
+            if choices:
+                d['allowed'] = [c.get('value') for c in choices]
+            if f.get('multiple'):
+                schema[f['name']] = {
+                    'type': 'list', 'schema': d, 'required': required, 'nullable': not required, 'empty': not required
+                }
+            else:
+                schema[f['name']] = d
+
+        return schema
+
+    def save(self, *args, **kwargs):
+        if self.member_fields_schema:
+            v = Validator({'member_fields_schema': self.MEMBER_FIELDS_SCHEMA_VALIDATOR}, purge_unknown=True)
+            if not v.validate({'member_fields_schema': self.member_fields_schema}):
+                raise ValidationError({'member_fields_schema': str(v.errors)})
+            self.member_fields_schema = v.document['member_fields_schema']
+        else:
+            self.member_fields_schema = []
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.name}'

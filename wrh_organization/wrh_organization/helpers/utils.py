@@ -12,6 +12,7 @@ from functools import wraps
 
 import json
 
+import cerberus
 import pyotp
 from django import forms
 from django.conf import settings
@@ -53,6 +54,9 @@ from twilio.rest import Client as TwilioRestClient
 from apps.bycing_org.models import OrganizationMember
 
 print = functools.partial(print, flush=True)
+
+time_type = cerberus.TypeDefinition('time', (datetime.time,), ())
+cerberus.Validator.types_mapping['time'] = time_type
 
 
 class CustomFileBasedEmailBackend(EmailBackend):
@@ -970,7 +974,10 @@ def date_coerce(s):
 
 
 def time_coerce(s):
-    return (s and datetime.datetime.strptime(s, '%H:%M:%S').time()) or None
+    if not s:
+        return None
+    format = '%H:%M' if len(s.split(':')) == 2 else '%H:%M:%S'
+    return datetime.datetime.strptime(s, format).time() or None
 
 
 def datetime_coerce(s):

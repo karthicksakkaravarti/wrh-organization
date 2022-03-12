@@ -9,11 +9,25 @@
 
       <v-col cols="12" md="7" lg="8">
         <v-tabs v-model="tab" show-arrows class="organization-profile-tabs">
-          <v-tab v-for="t in tabs" :key="t.title">
-            <v-icon size="20" class="me-3">
-              {{ t.icon }}
-            </v-icon>
-            <span>{{ t.title }}</span>
+          <v-tab>
+            <v-icon size="20" class="me-3">{{ icons.mdiHomeAccount }}</v-icon>
+            <span>Overview</span>
+          </v-tab>
+          <v-tab>
+            <v-icon size="20" class="me-3">{{ icons.mdiAccountMultipleOutline }}</v-icon>
+            <span>Members</span>
+          </v-tab>
+          <v-tab>
+            <v-icon size="20" class="me-3">{{ icons.mdiHomeGroup }}</v-icon>
+            <span>Member Orgs</span>
+          </v-tab>
+          <v-tab v-if="organization.my_level.is_admin">
+            <v-icon size="20" class="me-3">{{ icons.mdiFormatListText }}</v-icon>
+            <span>Member Fields</span>
+          </v-tab>
+          <v-tab>
+            <v-icon size="20" class="me-3">{{ icons.mdiCalendarMultiple }}</v-icon>
+            <span>Events</span>
           </v-tab>
         </v-tabs>
 
@@ -26,6 +40,9 @@
           </v-tab-item>
           <v-tab-item>
             <organization-member-orgs-tab :organization="organization"></organization-member-orgs-tab>
+          </v-tab-item>
+          <v-tab-item v-if="organization.my_level.is_admin">
+            <organization-member-fields-tab :organization="organization"></organization-member-fields-tab>
           </v-tab-item>
           <v-tab-item>
             <organization-events-tab :organization="organization"></organization-events-tab>
@@ -44,7 +61,13 @@
 import { ref } from '@vue/composition-api'
 
 // eslint-disable-next-line object-curly-newline
-import {mdiAccountMultipleOutline, mdiCalendarMultiple, mdiHomeAccount, mdiHomeGroup} from '@mdi/js'
+import {
+  mdiAccountMultipleOutline,
+  mdiCalendarMultiple,
+  mdiHomeAccount,
+  mdiHomeGroup,
+  mdiFormatListText,
+} from '@mdi/js'
 import OrganizationBioPanel from "./OrganizationBioPanel";
 import OrganizationOverviewTab from "./OrganizationOverviewTab";
 import axios from "@/axios";
@@ -54,10 +77,12 @@ import OrganizationMembersTab from "./OrganizationMembersTab";
 import OrganizationEventsTab from "./OrganizationEventsTab";
 import {useRouter} from "@core/utils";
 import ProfileOrganizationFormDialog from "@/views/dashboard/memberProfile/ProfileOrganizationFormDialog";
-import OrganizationMemberOrgsTab from "@/views/dashboard/organizationProfile/OrganizationMemberOrgsTab";
+import OrganizationMemberOrgsTab from "./OrganizationMemberOrgsTab";
+import OrganizationMemberFieldsTab from "./OrganizationMemberFieldsTab";
 
 export default {
   components: {
+    OrganizationMemberFieldsTab,
     OrganizationMemberOrgsTab,
     ProfileOrganizationFormDialog,
     OrganizationEventsTab,
@@ -69,15 +94,10 @@ export default {
     const { route } = useRouter();
     const tab = ref(null);
 
-    const tabs = [
-      { icon: mdiHomeAccount, title: 'Overview' },
-      { icon: mdiAccountMultipleOutline, title: 'Members' },
-      { icon: mdiHomeGroup, title: 'Member Orgs' },
-      { icon: mdiCalendarMultiple, title: 'Events' },
-    ];
-    const organization = ref({user: {}});
+    const organization = ref({my_level: {}});
     const loadOrganization = () => {
-      axios.get(`bycing_org/organization/${route.value.params.record_id}`).then((response) => {
+      var params = {exfields: 'my_level'};
+      axios.get(`bycing_org/organization/${route.value.params.record_id}`, {params: params}).then((response) => {
         organization.value = response.data;
       }, (error) => {
         notifyDefaultServerError(error, true)
@@ -92,8 +112,14 @@ export default {
     return {
       organization,
       loadOrganization,
-      tabs,
       tab,
+      icons: {
+        mdiAccountMultipleOutline,
+        mdiCalendarMultiple,
+        mdiHomeAccount,
+        mdiHomeGroup,
+        mdiFormatListText,
+      }
     }
   },
 }

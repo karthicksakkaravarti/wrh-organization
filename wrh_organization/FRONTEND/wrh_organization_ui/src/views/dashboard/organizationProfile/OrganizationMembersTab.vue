@@ -6,7 +6,7 @@
           <v-btn fab x-small color="info" class="me-1" @click="loadRecords(1)">
             <v-icon>{{icons.mdiRefresh}}</v-icon>
           </v-btn>
-          <v-tooltip bottom>
+          <v-tooltip bottom v-if="organization.my_level.is_admin">
             <template #activator="{ on, attrs }">
               <v-btn v-bind="attrs" v-on="on" small color="primary" class="me-1" @click="$refs.formDialogRef.show()">
                 <v-icon size="18" class="me-1">
@@ -17,7 +17,7 @@
             </template>
             <span>Add A Member To Organization</span>
           </v-tooltip>
-          <v-tooltip bottom>
+          <v-tooltip bottom v-if="organization.my_level.is_admin">
             <template #activator="{ on, attrs }">
               <v-btn v-bind="attrs" v-on="on" small outlined color="info" class="me-1" @click="$refs.importDialogRef.show()">
                 <v-icon size="18" class="me-1">
@@ -143,7 +143,7 @@
         <!-- actions -->
         <template #item.actions="{item}">
           <div class="d-flex align-end justify-end">
-            <v-tooltip bottom>
+            <v-tooltip bottom v-if="organization.my_level.is_admin">
               <template #activator="{ on, attrs }">
                 <v-btn icon small v-bind="attrs" v-on="on" @click="$refs.formDialogRef.show(item)">
                   <v-icon size="18">
@@ -151,7 +151,7 @@
                   </v-icon>
                 </v-btn>
               </template>
-              <span>Edit</span>
+              <span>Edit / View</span>
             </v-tooltip>
 
           </div>

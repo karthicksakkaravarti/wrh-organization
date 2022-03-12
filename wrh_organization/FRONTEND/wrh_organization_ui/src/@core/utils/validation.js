@@ -1,6 +1,6 @@
 import { isEmpty } from './index'
 
-export const required = value => (value && value.length ? true : 'This field is required')
+export const required = value => (value === null || value === undefined || value === "")? 'This field is required': true
 export const emailValidator = value => {
   if (isEmpty(value)) {
     return true

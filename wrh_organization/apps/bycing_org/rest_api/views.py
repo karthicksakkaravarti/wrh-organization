@@ -460,7 +460,7 @@ class OrganizationMemberView(OrganizationMembershipMixin, viewsets.ModelViewSet)
                     continue
                 if f == 'gender':
                     v = v.lower()
-                setattr(member, f, row.get(f, None))
+                setattr(member, f, v)
             member.save()
         else:
             old_org_members = OrganizationMember.objects.filter(
@@ -469,6 +469,14 @@ class OrganizationMemberView(OrganizationMembershipMixin, viewsets.ModelViewSet)
             if old_org_members.filter(Q(is_admin=True) | Q(is_master_admin=True)).exists():
                 return
             old_org_members.update(is_active=None)
+
+        row['_member'] = {}
+        for k in member_fields:
+            v = row.pop(k, None)
+            if not v:
+                continue
+            row['_member'][k] = v
+
         membership_status = OrganizationMember.STATUS_WAITING if member.user_id else None
         org_member = OrganizationMember.objects.get_or_create(
             member=member, organization=org, is_active=True,

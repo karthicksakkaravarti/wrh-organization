@@ -2,17 +2,17 @@
   <v-dialog
     v-model="isVisible"
     persistent
-    max-width="600px"
+    max-width="700px"
   >
     <v-card>
       <v-card-title>
         <span class="headline">{{isEditMode? `Edit Member of Organization: #${record.id}`: 'Add Member to Organization'}}</span>
       </v-card-title>
-      <v-form @submit.prevent="save">
+      <v-form @submit.prevent="save" v-model="formValid">
         <v-card-text>
           <v-container>
             <v-row>
-              <v-col cols="12">
+              <v-col cols="12" md="6">
                 <v-menu
                   v-if="isEditMode"
                   bottom
@@ -70,6 +70,8 @@
                     item-value="id"
                     :menu-props="{contentClass:'list-style'}"
                     return-object
+                    dense
+                    :rules="[rules.required]"
                 >
                   <template #selection="data">
                     <v-chip
@@ -109,14 +111,14 @@
                   </template>
                 </v-autocomplete>
               </v-col>
-              <v-col cols="12">
-                <v-text-field v-model="record.org_member_uid" label="Member UID" dense></v-text-field>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="record.org_member_uid" label="Member UID" dense hide-details></v-text-field>
               </v-col>
               <v-col cols="12" md="6">
                 <v-menu v-model="startDateMenu" :close-on-content-click="false"
                     :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                   <template v-slot:activator="{ on, attrs }">
-                    <v-text-field class="pt-0 pb-0" v-model="record.start_date" label="Start Date"
+                    <v-text-field class="pt-0 pb-0" v-model="record.start_date" label="Start Date" hide-details
                                   :prepend-icon="icons.mdiCalendar" v-bind="attrs" v-on="on" readonly>
                     </v-text-field>
                   </template>
@@ -128,7 +130,7 @@
                 <v-menu v-model="expDateMenu" :close-on-content-click="false"
                     :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                   <template v-slot:activator="{ on, attrs }">
-                    <v-text-field class="pt-0 pb-0" v-model="record.exp_date" label="Exp Date"
+                    <v-text-field class="pt-0 pb-0" v-model="record.exp_date" label="Exp Date" hide-details
                                   :prepend-icon="icons.mdiCalendar" v-bind="attrs" v-on="on" readonly>
                     </v-text-field>
                   </template>
@@ -144,6 +146,108 @@
               </v-col>
             </v-row>
           </v-container>
+          <app-card-actions action-collapse outlined v-if="schema && schema.length">
+            <template #title>
+              <span class="warning--text">Extra Organization Fields</span>
+            </template>
+            <v-card-text class="pr-2 pl-2">
+              <v-container>
+                <v-row>
+                  <v-col cols="12" :md="f.type == 'text' || (f.choices && f.choices.length > 0)? 12: 6"
+                         v-for="f in schema" :key="f.name">
+                    <template v-if="f.choices && f.choices.length > 0">
+                      <p class="caption mb-0">{{f.title}}</p>
+                      <div v-if="f.multiple" class="d-flex flex-wrap demo-space-x mt-0">
+                        <v-checkbox v-for="(c, cIdx) in f.choices" v-model="record.member_fields[f.name]"
+                                    class="mt-0 mb-0 pt-0" :label="c.title" :value="c.value" :key="cIdx" hide-details></v-checkbox>
+                      </div>
+                      <v-radio-group v-else v-model="record.member_fields[f.name]" hide-details class="mt-0"
+                                     :rules="f.required? [rules.required]: []">
+                        <div class="d-flex flex-wrap demo-space-x mt-0">
+                          <v-radio v-for="(c, cIdx) in f.choices" :label="c.title" :value="c.value" :key="cIdx"
+                                   class="mt-0 mb-0 pt-0"></v-radio>
+                        </div>
+                      </v-radio-group>
+                    </template>
+                    <template v-else-if="f.type=='integer' || f.type=='float' || f.type=='number'">
+                      <v-text-field
+                          hide-details
+                          dense
+                          v-model.number="record.member_fields[f.name]"
+                          :label="f.title"
+                          type="number"
+                          :step="f.type=='integer'? 1: 'any'"
+                          :rules="f.required? [rules.required]: []"
+                      ></v-text-field>
+                    </template>
+                    <template v-else-if="f.type=='percent'">
+                      <v-text-field
+                          hide-details
+                          dense
+                          v-model.number="record.member_fields[f.name]"
+                          :label="f.title"
+                          :rules="f.required? [rules.required]: []"
+                          type="number"
+                          suffix="%"
+                          min="0"
+                          max="100"
+                      ></v-text-field>
+                    </template>
+                    <template v-else-if="f.type=='boolean'">
+                      <v-switch
+                          hide-details
+                          v-model="record.member_fields[f.name]"
+                          :label="f.title"
+                          dense
+                          class="pt-0 mt-1"
+                      ></v-switch>
+                    </template>
+                    <template v-else-if="f.type=='date' || f.type=='time' || f.type=='datetime'">
+                      <v-menu v-model="uiFieldsData[`menu__${f.name}`]" :close-on-content-click="false"
+                              :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-text-field
+                              hide-details
+                              v-model="record.member_fields[f.name]"
+                              :label="f.title"
+                              :rules="f.required? [rules.required]: []"
+                              class="pt-0 mt-0 mb-5"
+                              :append-icon="f.type=='time'? icons.mdiClockOutline: icons.mdiCalendar"
+                              v-bind="attrs"
+                              v-on="on"
+                              readonly>
+                          </v-text-field>
+                        </template>
+                        <v-time-picker v-if="f.type=='time'" v-model="record.member_fields[f.name]" color="primary"
+                                       @click:minute="uiFieldsData[`menu__${f.name}`] = false"></v-time-picker>
+                        <v-date-picker v-else v-model="record.member_fields[f.name]" color="primary"
+                                       @input="uiFieldsData[`menu__${f.name}`] = false"></v-date-picker>
+                      </v-menu>
+                    </template>
+                    <template v-else-if="f.type=='text'">
+                      <v-textarea
+                          hide-details
+                          dense
+                          v-model="record.member_fields[f.name]"
+                          :label="f.title"
+                          :rules="f.required? [rules.required]: []"
+                          rows="2"
+                      ></v-textarea>
+                    </template>
+                    <template v-else>
+                      <v-text-field
+                          dense
+                          v-model.trim="record.member_fields[f.name]"
+                          :label="f.title"
+                          :rules="f.required? [rules.required]: []"
+                          type="text"
+                      ></v-text-field>
+                    </template>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+          </app-card-actions>
         </v-card-text>
         <v-card-text v-if="confirmDelete">
           <v-alert type="warning" dense text :icon="icons.mdiAlert">
@@ -160,7 +264,7 @@
           </template>
           <v-spacer></v-spacer>
           <v-btn color="secondary" outlined @click="hide()">Close</v-btn>
-          <v-btn color="primary" type="submit" :loading="saving">Save</v-btn>
+          <v-btn color="primary" type="submit" :loading="saving" :disabled="!formValid">Save</v-btn>
         </v-card-actions>
       </v-form>
     </v-card>
@@ -174,15 +278,19 @@ import {
   mdiDelete,
   mdiAlert,
   mdiCalendar,
+  mdiClockOutline,
   mdiAccountCheck,
   mdiAccountCancel,
 } from '@mdi/js'
 import _ from 'lodash';
-import {ref, computed, watch} from '@vue/composition-api'
+import {ref, computed, watch, set} from '@vue/composition-api'
 import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
+import AppCardActions from "@core/components/app-card-actions/AppCardActions";
+import {required} from "@core/utils/validation";
 
 export default {
+  components: {AppCardActions},
   props: {
     organization: {
       type: Object,
@@ -191,7 +299,10 @@ export default {
   },
   setup(props, context) {
     const isVisible = ref(false);
-    const record = ref({});
+    const formValid = ref(false);
+    const uiFieldsData = ref({});
+    const record = ref({member_fields: {}});
+    const schema = ref(null);
     const saving = ref(false);
     const deleting = ref(false);
     const confirmDelete = ref(false);
@@ -206,6 +317,22 @@ export default {
     });
 
     const isEditMode = computed(() => !!record.value.id);
+
+    const loadSchema = () => {
+      let params = {exfields: "member_fields_schema", fields: "member_fields_schema"};
+      axios.get(`bycing_org/organization/${props.organization.id}`, {params: params}).then((response) => {
+        schema.value = response.data.member_fields_schema || [];
+        schema.value.forEach(r => {
+          if (r.multiple && !Array.isArray(record.value.member_fields[r.name])) {
+            set(record.value.member_fields, r.name, []);
+          }
+        });
+
+      }, (error) => {
+        notifyDefaultServerError(error, true);
+      });
+
+    };
 
     const deleteRecord = () => {
       deleting.value = true;
@@ -225,6 +352,7 @@ export default {
         return;
       }
       var data = Object.assign({}, record.value);
+      data.member_fields = Object.assign({}, record.value.member_fields);
       data.member = data._member.id;
       delete data._member;
       saving.value = true;
@@ -269,7 +397,12 @@ export default {
       isVisible.value = false;
     };
     const show = (r) => {
+      if (!schema.value) {
+        loadSchema();
+      }
+      uiFieldsData.value = {};
       record.value = Object.assign({is_active: true}, r);
+      record.value.member_fields = Object.assign({}, record.value.member_fields)
       confirmDelete.value = false;
       deleting.value = false;
       saving.value = false;
@@ -278,15 +411,19 @@ export default {
 
     return {
       isVisible,
+      formValid,
       confirmDelete,
       isEditMode,
       record,
+      uiFieldsData,
+      schema,
       saving,
       deleting,
       deleteRecord,
       hide,
       show,
       save,
+      loadSchema,
       findingMembers,
       findMembers,
       findMembersDebounce,
@@ -294,12 +431,16 @@ export default {
       memberSearchInput,
       startDateMenu,
       expDateMenu,
+      rules: {
+        required
+      },
       icons: {
         mdiPlus,
         mdiPencilOutline,
         mdiDelete,
         mdiAlert,
         mdiCalendar,
+        mdiClockOutline,
         mdiAccountCheck,
         mdiAccountCancel,
       },
