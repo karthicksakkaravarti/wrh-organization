@@ -19,14 +19,14 @@ from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg
+from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, FieldsTracking
 from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter, OrganizationMemberFilter, \
-    OrganizationMemberOrgFilter
+    OrganizationMemberOrgFilter, FieldsTrackingFilter
 from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationSerializer, SignupUserSerializer, \
     ActivationEmailSerializer, MyMemberSerializer, MemberOTPVerifySerializer, OrganizationMemberSerializer, \
     NestedMemberSerializer, UserSendRecoverPasswordSerializer, UserRecoverPasswordSerializer, \
     CsvFileImportSerializer, OrganizationMemberMyRequestsSerializer, OrganizationMemberOrgSerializer, \
-    NestedOrganizationSerializer
+    NestedOrganizationSerializer, FieldsTrackingSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
     IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token
 
@@ -540,3 +540,15 @@ class OrganizationMemberOrgView(OrganizationMembershipMixin, viewsets.ModelViewS
     @action(detail=False, methods=['POST'], serializer_class=CsvFileImportSerializer)
     def import_from_csv(self, request, *args, **kwargs):
         return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+class FieldsTrackingView(viewsets.ReadOnlyModelViewSet):
+    queryset = FieldsTracking.objects.all()
+    serializer_class = FieldsTrackingSerializer
+    filterset_class = FieldsTrackingFilter
+    ordering = '-id'
+    ordering_fields = '__all__'
+    search_fields = ['object_repr',]
+
+    def get_queryset(self):
+        return super().get_queryset().filter(content_type__app_label='bycing_org')

@@ -24,7 +24,14 @@ class OrganizationAdmin(admin.ModelAdmin):
     list_filter = ('type',)
 
 
+class FieldsTrackingAdmin(admin.ModelAdmin):
+    list_display = ('id', 'object_id', 'content_type', 'object_repr', 'datetime', 'user')
+    search_fields = ('object_repr',)
+    list_filter = ('content_type',)
+
+
 admin.site.register(models.Member, MemberAdmin)
 admin.site.register(models.Organization, OrganizationAdmin)
 admin.site.register(models.OrganizationMember, OrganizationMemberAdmin)
 admin.site.register(models.OrganizationMemberOrg, OrganizationMemberOrgAdmin)
+admin.site.register(models.FieldsTracking, FieldsTrackingAdmin)

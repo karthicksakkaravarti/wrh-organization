@@ -1,11 +1,11 @@
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
-from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg
+from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, FieldsTracking
 from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField
 
 
@@ -200,3 +200,25 @@ class UserRecoverPasswordSerializer(serializers.Serializer):
         except ValidationError as e:
             raise serializers.ValidationError({'new_password': list(e.messages)})
         return new_password
+
+
+class NestedContentTypeSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = ContentType
+        fields = ['id', 'model']
+
+
+class NestedUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username',)
+
+
+class FieldsTrackingSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+
+    _user = NestedUserSerializer(read_only=True, source='user')
+    _content_type = NestedContentTypeSerializer(read_only=True, source='content_type')
+
+    class Meta:
+        model = FieldsTracking
+        fields = '__all__'

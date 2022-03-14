@@ -3,6 +3,8 @@ from datetime import datetime
 from apps.usacycling import models
 from rest_framework import serializers
 
+from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin
+
 
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,7 +34,7 @@ class LinkstSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class USAEventSerializer(serializers.ModelSerializer):
+class USAEventSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     dates = DatesSerializer()
     links = LinkstSerializer()
 
@@ -55,13 +57,13 @@ class USAEventSerializer(serializers.ModelSerializer):
         return usaEvent
 
 
-class USACyclingClubTeamsSerializers(serializers.ModelSerializer):
+class USACyclingClubTeamsSerializers(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = models.USACyclingClubs
         fields = '__all__'
 
 
-class USACyclingClubsSerializers(serializers.ModelSerializer):
+class USACyclingClubsSerializers(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     clubteam = USACyclingClubTeamsSerializers(many=True, read_only=True)
 
     class Meta:
@@ -76,7 +78,7 @@ class TimestampField(serializers.Field):
         return epoch
 
 
-class USARiderSerializers(serializers.ModelSerializer):
+class USARiderSerializers(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     expdateroad = TimestampField()
     expdatemtn = TimestampField()
 

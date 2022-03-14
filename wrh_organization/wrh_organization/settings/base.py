@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'wrh_organization.helpers.middleware.InjectUiVersionInHeadersMiddleware',
+    'wrh_organization.helpers.middleware.ThreadLocalMiddleware',
 ]
 
 ROOT_URLCONF = 'wrh_organization.urls'

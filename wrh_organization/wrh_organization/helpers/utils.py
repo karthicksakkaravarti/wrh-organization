@@ -17,6 +17,7 @@ import pyotp
 from django import forms
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import PermissionRequiredMixin as DjangoPermissionRequiredMixin
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth.views import redirect_to_login
@@ -24,7 +25,7 @@ from django.core.exceptions import PermissionDenied, ValidationError, RequestDat
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 from django.core.mail.backends.filebased import EmailBackend
-from django.db import IntegrityError
+from django.db import IntegrityError, models
 from django.db.models import ProtectedError, Q
 from django.http import Http404, QueryDict, HttpResponseForbidden
 from django.http import JsonResponse
@@ -51,12 +52,12 @@ from storages.backends.s3boto3 import S3Boto3Storage, SpooledTemporaryFile
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client as TwilioRestClient
 
-from apps.bycing_org.models import OrganizationMember
-
 print = functools.partial(print, flush=True)
 
 time_type = cerberus.TypeDefinition('time', (datetime.time,), ())
 cerberus.Validator.types_mapping['time'] = time_type
+
+User = get_user_model()
 
 
 class CustomFileBasedEmailBackend(EmailBackend):
@@ -809,6 +810,7 @@ class IsAdminOrganizationPermission(permissions.BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
+        from apps.bycing_org.models import OrganizationMember
         obj = self.get_object(view, obj)
         return OrganizationMember.objects.filter(member=request.user.member, organization=obj, is_active=True
                                                  ).filter(Q(is_admin=True) | Q(is_master_admin=True)).exists()
@@ -1012,6 +1014,7 @@ class CreateListMixin:
 
 class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
     key_salt = 'AccountActivationTokenGenerator'
+
     def _make_hash_value(self, user, timestamp):
         return f'{user.pk}{timestamp}{user.is_active}'
 

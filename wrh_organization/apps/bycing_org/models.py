@@ -5,15 +5,24 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from model_utils import FieldTracker
 from phonenumber_field.modelfields import PhoneNumberField
 
+from wrh_organization.helpers.fields_tracking import BaseFieldsTracking
+
 User = get_user_model()
+
 
 def organization_logo_file_path_func(instance, filename):
     from wrh_organization.helpers.utils import get_random_upload_path
     return get_random_upload_path(str(Path('uploads', 'bycing_org', 'organization', 'logo')), filename)
 
 
+class FieldsTracking(BaseFieldsTracking):
+    pass
+
+
+@FieldsTracking.register()
 class OrganizationMember(models.Model):
     STATUS_ACCEPT = 'accept'
     STATUS_REJECT = 'reject'
@@ -35,6 +44,7 @@ class OrganizationMember(models.Model):
     member_fields = models.JSONField(null=True)
     status = models.CharField(max_length=16, null=True, choices=STATUS_CHOICES)
     datetime = models.DateTimeField(auto_now_add=True)
+    _tracker = FieldTracker()
 
     class Meta:
         unique_together = (
@@ -74,6 +84,7 @@ class OrganizationMember(models.Model):
         return f'{self.organization} - {self.member}'
 
 
+@FieldsTracking.register()
 class OrganizationMemberOrg(models.Model):
     STATUS_ACCEPT = 'accept'
     STATUS_REJECT = 'reject'
@@ -85,7 +96,8 @@ class OrganizationMemberOrg(models.Model):
     )
     organization = models.ForeignKey('Organization', related_name='organizaton_member_orgs',
                                      on_delete=models.CASCADE)
-    member_org = models.ForeignKey('Organization', related_name='member_organizaton_member_orgs', on_delete=models.CASCADE)
+    member_org = models.ForeignKey('Organization', related_name='member_organizaton_member_orgs',
+                                   on_delete=models.CASCADE)
     membership_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     is_active = models.BooleanField(default=True, null=True)
     start_date = models.DateField(null=True)
@@ -93,7 +105,7 @@ class OrganizationMemberOrg(models.Model):
     member_fields = models.JSONField(null=True)
     status = models.CharField(max_length=16, null=True, choices=STATUS_CHOICES)
     datetime = models.DateTimeField(auto_now_add=True)
-
+    _tracker = FieldTracker()
 
     class Meta:
         unique_together = (('organization', 'member_org', 'is_active'),)
@@ -111,6 +123,7 @@ class OrganizationMemberOrg(models.Model):
         return f'{self.organization} - {self.member_org}'
 
 
+@FieldsTracking.register()
 class Organization(models.Model):
     MEMBER_FIELDS_SCHEMA_VALIDATOR = {
         'type': 'list', 'empty': True, 'required': False,
@@ -120,10 +133,10 @@ class Organization(models.Model):
                 'title': {'type': 'string', 'required': True, 'nullable': False, 'empty': False},
                 'type': {
                     'type': 'string', 'required': True, 'nullable': False, 'empty': False,
-                     'allowed': [
-                         'integer', 'float', 'number', 'string', 'text', 'boolean', 'percent', 'date', 'time', 'datetime'
-                     ]
-                 },
+                    'allowed': [
+                        'integer', 'float', 'number', 'string', 'text', 'boolean', 'percent', 'date', 'time', 'datetime'
+                    ]
+                },
                 'required': {'type': 'boolean', 'required': False, 'default': False},
                 'choices': {
                     'type': 'list', 'required': False, 'nullable': True, 'empty': True,
@@ -165,6 +178,7 @@ class Organization(models.Model):
     verified = models.BooleanField(default=False)
     members = models.ManyToManyField('Member', related_name='organizations', through=OrganizationMember)
     member_orgs = models.ManyToManyField('Organization', related_name='organizations', through=OrganizationMemberOrg)
+    _tracker = FieldTracker()
 
     @property
     def normalized_member_fields_schema(self):
@@ -174,7 +188,7 @@ class Organization(models.Model):
             'integer': integer_safe_coerce,
             'float': float_safe_coerce,
             'number': number_safe_coerce,
-            'date':  date_coerce,
+            'date': date_coerce,
             'time': time_coerce,
             'datetime': datetime_coerce,
         }
