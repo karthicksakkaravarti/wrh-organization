@@ -435,9 +435,9 @@ class OrganizationMemberView(OrganizationMembershipMixin, viewsets.ModelViewSet)
         flt = Q()
         member = None
         if row.get('email'):
-            flt = flt | Q(email=row.get('email'), email_verified=True)
+            flt = flt | Q(email=row.get('email'))
         if row.get('phone'):
-            flt = flt | Q(email=row.get('phpne'), phone_verified=True)
+            flt = flt | Q(phone=row.get('phone'))
         if flt:
             member = Member.objects.filter(flt).first()
 
