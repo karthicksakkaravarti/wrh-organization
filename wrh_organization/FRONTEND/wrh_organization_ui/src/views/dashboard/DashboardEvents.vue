@@ -121,16 +121,16 @@
                         <v-col cols="12" sm="9">
                           <h1>{{ i.name }}</h1>
                           <div class="ml-2">
-                            {{ i.dates.address.city }},
-                            {{ i.dates.address.state }},
-                            {{ i.dates.address.postal }}
+                            {{ i.dates[0].address.city }},
+                            {{ i.dates[0].address.state }},
+                            {{ i.dates[0].address.postal }}
                           </div>
                           <v-chip
                             class="ml-1"
                             color="primary"
-                            v-bind:key="i"
-                            v-for="i in i.labels"
-                            >{{ i }}</v-chip
+                            :key="idx"
+                            v-for="(l, idx) in i.labels"
+                            >{{ l }}</v-chip
                           >
                           <a
                             class="ml-2"
@@ -290,7 +290,7 @@ export default {
       axios.get(
         this.FormURL(event, "usacycling/event/?") +
           "&search=" +
-          this.Eventsearch
+          (this.Eventsearch || "")
       ).then((data) => {
         this.AcaEvent = data.data;
         this.EventLoader = false;

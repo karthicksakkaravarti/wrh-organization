@@ -11,10 +11,10 @@ from apps.usacycling import models
 from . import (serializers, filter)
 
 
-class USAEventView(viewsets.ReadOnlyModelViewSet):
-    serializer_class = serializers.USAEventSerializer
-    queryset = models.USAEvent.objects.all()
-    filterset_class = filter.USAEventFilterFilter
+class USACEventView(viewsets.ReadOnlyModelViewSet):
+    serializer_class = serializers.USACEventSerializer
+    queryset = models.USACEvent.objects.all()
+    filterset_class = filter.USACEventFilter
     permission_classes = (IsAuthenticated,)
     search_fields = ['event_id', 'name', 'dates__address__city', 'dates__address__postal',
                      'dates__address__friendly_address']
@@ -41,32 +41,21 @@ class USAEventView(viewsets.ReadOnlyModelViewSet):
     @action(methods=['get'], detail=False)
     def list_labels(self, request, version):
         return Response(list(set(itertools.chain.from_iterable(
-            models.USAEvent.objects.exclude(labels=None).values_list('labels', flat=True)))))
+            models.USACEvent.objects.exclude(labels=None).values_list('labels', flat=True)))))
 
 
-class AddressView(viewsets.ReadOnlyModelViewSet):
-    serializer_class = serializers.AddressSerializer
+class USACClubView(viewsets.ReadOnlyModelViewSet):
+    serializer_class = serializers.USACClubSerializers
     permission_classes = (IsAuthenticated,)
-    queryset = models.Address.objects.all()
-    ordering = ('pk',)
-
-    @action(methods=['get'], detail=False)
-    def list_state(self, request, version):
-        return Response(list(set(models.Address.objects.exclude(state=None).values_list('state', flat=True))))
-
-
-class USACyclingClubsView(viewsets.ReadOnlyModelViewSet):
-    serializer_class = serializers.USACyclingClubsSerializers
-    permission_classes = (IsAuthenticated,)
-    queryset = models.USACyclingClubs.objects.all()
+    queryset = models.USACClub.objects.all()
     search_fields = ['club_name']
     filterset_class = filter.USACyclingClubFilter
     ordering = ('pk',)
 
     @action(methods=['get'], detail=False)
     def list_type(self, request, version):
-        return Response(
-            list(set(models.USACyclingClubs.objects.values_list('club_aff_type__aff_type_description', flat=True))))
+        result = list(models.USACClub.objects.values_list('club_aff_type__aff_type_description', flat=True).distinct())
+        return Response(result)
 
 
 class USARiderView(viewsets.ReadOnlyModelViewSet):

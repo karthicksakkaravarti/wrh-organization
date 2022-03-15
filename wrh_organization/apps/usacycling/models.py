@@ -3,44 +3,12 @@ from django.db import models
 from django.db.models import JSONField
 
 
-class Address(models.Model):
-    street = models.CharField(max_length=200, null=True, blank=True)
-    street2 = models.CharField(max_length=200, null=True, blank=True)
-    city = models.CharField(max_length=200, null=True, blank=True)
-    state = models.CharField(max_length=200, null=True, blank=True)
-    postal = models.CharField(max_length=200, null=True, blank=True)
-    friendly_address = models.CharField(max_length=200, null=True, blank=True)
-    latitude = models.CharField(max_length=200, null=True, blank=True)
-    longitude = models.CharField(max_length=200, null=True, blank=True)
-
-
-class Dates(models.Model):
-    event_date_id = models.CharField(max_length=200, null=True, blank=True)
-    event_date_description = models.CharField(max_length=200, null=True, blank=True)
-    event_date_start = models.DateField()
-    event_date_end = models.DateField()
-    address = models.ForeignKey(Address, on_delete=models.CASCADE)
-
-
-class Links(models.Model):
-    logo_url = models.CharField(max_length=200, null=True, blank=True)
-    badge_url = models.CharField(max_length=200, null=True, blank=True)
-    register_url = models.CharField(max_length=200, null=True, blank=True)
-    website_url = models.CharField(max_length=200, null=True, blank=True)
-    social_urls = ArrayField(
-        models.CharField(max_length=200, null=True, blank=True),
-        size=50,
-        null=True,
-        blank=True
-    )
-
-
-class USAEvent(models.Model):
-    event_id = models.BigIntegerField()
+class USACEvent(models.Model):
+    event_id = models.BigIntegerField(unique=True)
     name = models.CharField(max_length=200)
     start_date = models.DateField()
     end_date = models.DateField()
-    dates = models.ForeignKey(Dates, on_delete=models.CASCADE, null=True)
+    dates = models.JSONField(null=True, blank=True)
     is_featured = models.BooleanField()
     is_weekend = models.BooleanField()
     is_multiday = models.BooleanField()
@@ -54,22 +22,19 @@ class USAEvent(models.Model):
         null=True
     )
     tags = ArrayField(
-        ArrayField(
-            models.CharField(max_length=50, blank=True),
-            size=50,
-        ),
+        models.CharField(max_length=100, blank=True),
         size=50,
         null=True,
         blank=True
     )
-    links = models.ForeignKey(Links, on_delete=models.CASCADE, null=True, blank=True)
+    links = models.JSONField(null=True, blank=True)
     data_source = models.CharField(max_length=300)
     created_at = models.DateField()
     updated_at = models.DateField()
 
 
-class USACyclingClubTeams(models.Model):
-    team_id = models.BigIntegerField()
+class USACClubTeam(models.Model):
+    team_id = models.BigIntegerField(unique=True)
     team_name = models.CharField(max_length=200)
     team_club_id = models.IntegerField()
     women_only = models.IntegerField()
@@ -79,8 +44,8 @@ class USACyclingClubTeams(models.Model):
     team_legacy_id = models.IntegerField()
 
 
-class USACyclingClubs(models.Model):
-    club_id = models.BigIntegerField()
+class USACClub(models.Model):
+    club_id = models.BigIntegerField(unique=True)
     club_name = models.CharField(max_length=200, null=True, blank=True)
     club_org_id = models.CharField(max_length=100, null=True, blank=True)
     club_ncaa_id = models.CharField(max_length=100, null=True, blank=True)
@@ -89,9 +54,9 @@ class USACyclingClubs(models.Model):
     club_type_id = models.IntegerField()
     club_legacy_id = models.IntegerField()
     club_disciplines = models.CharField(max_length=100, null=True, blank=True)
-    club_aff_type = JSONField()
+    club_aff_type = JSONField(null=True)
     is_active = models.BooleanField()
-    club_teams = models.ManyToManyField(USACyclingClubTeams, related_name='clubteam')
+    club_teams = models.ManyToManyField(USACClubTeam, related_name='clubteam')
     expiration_date = models.DateField()
 
 

@@ -138,7 +138,7 @@ export default {
     };
   },
   mounted() {
-    axios.get("usacycling/usaclubs/list_type/").then((data) => {
+    axios.get("usacycling/club/list_type/").then((data) => {
       this.StateList = data.data;
     });
   },
@@ -191,7 +191,7 @@ export default {
       this.ClubLoader = true;
       axios
         .get(
-          this.FormURL(event, "usacycling/usaclubs/?") +
+          this.FormURL(event, "usacycling/club/?") +
             "&search=" +
             this.search
         )
