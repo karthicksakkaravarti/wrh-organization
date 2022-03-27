@@ -122,7 +122,7 @@
         </template>
 
         <template #item.name="{item}">
-          <div class="d-flex align-center">
+          <div class="d-flex align-center cursor-pointer" @click="$refs.formDialogRef.show(item)">
             <v-avatar color="success" class="v-avatar-light-bg success--text" size="30">
               <v-img v-if="item._member._user.avatar" :src="item._member._user.avatar"></v-img>
               <span v-else class="font-weight-medium">

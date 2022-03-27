@@ -44,14 +44,22 @@
                         </v-list-item-content>
                       </v-list-item>
                     </v-list>
-                    <v-list>
+                    <v-list dense>
                       <v-list-item>
-                        <v-list-item-title>
-                          <v-chip small class="v-chip-light-bg">
-                            {{($const.GENDER_MAP[record._member.gender] || {}).title || record._member.gender}}
-                          </v-chip>
-                          {{record._member.email || '[NO E-MAIL]'}}
-                        </v-list-item-title>
+                        <v-list-item-icon class="mr-2">
+                          <v-icon>{{icons.mdiEmailOutline}}</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                          <v-list-item-title v-text="record._member.email || '[NO E-MAIL]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-icon class="mr-2">
+                          <v-icon>{{icons.mdiPhoneOutline}}</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                          <v-list-item-title v-text="record._member.phone? $utils.formatPhone(record._member.phone): '[NO PHONE]'"></v-list-item-title>
+                        </v-list-item-content>
                       </v-list-item>
                     </v-list>
                   </v-card>
@@ -281,6 +289,8 @@ import {
   mdiClockOutline,
   mdiAccountCheck,
   mdiAccountCancel,
+  mdiPhoneOutline,
+  mdiEmailOutline,
 } from '@mdi/js'
 import _ from 'lodash';
 import {ref, computed, watch, set} from '@vue/composition-api'
@@ -443,6 +453,8 @@ export default {
         mdiClockOutline,
         mdiAccountCheck,
         mdiAccountCancel,
+        mdiPhoneOutline,
+        mdiEmailOutline
       },
     }
   },
