@@ -56,7 +56,8 @@ class NestedMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
 
     class Meta:
         model = Member
-        fields = ('id', 'first_name', 'last_name', 'gender', 'email', 'phone', '_user')
+        fields = ('id', 'first_name', 'last_name', 'gender', 'email', 'phone', 'address1', 'address2', 'country',
+                  'city', 'state', 'zipcode', 'weight', 'height',  '_user')
 
     def to_representation(self, instance):
         res = super().to_representation(instance)

@@ -129,7 +129,7 @@
 
             <v-list-item dense class="px-0 mb-n2">
               <span class="font-weight-medium me-2">Height:</span>
-              <span class="text--secondary">{{ memberData.height || '-' }} m</span>
+              <span class="text--secondary">{{ $utils.removeTrailingZero(memberData.height) || '-' }} m</span>
             </v-list-item>
             <v-list-item dense class="px-0 mb-n2">
               <span class="font-weight-medium me-2">Weight:</span>

@@ -40,25 +40,68 @@
                             <v-icon>{{record._member._user.id? icons.mdiAccountCheck: icons.mdiAccountCancel}}</v-icon>
                             {{ `${record._member.first_name} ${record._member.last_name}` }}
                           </v-list-item-title>
-
                         </v-list-item-content>
                       </v-list-item>
                     </v-list>
-                    <v-list dense>
+                    <v-list dense class="member-info-list">
                       <v-list-item>
-                        <v-list-item-icon class="mr-2">
-                          <v-icon>{{icons.mdiEmailOutline}}</v-icon>
-                        </v-list-item-icon>
                         <v-list-item-content>
+                          <v-list-item-subtitle>E-Mail</v-list-item-subtitle>
                           <v-list-item-title v-text="record._member.email || '[NO E-MAIL]'"></v-list-item-title>
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-icon class="mr-2">
-                          <v-icon>{{icons.mdiPhoneOutline}}</v-icon>
-                        </v-list-item-icon>
                         <v-list-item-content>
+                          <v-list-item-subtitle>Phone</v-list-item-subtitle>
                           <v-list-item-title v-text="record._member.phone? $utils.formatPhone(record._member.phone): '[NO PHONE]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Weight(kg)</v-list-item-subtitle>
+                          <v-list-item-title v-text="$utils.removeTrailingZero(record._member.weight) || '[NO WEIGHT]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Height(m)</v-list-item-subtitle>
+                          <v-list-item-title v-text="$utils.removeTrailingZero(record._member.height) || '[NO HEIGHT]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Country</v-list-item-subtitle>
+                          <v-list-item-title v-text="($const.COUNTRY_MAP[record._member.country] || {}).name || record._member.country || '[NO COUNTRY]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>City</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member.city || '[NO CITY]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>State</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member.state || '[NO STATE]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Zipcode</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member.zipcode || '[NO ZIPCODE]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Address1</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member.address1 || '[NO ADDRESS1]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item v-if="record._member.address2">
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Address2</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member.address2 || '[NO ADDRESS2]'"></v-list-item-title>
                         </v-list-item-content>
                       </v-list-item>
                     </v-list>
@@ -291,6 +334,10 @@ import {
   mdiAccountCancel,
   mdiPhoneOutline,
   mdiEmailOutline,
+  mdiEarth,
+  mdiHomeCity,
+  mdiHomeCityOutline
+
 } from '@mdi/js'
 import _ from 'lodash';
 import {ref, computed, watch, set} from '@vue/composition-api'
@@ -454,9 +501,19 @@ export default {
         mdiAccountCheck,
         mdiAccountCancel,
         mdiPhoneOutline,
-        mdiEmailOutline
+        mdiEmailOutline,
+        mdiEarth,
+        mdiHomeCity,
+        mdiHomeCityOutline,
       },
     }
   },
 }
 </script>
+
+<style scoped>
+.member-info-list .v-list-item {
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+</style>
