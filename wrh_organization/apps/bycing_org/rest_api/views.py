@@ -612,8 +612,17 @@ class RaceResultView(viewsets.ModelViewSet):
 
         org_member = OrganizationMember.objects.filter(is_active=True, organization=org, org_member_uid=uuid).first()
         rider_id = org_member and org_member.member_id
-        r, _ = RaceResult.objects.update_or_create(rider_id=rider_id, race=race, organization=org,
-                                                   defaults=dict(place=place, more_data=row, create_by=user))
+        if rider_id:
+            r, _ = RaceResult.objects.update_or_create(rider_id=rider_id, race=race, organization=org,
+                                                       defaults=dict(place=place, more_data=row, create_by=user))
+        else:
+            r = RaceResult.objects.filter(
+                rider_id=None, race=race, organization=org, create_by=user, more_data__uuid=uuid).first()
+            if not r:
+                r = RaceResult(race=race, organization=org, create_by=user)
+            r.place = place
+            r.more_data = row
+            r.save()
         return r
 
     @staticmethod
