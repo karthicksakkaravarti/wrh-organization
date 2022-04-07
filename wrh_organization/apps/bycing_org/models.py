@@ -8,6 +8,7 @@ from django.db import models
 from model_utils import FieldTracker
 from phonenumber_field.modelfields import PhoneNumberField
 
+from apps.usacycling.models import USACEvent
 from wrh_organization.helpers.fields_tracking import BaseFieldsTracking
 
 User = get_user_model()
@@ -338,3 +339,28 @@ class Member(models.Model):
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
+
+
+class Race(models.Model):
+    name = models.CharField(max_length=256)
+    event = models.ForeignKey(USACEvent, on_delete=models.CASCADE)
+    start_datetime = models.DateTimeField()
+
+    def __str__(self):
+        return self.name
+
+
+class RaceResult(models.Model):
+    rider = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True)
+    race = models.ForeignKey(Race, on_delete=models.CASCADE)
+    place = models.IntegerField(validators=[MinValueValidator(1)])
+    more_data = models.JSONField(null=True)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    create_datetime = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (('rider', 'race', 'organization'),)
+
+    def __str__(self):
+        return f'{self.place}-{self.rider}'

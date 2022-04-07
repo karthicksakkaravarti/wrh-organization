@@ -1,10 +1,15 @@
 <template>
   <v-dialog v-model="isVisible" persistent width="500">
-    <v-card class="org-import-member-orgs-card">
+    <v-card class="org-import-members-card">
       <v-form @submit.prevent="importCsv()">
         <v-card-title class="headline">
-          Import Member-Orgs From CSV
+          Import Race Results From CSV
         </v-card-title>
+        <v-card-text v-if="race">
+          <div>Event: <span class="font-weight-semibold">{{race._event.name}}</span></div>
+          <div>Race: <span class="font-weight-semibold">{{race.name}}</span></div>
+        </v-card-text>
+        <v-divider></v-divider>
         <v-card-text>
           <v-file-input show-size :prepend-icon="icons.mdiFileExcel" label="Choose a CSV file" hide-details
                         @change="onChangeFile"
@@ -18,25 +23,17 @@
             <v-card-text>
               Your csv file should contains this required columns:
               <ul>
-                <li>name</li>
-                <li>type</li>
+                <li>uuid</li>
+                <li>first_name</li>
+                <li>last_name</li>
+                <li>place</li>
               </ul>
               and this optional columns
               <ul>
-                <li>website</li>
-                <li>email</li>
-                <li>phone</li>
-                <li>address</li>
-                <li>country</li>
-                <li>city</li>
-                <li>state</li>
-                <li>zipcode</li>
-                <li>about</li>
-                <li>start_date</li>
-                <li>exp_date</li>
+                <li>category_place</li>
+                <li>elapsed_time</li>
+                <li>lap_down</li>
               </ul>
-              And any extra columns based your org config.
-
             </v-card-text>
           </app-card-actions>
 
@@ -82,16 +79,18 @@ export default {
     const csvFileRef = ref(null);
     const csvColsCardRef = ref(null);
     const failedRecords = ref([]);
+    const race = ref(null);
 
     const hide = () => {
       isVisible.value = false;
     };
 
-    const show = (type, _to) => {
+    const show = (_race) => {
       csvFile.value = null;
       importing.value = false;
       failedRecords.value = [];
       isVisible.value = true;
+      race.value = _race;
     };
 
     const onChangeFile = (file) => {
@@ -101,14 +100,15 @@ export default {
     const importCsv = () => {
       importing.value = true;
       var formData = new FormData(),
-          orgId = props.organization.id;
+          orgId = props.organization.id,
+          raceId = race.value.id;
       formData.append('file', csvFile.value);
-      axios.post( `bycing_org/organization/${orgId}/member_orgs/import_from_csv`,
+      axios.post( `bycing_org/race_result/organization/${orgId}/race/${raceId}/import_from_csv`,
           formData, {headers: {'Content-Type': 'multipart/form-data'}}
       ).then((response) => {
         importing.value = false;
         context.emit('import-successed');
-        notifyInfo(`Members imported. ${response.data.successed} successed. ${response.data.failed.length} failed.`);
+        notifyInfo(`Race Results imported. ${response.data.successed} successed. ${response.data.failed.length} failed.`);
         failedRecords.value = response.data.failed;
         csvFileRef.value.clearableCallback();
         if (failedRecords.value && failedRecords.value.length && !csvColsCardRef.value.isContentCollapsed) {
@@ -131,6 +131,7 @@ export default {
       importCsv,
       onChangeFile,
       failedRecords,
+      race,
       icons: {
         mdiFileExcel,
         mdiInformationOutline,
@@ -142,10 +143,10 @@ export default {
 </script>
 
 <style>
-.org-import-member-orgs-card .v-card .v-card__title {
+.org-import-members-card .v-card .v-card__title {
   padding: 10px !important;
 }
-.org-import-member-orgs-card pre.failed-records {
+.org-import-members-card pre.failed-records {
   max-height: 300px;
   overflow: auto;
 }

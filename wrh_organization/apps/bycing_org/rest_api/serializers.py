@@ -5,7 +5,9 @@ from django.core.validators import FileExtensionValidator
 from django.db import transaction
 from rest_framework import serializers
 
-from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, FieldsTracking
+from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
+    FieldsTracking, Race, RaceResult
+from apps.usacycling.models import USACEvent
 from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField
 
 
@@ -58,6 +60,20 @@ class NestedMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
         model = Member
         fields = ('id', 'first_name', 'last_name', 'gender', 'email', 'phone', 'address1', 'address2', 'country',
                   'city', 'state', 'zipcode', 'weight', 'height',  '_user')
+
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        if not res['_user']:
+            res['_user'] = {}
+        return res
+
+
+class NestedMember2Serializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    _user = NestedUserAvatarSerializer(source='user', read_only=True)
+
+    class Meta:
+        model = Member
+        fields = ('id', 'first_name', 'last_name', 'gender',  '_user')
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
@@ -223,3 +239,36 @@ class FieldsTrackingSerializer(DynamicFieldsSerializerMixin, serializers.ModelSe
     class Meta:
         model = FieldsTracking
         fields = '__all__'
+
+
+class NestedEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = USACEvent
+        fields = ('event_id', 'name',)
+
+
+class RaceSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    _event = NestedEventSerializer(read_only=True, source='event')
+
+    class Meta:
+        model = Race
+        fields = '__all__'
+
+
+class RaceResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    _rider = NestedMember2Serializer(read_only=True, source='rider')
+    _race = RaceSerializer(read_only=True, source='race')
+
+    class Meta:
+        model = RaceResult
+        fields = '__all__'
+        extra_kwargs = {
+            'organization': {'required': True},
+            'create_by': {'read_only': True},
+        }
+
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        if not res['more_data']:
+            res['more_data'] = {}
+        return res

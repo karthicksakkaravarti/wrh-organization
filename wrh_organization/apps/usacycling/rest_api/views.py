@@ -58,14 +58,14 @@ class USACClubView(viewsets.ReadOnlyModelViewSet):
         return Response(result)
 
 
-class USARiderView(viewsets.ReadOnlyModelViewSet):
-    serializer_class = serializers.USARiderSerializers
+class USACRiderView(viewsets.ReadOnlyModelViewSet):
+    serializer_class = serializers.USACRiderSerializers
     permission_classes = (IsAuthenticated,)
-    queryset = models.USARider.objects.all()
+    queryset = models.USACRider.objects.all()
     search_fields = ['lastname', 'firstname', 'license']
     ordering = ('pk',)
 
     @action(methods=['get'], detail=False)
     def list_state(self, request, version):
         return Response(
-            list(set(models.USARider.objects.exclude(state=None).exclude(state="").values_list('state', flat=True))))
+            list(set(models.USACRider.objects.exclude(state=None).exclude(state="").values_list('state', flat=True))))

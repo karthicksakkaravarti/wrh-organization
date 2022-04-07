@@ -214,8 +214,10 @@ export default {
       {text: 'START/EXP DATE', value: 'start_date'},
       {text: 'CREATED AT', value: 'datetime'},
       {text: 'STATUS', value: 'status'},
-      {text: 'ACTIONS', value: 'actions', align: 'end', sortable: false,},
     ];
+    if (props.organization.my_level.is_admin) {
+      tableColumns.push({text: 'ACTIONS', value: 'actions', align: 'end', sortable: false,})
+    }
 
     const tableRowClass = (item) => {
       return `member-row${!item.is_active? ' inactive': ''}`

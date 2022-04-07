@@ -828,6 +828,12 @@ class IsAdminOrganizationOrReadOnlyPermission(IsAdminOrganizationPermission):
         return super().has_object_permission(request, view, obj)
 
 
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return super().has_permission(request, view)
+
+
 class NestedMultipartParser(parsers.MultiPartParser):
 
     def parse(self, stream, media_type=None, parser_context=None):

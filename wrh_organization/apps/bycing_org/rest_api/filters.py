@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django_filters import rest_framework as filters
 
-from ..models import Member, Organization, OrganizationMember, OrganizationMemberOrg, FieldsTracking
+from ..models import Member, Organization, OrganizationMember, OrganizationMemberOrg, FieldsTracking, Race, RaceResult
 
 
 class MemberFilter(filters.FilterSet):
@@ -50,6 +50,20 @@ class OrganizationMemberOrgFilter(filters.FilterSet):
     class Meta:
         model = OrganizationMemberOrg
         exclude = ['member_fields']
+
+
+class RaceFilter(filters.FilterSet):
+    class Meta:
+        model = Race
+        fields = '__all__'
+
+
+class RaceResultFilter(filters.FilterSet):
+    event = filters.NumberFilter(field_name='race__event')
+
+    class Meta:
+        model = RaceResult
+        exclude = ['more_data']
 
 
 class FieldsTrackingFilter(filters.FilterSet):

@@ -79,7 +79,7 @@ const routes = [
   {
     path: '/dashboard/club',
     name: routeNames.DASHBOARD_CLUB,
-    component: () => import('@/views/dashboard/DasgboardClub.vue'),
+    component: () => import('@/views/dashboard/DashboardClub.vue'),
     meta: {
       layout: 'DashboardLayout',
     },

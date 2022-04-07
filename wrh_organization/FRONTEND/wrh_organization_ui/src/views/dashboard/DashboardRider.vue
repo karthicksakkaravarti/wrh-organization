@@ -122,7 +122,7 @@ export default {
     },
   },
   mounted() {
-    axios.get("usacycling/usarider/list_state/").then((data) => {
+    axios.get("usacycling/rider/list_state/").then((data) => {
       this.StateList = data.data;
     });
   },
@@ -170,7 +170,7 @@ export default {
       this.RiderLoader = true;
       axios
         .get(
-          this.FormURL(event, "usacycling/usarider/?") +
+          this.FormURL(event, "usacycling/rider/?") +
             "&search=" +
             this.Search
         )

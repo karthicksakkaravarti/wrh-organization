@@ -4,7 +4,7 @@ from django.db.models import JSONField
 
 
 class USACEvent(models.Model):
-    event_id = models.BigIntegerField(unique=True)
+    event_id = models.BigIntegerField(primary_key=True)
     name = models.CharField(max_length=200)
     start_date = models.DateField()
     end_date = models.DateField()
@@ -32,9 +32,12 @@ class USACEvent(models.Model):
     created_at = models.DateField()
     updated_at = models.DateField()
 
+    def __str__(self):
+        return self.name
+
 
 class USACClubTeam(models.Model):
-    team_id = models.BigIntegerField(unique=True)
+    team_id = models.BigIntegerField(primary_key=True)
     team_name = models.CharField(max_length=200)
     team_club_id = models.IntegerField()
     women_only = models.IntegerField()
@@ -43,9 +46,12 @@ class USACClubTeam(models.Model):
     d_elite = models.IntegerField()
     team_legacy_id = models.IntegerField()
 
+    def __str__(self):
+        return self.team_name
+
 
 class USACClub(models.Model):
-    club_id = models.BigIntegerField(unique=True)
+    club_id = models.BigIntegerField(primary_key=True)
     club_name = models.CharField(max_length=200, null=True, blank=True)
     club_org_id = models.CharField(max_length=100, null=True, blank=True)
     club_ncaa_id = models.CharField(max_length=100, null=True, blank=True)
@@ -59,8 +65,11 @@ class USACClub(models.Model):
     club_teams = models.ManyToManyField(USACClubTeam, related_name='clubteam')
     expiration_date = models.DateField()
 
+    def __str__(self):
+        return self.club_name
 
-class USARider(models.Model):
+
+class USACRider(models.Model):
     license = models.IntegerField(primary_key=True)
     suspension = models.IntegerField(blank=True, null=True)
     lastname = models.CharField(max_length=255, blank=True, null=True)
@@ -109,3 +118,7 @@ class USARider(models.Model):
     cxrank = models.FloatField(blank=True, null=True)
     dhcat = models.CharField(max_length=20, blank=True, null=True)
     hsclub = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.license
+

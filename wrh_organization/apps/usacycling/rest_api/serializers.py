@@ -34,10 +34,10 @@ class TimestampField(serializers.Field):
         return epoch
 
 
-class USARiderSerializers(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+class USACRiderSerializers(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     expdateroad = TimestampField()
     expdatemtn = TimestampField()
 
     class Meta:
-        model = models.USARider
+        model = models.USACRider
         fields = '__all__'

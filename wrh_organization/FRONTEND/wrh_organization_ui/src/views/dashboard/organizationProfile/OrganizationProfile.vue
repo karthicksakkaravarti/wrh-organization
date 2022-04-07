@@ -26,8 +26,8 @@
             <span>Member Fields</span>
           </v-tab>
           <v-tab>
-            <v-icon size="20" class="me-3">{{ icons.mdiCalendarMultiple }}</v-icon>
-            <span>Events</span>
+            <v-icon size="20" class="me-3">{{ icons.mdiFlagCheckered }}</v-icon>
+            <span>Race Results</span>
           </v-tab>
         </v-tabs>
 
@@ -45,7 +45,7 @@
             <organization-member-fields-tab :organization="organization"></organization-member-fields-tab>
           </v-tab-item>
           <v-tab-item>
-            <organization-events-tab :organization="organization"></organization-events-tab>
+            <organization-race-results-tab :organization="organization"></organization-race-results-tab>
           </v-tab-item>
 
         </v-tabs-items>
@@ -67,6 +67,7 @@ import {
   mdiHomeAccount,
   mdiHomeGroup,
   mdiFormatListText,
+  mdiFlagCheckered
 } from '@mdi/js'
 import OrganizationBioPanel from "./OrganizationBioPanel";
 import OrganizationOverviewTab from "./OrganizationOverviewTab";
@@ -74,7 +75,7 @@ import axios from "@/axios";
 import {notifyDefaultServerError} from "@/composables/utils";
 import {onMounted} from "@vue/composition-api/dist/vue-composition-api";
 import OrganizationMembersTab from "./OrganizationMembersTab";
-import OrganizationEventsTab from "./OrganizationEventsTab";
+import OrganizationRaceResultsTab from "./OrganizationRaceResultsTab";
 import {useRouter} from "@core/utils";
 import ProfileOrganizationFormDialog from "@/views/dashboard/memberProfile/ProfileOrganizationFormDialog";
 import OrganizationMemberOrgsTab from "./OrganizationMemberOrgsTab";
@@ -85,7 +86,7 @@ export default {
     OrganizationMemberFieldsTab,
     OrganizationMemberOrgsTab,
     ProfileOrganizationFormDialog,
-    OrganizationEventsTab,
+    OrganizationRaceResultsTab,
     OrganizationMembersTab,
     OrganizationOverviewTab,
     OrganizationBioPanel,
@@ -119,6 +120,7 @@ export default {
         mdiHomeAccount,
         mdiHomeGroup,
         mdiFormatListText,
+        mdiFlagCheckered
       }
     }
   },

@@ -454,9 +454,7 @@ export default {
       isVisible.value = false;
     };
     const show = (r) => {
-      if (!schema.value) {
-        loadSchema();
-      }
+      loadSchema();
       uiFieldsData.value = {};
       record.value = Object.assign({is_active: true}, r);
       record.value.member_fields = Object.assign({}, record.value.member_fields)
