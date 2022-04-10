@@ -253,6 +253,10 @@ class RaceSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Race
         fields = '__all__'
+        extra_kwargs = {
+            'organization': {'required': True},
+            'create_by': {'read_only': True},
+        }
 
 
 class RaceResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):

@@ -60,6 +60,14 @@ class RaceFilter(filters.FilterSet):
 
 class RaceResultFilter(filters.FilterSet):
     event = filters.NumberFilter(field_name='race__event')
+    my = filters.BooleanFilter(method='my_method')
+
+    def my_method(self, queryset, name, value):
+        user = self.request and self.request.user
+        member = user and getattr(user, 'member', None)
+        if value:
+            queryset = queryset.filter(rider=member) if (user and user.is_authenticated and member) else queryset.none()
+        return queryset
 
     class Meta:
         model = RaceResult

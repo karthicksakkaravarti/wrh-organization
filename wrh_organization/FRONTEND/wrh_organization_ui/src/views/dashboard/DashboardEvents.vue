@@ -9,7 +9,7 @@
         <v-col class="ma-0 pa-0">
           <v-text-field
             v-model="Eventsearch"
-            label="Id, City, Postal, Address"
+            label="Id, Name, City, Postal, Address"
             single-line
             hide-details
           ></v-text-field>

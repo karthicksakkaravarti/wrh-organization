@@ -1,7 +1,7 @@
 {
   "name": "materio-vuetify-vuejs-admin-template",
   "description": "Production Ready, Carefully Crafted, Extensive Vuetifty Admin Template",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -37,6 +37,7 @@
     "vue2-leaflet": "^2.7.1",
     "vue2-perfect-scrollbar": "^1.5.0",
     "vuetify": "^2.5.5",
+    "vuetify-datetime-picker": "^2.1.1",
     "vuex": "^3.4.0"
   },
   "devDependencies": {

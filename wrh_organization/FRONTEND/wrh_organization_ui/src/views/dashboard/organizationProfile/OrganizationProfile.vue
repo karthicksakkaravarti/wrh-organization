@@ -10,10 +10,6 @@
       <v-col cols="12" md="7" lg="8">
         <v-tabs v-model="tab" show-arrows class="organization-profile-tabs">
           <v-tab>
-            <v-icon size="20" class="me-3">{{ icons.mdiHomeAccount }}</v-icon>
-            <span>Overview</span>
-          </v-tab>
-          <v-tab>
             <v-icon size="20" class="me-3">{{ icons.mdiAccountMultipleOutline }}</v-icon>
             <span>Members</span>
           </v-tab>
@@ -26,15 +22,16 @@
             <span>Member Fields</span>
           </v-tab>
           <v-tab>
+            <v-icon size="20" class="me-3">{{ icons.mdiCheckerboard }}</v-icon>
+            <span>Races</span>
+          </v-tab>
+          <v-tab>
             <v-icon size="20" class="me-3">{{ icons.mdiFlagCheckered }}</v-icon>
             <span>Race Results</span>
           </v-tab>
         </v-tabs>
 
         <v-tabs-items id="organization-profile-tabs-content" v-model="tab" class="mt-5 pa-1">
-          <v-tab-item>
-            <organization-overview-tab :organization="organization"></organization-overview-tab>
-          </v-tab-item>
           <v-tab-item>
             <organization-members-tab :organization="organization"></organization-members-tab>
           </v-tab-item>
@@ -43,6 +40,9 @@
           </v-tab-item>
           <v-tab-item v-if="organization.my_level.is_admin">
             <organization-member-fields-tab :organization="organization"></organization-member-fields-tab>
+          </v-tab-item>
+          <v-tab-item>
+            <organization-races-tab :organization="organization"></organization-races-tab>
           </v-tab-item>
           <v-tab-item>
             <organization-race-results-tab :organization="organization"></organization-race-results-tab>
@@ -64,13 +64,13 @@ import { ref } from '@vue/composition-api'
 import {
   mdiAccountMultipleOutline,
   mdiCalendarMultiple,
-  mdiHomeAccount,
+  mdiCheckerboard,
   mdiHomeGroup,
   mdiFormatListText,
   mdiFlagCheckered
 } from '@mdi/js'
 import OrganizationBioPanel from "./OrganizationBioPanel";
-import OrganizationOverviewTab from "./OrganizationOverviewTab";
+import OrganizationRacesTab from "./OrganizationRacesTab";
 import axios from "@/axios";
 import {notifyDefaultServerError} from "@/composables/utils";
 import {onMounted} from "@vue/composition-api/dist/vue-composition-api";
@@ -88,7 +88,7 @@ export default {
     ProfileOrganizationFormDialog,
     OrganizationRaceResultsTab,
     OrganizationMembersTab,
-    OrganizationOverviewTab,
+    OrganizationRacesTab,
     OrganizationBioPanel,
   },
   setup() {
@@ -106,7 +106,7 @@ export default {
     };
 
     onMounted(() => {
-      tab.value = route.value.params.tab !== undefined? route.value.params.tab: 1 ;
+      tab.value = route.value.params.tab !== undefined? route.value.params.tab: 0 ;
       loadOrganization();
     });
 
@@ -117,7 +117,7 @@ export default {
       icons: {
         mdiAccountMultipleOutline,
         mdiCalendarMultiple,
-        mdiHomeAccount,
+        mdiCheckerboard,
         mdiHomeGroup,
         mdiFormatListText,
         mdiFlagCheckered

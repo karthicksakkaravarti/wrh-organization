@@ -4,7 +4,7 @@ import {Config} from "@/Config";
 import {conformToMask} from 'text-mask-core';
 import {countries} from "@/composables/countries";
 
-
+export const momentLib = moment;
 export const countryPhoneCodes = {};
 countries.forEach(v => {
   if (!v.phone_code) return;

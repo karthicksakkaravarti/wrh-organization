@@ -193,7 +193,7 @@ export default {
         .get(
           this.FormURL(event, "usacycling/club/?") +
             "&search=" +
-            this.search
+            (this.search || "")
         )
         .then((data) => {
           this.Club = data.data;

@@ -555,10 +555,10 @@ class FieldsTrackingView(viewsets.ReadOnlyModelViewSet):
         return super().get_queryset().filter(content_type__app_label='bycing_org')
 
 
-class RaceView(viewsets.ReadOnlyModelViewSet):
+class RaceView(viewsets.ModelViewSet):
     queryset = Race.objects.all()
     serializer_class = RaceSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsAdminOrganizationOrReadOnlyPermission,)
     filterset_class = RaceFilter
     ordering = '-id'
     ordering_fields = '__all__'
@@ -567,6 +567,27 @@ class RaceView(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return super().get_queryset().select_related('event')
 
+    def get_organization_object_permission(self, obj):
+        return obj.organization
+
+    def _check_org_permission(self, org):
+        member = self.request.user.member
+        if not (org and OrganizationMember.objects.filter(member=member, organization=org, is_active=True).filter(
+                Q(is_admin=True) | Q(is_master_admin=True)).exists()):
+            raise PermissionDenied('you dont have permission on this organization')
+
+    def perform_create(self, serializer):
+        self._check_org_permission(serializer.validated_data.get('organization'))
+        serializer.save(create_by=self.request.user)
+
+    def perform_update(self, serializer):
+        self._check_org_permission(serializer.instance.organization)
+        serializer.save(organization=serializer.instance.organization)
+
+    def perform_destroy(self, instance):
+        self._check_org_permission(instance.organization)
+        return super().perform_destroy(instance=instance)
+
 
 class RaceResultView(viewsets.ModelViewSet):
     queryset = RaceResult.objects.all()
@@ -574,7 +595,7 @@ class RaceResultView(viewsets.ModelViewSet):
     filterset_class = RaceResultFilter
     ordering = '-id'
     ordering_fields = '__all__'
-    search_fields = ['name',]
+    search_fields = ['rider__first_name', 'rider__last_name', 'race__name']
     permission_classes = (IsAuthenticated, IsAdminOrganizationOrReadOnlyPermission,)
     _current_org = None
 

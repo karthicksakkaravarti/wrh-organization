@@ -14,6 +14,7 @@ import Toast from "vue-toastification";
 import * as utils from "@/composables/utils"
 import VueMask from 'v-mask'
 import "vue-toastification/dist/index.css";
+import DatetimePicker from 'vuetify-datetime-picker'
 
 Vue.use(VueMask);
 Vue.use(Toast, {
@@ -21,6 +22,7 @@ Vue.use(Toast, {
   maxToasts: 20,
   newestOnTop: true
 });
+Vue.use(DatetimePicker);
 
 Vue.config.productionTip = false;
 

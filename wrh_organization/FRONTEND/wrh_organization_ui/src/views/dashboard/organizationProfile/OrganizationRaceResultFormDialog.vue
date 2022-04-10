@@ -112,12 +112,6 @@
 
 <script>
 import {
-  mdiAccountGroupOutline,
-  mdiAccountMultipleOutline,
-  mdiCloudUploadOutline,
-  mdiEyeOutline,
-  mdiPencilOutline,
-  mdiPlus,
   mdiDelete,
   mdiAlert,
 } from '@mdi/js'
@@ -247,12 +241,6 @@ export default {
       save,
       currentRace,
       icons: {
-        mdiPlus,
-        mdiPencilOutline,
-        mdiEyeOutline,
-        mdiAccountGroupOutline,
-        mdiAccountMultipleOutline,
-        mdiCloudUploadOutline,
         mdiDelete,
         mdiAlert,
       },
