@@ -24,7 +24,7 @@
                 <v-text-field v-model="record.name" label="Race Name" dense></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-datetime-picker v-model="record.start_datetime" label="Start Date/Time" class="start-datetime-picker">
+                <v-datetime-picker v-model="record.start_datetime" label="Start Date/Time">
                   <template #dateIcon>
                     <v-icon>{{icons.mdiCalendar}}</v-icon>
                   </template>
@@ -120,7 +120,7 @@ export default {
         saving.value = false;
         notifySuccess(successMsg);
         hide();
-        context.emit('save-successed', record.value);
+        context.emit('save-successed', response.data);
       }, (error) => {
         saving.value = false;
         notifyDefaultServerError(error, true);

@@ -253,7 +253,7 @@
                           class="pt-0 mt-1"
                       ></v-switch>
                     </template>
-                    <template v-else-if="f.type=='date' || f.type=='time' || f.type=='datetime'">
+                    <template v-else-if="f.type=='date' || f.type=='time'">
                       <v-menu v-model="uiFieldsData[`menu__${f.name}`]" :close-on-content-click="false"
                               :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                         <template v-slot:activator="{ on, attrs }">
@@ -274,6 +274,17 @@
                         <v-date-picker v-else v-model="record.member_fields[f.name]" color="primary"
                                        @input="uiFieldsData[`menu__${f.name}`] = false"></v-date-picker>
                       </v-menu>
+                    </template>
+                    <template v-else-if="f.type=='datetime'">
+                      <v-datetime-picker v-model="record.member_fields[f.name]" :label="f.title"
+                                         :text-field-props="{appendIcon: icons.mdiCalendar, class: 'pt-0 mt-0 mb-5', rules: f.required? [rules.required]: []}">
+                        <template #dateIcon>
+                          <v-icon>{{icons.mdiCalendar}}</v-icon>
+                        </template>
+                        <template #timeIcon>
+                          <v-icon>{{icons.mdiClock}}</v-icon>
+                        </template>
+                      </v-datetime-picker>
                     </template>
                     <template v-else-if="f.type=='text'">
                       <v-textarea
@@ -329,6 +340,7 @@ import {
   mdiDelete,
   mdiAlert,
   mdiCalendar,
+  mdiClock,
   mdiClockOutline,
   mdiAccountCheck,
   mdiAccountCancel,
@@ -345,6 +357,7 @@ import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import AppCardActions from "@core/components/app-card-actions/AppCardActions";
 import {required} from "@core/utils/validation";
+import moment from "moment";
 
 export default {
   components: {AppCardActions},
@@ -382,6 +395,9 @@ export default {
         schema.value.forEach(r => {
           if (r.multiple && !Array.isArray(record.value.member_fields[r.name])) {
             set(record.value.member_fields, r.name, []);
+          }
+          if (r.type === 'datetime' && record.value.member_fields[r.name]) {
+            record.value.member_fields[r.name] = moment(record.value.member_fields[r.name]).toDate();
           }
         });
 
@@ -423,10 +439,9 @@ export default {
       }
       httpMethod(url, data).then((response) => {
         saving.value = false;
-        record.value = response.data;
         notifySuccess(successMsg);
         hide();
-        context.emit('save-successed', record.value);
+        context.emit('save-successed', response.data);
       }, (error) => {
         saving.value = false;
         notifyDefaultServerError(error, true);
@@ -457,7 +472,7 @@ export default {
       loadSchema();
       uiFieldsData.value = {};
       record.value = Object.assign({is_active: true}, r);
-      record.value.member_fields = Object.assign({}, record.value.member_fields)
+      record.value.member_fields = Object.assign({}, record.value.member_fields);
       confirmDelete.value = false;
       deleting.value = false;
       saving.value = false;
@@ -495,6 +510,7 @@ export default {
         mdiDelete,
         mdiAlert,
         mdiCalendar,
+        mdiClock,
         mdiClockOutline,
         mdiAccountCheck,
         mdiAccountCancel,

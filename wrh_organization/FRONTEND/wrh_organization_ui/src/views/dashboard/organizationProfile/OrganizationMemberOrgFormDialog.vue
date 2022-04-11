@@ -230,10 +230,9 @@ export default {
       }
       httpMethod(url, data).then((response) => {
         saving.value = false;
-        record.value = response.data;
         notifySuccess(successMsg);
         hide();
-        context.emit('save-successed', record.value);
+        context.emit('save-successed', response.data);
       }, (error) => {
         saving.value = false;
         notifyDefaultServerError(error, true);

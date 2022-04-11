@@ -39,7 +39,7 @@ export const MEMBER_FIELDS_SCHEMA_TYPE_OPTIONS = [
   { value: "percent", title: "Percent" },
   { value: "date", title: "Date" },
   { value: "time", title: "Time" },
-  // { value: "datetime", title: "Date/Time" },
+  { value: "datetime", title: "Date/Time" },
 ];
 export const MEMBER_FIELDS_SCHEMA_TYPE_MAP = {};
 MEMBER_FIELDS_SCHEMA_TYPE_OPTIONS.forEach(function(v) {
