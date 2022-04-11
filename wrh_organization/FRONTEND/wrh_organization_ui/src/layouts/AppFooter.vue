@@ -5,16 +5,11 @@
         WeRaceHere
       </a>
       <span class="d-none d-md-inline">, All rights Reserved</span>
-      <v-chip small label class="ml-1 v-chip-light-bg secondary--text" color="secondary">Version: {{$appVersion}}</v-chip>
     </span>
     <div class="align-center d-none d-md-flex">
-      <span>Hand-crafted &amp; Made with</span>
-      <v-icon
-        color="error"
-        class="ms-2"
-      >
-        {{ icons.mdiHeartOutline }}
-      </v-icon>
+      <v-chip small label class="ml-1 v-chip-light-bg secondary--text" color="secondary">
+        Version: {{$appVersion}}
+      </v-chip>
     </div>
   </div>
 </template>

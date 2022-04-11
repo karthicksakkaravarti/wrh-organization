@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from apps.usacycling import models
@@ -15,7 +15,7 @@ class USACEventView(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.USACEventSerializer
     queryset = models.USACEvent.objects.all()
     filterset_class = filter.USACEventFilter
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     search_fields = ['event_id', 'name', 'dates__address__city', 'dates__address__postal',
                      'dates__address__friendly_address']
     ordering = ('pk',)
@@ -46,7 +46,7 @@ class USACEventView(viewsets.ReadOnlyModelViewSet):
 
 class USACClubView(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.USACClubSerializers
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     queryset = models.USACClub.objects.all()
     search_fields = ['club_name']
     filterset_class = filter.USACyclingClubFilter
@@ -60,7 +60,7 @@ class USACClubView(viewsets.ReadOnlyModelViewSet):
 
 class USACRiderView(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.USACRiderSerializers
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     queryset = models.USACRider.objects.all()
     search_fields = ['lastname', 'firstname', 'license']
     ordering = ('pk',)

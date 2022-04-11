@@ -16,7 +16,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
@@ -301,7 +301,7 @@ class MemberView(viewsets.ModelViewSet):
 
 class OrganizationView(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
-    permission_classes = (IsAuthenticated, IsAdminOrganizationOrReadOnlyPermission,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrganizationOrReadOnlyPermission,)
     serializer_class = OrganizationSerializer
     filterset_class = OrganizationFilter
     search_fields = ('name', 'about', 'type', 'website')
@@ -565,7 +565,7 @@ class FieldsTrackingView(viewsets.ReadOnlyModelViewSet):
 class RaceView(viewsets.ModelViewSet):
     queryset = Race.objects.all()
     serializer_class = RaceSerializer
-    permission_classes = (IsAuthenticated, IsAdminOrganizationOrReadOnlyPermission,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrganizationOrReadOnlyPermission,)
     filterset_class = RaceFilter
     ordering = '-id'
     ordering_fields = '__all__'
@@ -604,7 +604,7 @@ class RaceResultView(viewsets.ModelViewSet):
     ordering_fields = '__all__'
     search_fields = ['rider__first_name', 'rider__last_name', 'race__name', 'more_data__first_name',
                      'more_data__last_name']
-    permission_classes = (IsAuthenticated, IsAdminOrganizationOrReadOnlyPermission,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrganizationOrReadOnlyPermission,)
     _current_org = None
 
     def get_organization_object_permission(self, obj):

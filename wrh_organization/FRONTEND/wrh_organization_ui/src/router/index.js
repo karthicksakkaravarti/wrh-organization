@@ -7,9 +7,9 @@ export const routeNames = {
   ROOT: "root",
   ERROR_404: "error_404",
 
-  PUBLIC_ROOT: "public_root",
-
   PUBLIC_HOME: "public_home",
+  PUBLIC_RACE_RESULTS: "public_race_results",
+
   DASHBOARD_HOME: "dashboard_home",
   DASHBOARD_EVENTS: "dashboard_events",
   DASHBOARD_CLUB: "dashboard_club",
@@ -32,6 +32,14 @@ const routes = [
     path: '/home',
     name: routeNames.PUBLIC_HOME,
     component: () => import('@/views/public/PublicHome.vue'),
+    meta: {
+      layout: 'PublicLayout',
+    },
+  },
+  {
+    path: '/race-results',
+    name: routeNames.PUBLIC_RACE_RESULTS,
+    component: () => import('@/views/public/PublicRaceResults.vue'),
     meta: {
       layout: 'PublicLayout',
     },

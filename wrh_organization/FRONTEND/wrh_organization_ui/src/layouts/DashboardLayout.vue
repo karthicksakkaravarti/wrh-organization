@@ -43,14 +43,13 @@
 
 <script>
 import LayoutContentVerticalNav from '@/@core/layouts/variants/content/vertical-nav/LayoutContentVerticalNav.vue'
-import navMenuItems from '@/navigation/vertical'
 
 // App Bar Components
 import AppBarSearch from '@core/layouts/components/app-bar/AppBarSearch.vue'
 import AppBarUserMenu from '@/components/AppBarUserMenu.vue'
 import AppBarThemeSwitcher from "@core/layouts/components/app-bar/AppBarThemeSwitcher";
 
-import { mdiMenu, mdiHeartOutline } from '@mdi/js'
+import {mdiMenu, mdiHeartOutline, mdiHomeOutline, mdiCalendarMultiselect, mdiAccountGroup, mdiBike} from '@mdi/js'
 
 import { getVuetify } from '@core/utils'
 
@@ -59,6 +58,7 @@ import appBarSearchData from '@/assets/app-bar-search-data'
 
 import { ref, watch } from '@vue/composition-api'
 import AppFooter from "./AppFooter";
+import {routeNames} from "@/router";
 
 export default {
   components: {
@@ -71,8 +71,30 @@ export default {
     AppBarUserMenu,
   },
   setup() {
-    const $vuetify = getVuetify()
+    const $vuetify = getVuetify();
 
+    const navMenuItems = [
+      {
+        title: 'Home',
+        icon: mdiHomeOutline,
+        to: routeNames.DASHBOARD_HOME,
+      },
+      {
+        title: 'USA Events',
+        icon: mdiCalendarMultiselect,
+        to: routeNames.DASHBOARD_EVENTS,
+      },
+      {
+        title: 'USA Club',
+        icon: mdiAccountGroup,
+        to: routeNames.DASHBOARD_CLUB,
+      },
+      {
+        title: 'USA Rider',
+        icon: mdiBike,
+        to: routeNames.DASHBOARD_RIDER,
+      },
+    ];
     // Search
     const appBarSearchQuery = ref('')
     const shallShowFullSearch = ref(false)

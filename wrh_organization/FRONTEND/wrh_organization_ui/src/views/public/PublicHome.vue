@@ -11,11 +11,9 @@
 <script>
 
 export default {
-  components: {},
-  data: function () {
+  setup() {
     return {
-    };
+    }
   },
-
-};
+}
 </script>

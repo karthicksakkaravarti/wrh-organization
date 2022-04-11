@@ -68,7 +68,6 @@
 
 <script>
 import LayoutContentHorizontalNav from '@core/layouts/variants/content/horizontal-nav/LayoutContentHorizontalNav.vue'
-import navMenuItems from '@/navigation/horizontal'
 
 // App Bar Components
 import AppBarSearch from '@core/layouts/components/app-bar/AppBarSearch.vue'
@@ -81,8 +80,9 @@ import appBarSearchData from '@/assets/app-bar-search-data'
 import { ref, watch } from '@vue/composition-api'
 
 import themeConfig from '@themeConfig'
-import { mdiHeartOutline, mdiLogin } from '@mdi/js'
+import {mdiApps, mdiHeartOutline, mdiHomeOutline, mdiLogin, mdiFlagCheckered} from '@mdi/js'
 import AppFooter from "@/layouts/AppFooter";
+import {routeNames} from "@/router";
 
 export default {
   components: {
@@ -95,6 +95,23 @@ export default {
     AppBarUserMenu,
   },
   setup() {
+    const navMenuItems = [
+      {
+        title: 'Home',
+        icon: mdiHomeOutline,
+        to: routeNames.PUBLIC_HOME,
+      },
+      {
+        title: 'Race Results',
+        icon: mdiFlagCheckered,
+        to: routeNames.PUBLIC_RACE_RESULTS,
+      },
+      {
+        title: 'Dashboard',
+        icon: mdiApps,
+        to: routeNames.DASHBOARD_HOME,
+      },
+    ];
     // Search
     const appBarSearchQuery = ref('')
     const shallShowFullSearch = ref(false)
