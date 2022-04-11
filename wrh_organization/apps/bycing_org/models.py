@@ -345,7 +345,7 @@ class Race(models.Model):
     name = models.CharField(max_length=256)
     event = models.ForeignKey(USACEvent, on_delete=models.CASCADE)
     start_datetime = models.DateTimeField()
-    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, related_name='races')
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
 
@@ -357,7 +357,7 @@ class Race(models.Model):
 
 
 class RaceResult(models.Model):
-    rider = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True)
+    rider = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, related_name='race_results')
     race = models.ForeignKey(Race, on_delete=models.CASCADE)
     place = models.IntegerField(validators=[MinValueValidator(1)])
     more_data = models.JSONField(null=True)

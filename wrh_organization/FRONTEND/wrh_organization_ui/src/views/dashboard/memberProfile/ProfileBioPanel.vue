@@ -45,15 +45,15 @@
                 color="primary"
                 size="22"
               >
-                {{ icons.mdiBike }}
+                {{ icons.mdiCalendar }}
               </v-icon>
             </v-avatar>
 
             <div>
               <h3 class="text-xl font-weight-medium mb-n1">
-                {{ kFormatter(242) }}
+                {{ (memberData.summary || {}).events_count }}
               </h3>
-              <span>Races</span>
+              <span>Events</span>
             </div>
           </div>
 
@@ -68,15 +68,15 @@
                 color="primary"
                 size="22"
               >
-                {{ icons.mdiCalendar }}
+                {{ icons.mdiBike }}
               </v-icon>
             </v-avatar>
 
             <div>
               <h3 class="text-xl font-weight-medium mb-n1">
-                {{ kFormatter(12) }}
+                {{ (memberData.summary || {}).race_results_count }}
               </h3>
-              <span>Events</span>
+              <span>Results</span>
             </div>
           </div>
         </v-card-text>
@@ -179,7 +179,7 @@
 
 <script>
 import { mdiBike, mdiCalendar, mdiCheckboxBlankCircle, mdiAccountEditOutline } from '@mdi/js';
-import { avatarText, kFormatter } from '@core/utils/filter';
+import { avatarText } from '@core/utils/filter';
 
 export default {
   props: {
@@ -193,7 +193,6 @@ export default {
   setup() {
     return {
       avatarText,
-      kFormatter,
       icons: {
         mdiBike,
         mdiCalendar,

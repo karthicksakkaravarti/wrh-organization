@@ -30,6 +30,14 @@ class UserMyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
 class MyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     user = UserMyMemberSerializer(allow_null=True, required=False)
     email = serializers.EmailField(allow_null=True, required=False)
+    summary = serializers.SerializerMethodField(read_only=True)
+    extra_fields = ['summary',]
+
+    def get_summary(self, obj):
+        race_results_count = obj.race_results.count()
+        races_count = obj.race_results.distinct('race').count()
+        events_count = obj.race_results.distinct('race__event').count()
+        return {'races_count': races_count, 'events_count': events_count, 'race_results_count': race_results_count}
 
     class Meta:
         model = Member

@@ -316,6 +316,13 @@ class OrganizationView(viewsets.ModelViewSet):
         OrganizationMember.objects.create(organization=serializer.instance, is_master_admin=True,
                                           member=self.request.user.member)
 
+    @action(detail=True, methods=['GET'])
+    def summary(self, request, *args, **kwargs):
+        org = self.get_object()
+        members_count = OrganizationMember.objects.filter(is_active=True, organization=org).count()
+        races_count = org.races.count()
+        return Response({'members_count': members_count, 'races_count': races_count})
+
     @action(detail=False, methods=['GET'], permission_classes=(IsAuthenticated,),
             serializer_class=NestedOrganizationSerializer, filter_backends=(SearchFilter,),
             search_fields=['name', 'type', 'website'])

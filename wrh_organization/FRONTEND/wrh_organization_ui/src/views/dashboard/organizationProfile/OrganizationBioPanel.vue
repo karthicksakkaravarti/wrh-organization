@@ -48,7 +48,7 @@
 
             <div>
               <h3 class="text-xl font-weight-medium mb-n1">
-                {{ kFormatter(242) }}
+                {{ orgSummary.members_count || 0 }}
               </h3>
               <span>Members</span>
             </div>
@@ -71,9 +71,9 @@
 
             <div>
               <h3 class="text-xl font-weight-medium mb-n1">
-                {{ kFormatter(12) }}
+                {{ orgSummary.races_count || 0 }}
               </h3>
-              <span>Events</span>
+              <span>Races</span>
             </div>
           </div>
         </v-card-text>
@@ -164,7 +164,10 @@ import {
   mdiHomeEditOutline,
   mdiKeyboardBackspace
 } from '@mdi/js';
-import { avatarText, kFormatter } from '@core/utils/filter';
+import { avatarText } from '@core/utils/filter';
+import {onMounted, ref} from "@vue/composition-api/dist/vue-composition-api";
+import axios from "@/axios";
+import {notifyDefaultServerError} from "@/composables/utils";
 
 export default {
   components: {
@@ -175,10 +178,25 @@ export default {
       required: true
     }
   },
-  setup() {
+  setup(props, context) {
+    const orgSummary = ref({});
+
+    const loadOrgSummary = () => {
+      axios.get(`bycing_org/organization/${props.organization.id}/summary`).then((response) => {
+        orgSummary.value = response.data;
+      }, (error) => {
+        notifyDefaultServerError(error, true)
+      });
+    };
+
+    onMounted(() => {
+      loadOrgSummary();
+    });
+
     return {
       avatarText,
-      kFormatter,
+      orgSummary,
+      loadOrgSummary,
       icons: {
         mdiAccountMultipleOutline,
         mdiCalendar,
