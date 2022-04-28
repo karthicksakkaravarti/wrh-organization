@@ -7,6 +7,7 @@ from django.contrib.auth import login
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.template.loader import render_to_string
 from django.utils import dateparse
@@ -20,16 +21,37 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 
 from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
-    FieldsTracking, Race, RaceResult
+    FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult
 from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter, OrganizationMemberFilter, \
-    OrganizationMemberOrgFilter, FieldsTrackingFilter, RaceFilter, RaceResultFilter
+    OrganizationMemberOrgFilter, FieldsTrackingFilter, RaceFilter, RaceResultFilter, CategoryFilter, RaceSeriesFilter, \
+    RaceSeriesResultFilter
 from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationSerializer, SignupUserSerializer, \
     ActivationEmailSerializer, MyMemberSerializer, MemberOTPVerifySerializer, OrganizationMemberSerializer, \
     NestedMemberSerializer, UserSendRecoverPasswordSerializer, UserRecoverPasswordSerializer, \
     CsvFileImportSerializer, OrganizationMemberMyRequestsSerializer, OrganizationMemberOrgSerializer, \
-    NestedOrganizationSerializer, FieldsTrackingSerializer, RaceSerializer, RaceResultSerializer
+    NestedOrganizationSerializer, FieldsTrackingSerializer, RaceSerializer, RaceResultSerializer, CategorySerializer, \
+    RaceSeriesSerializer, RaceSeriesResultSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
-    IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token
+    IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token, to_dict
+
+
+class ExportViewMixin(object):
+    valid_export_types = {}
+
+    def get_export_records(self, request, *args, **kwargs):
+        return self.filter_queryset(self.get_queryset())
+
+    @action(detail=False, methods=['get'], url_path='export/(?P<export_type>.+)')
+    def export(self, request, *args, **kwargs):
+        export_type = kwargs.get('export_type')
+        if export_type not in self.valid_export_types:
+            return Response({'reason': 'Invalid export type "{}"'.format(export_type)}, status=400)
+
+        export_method = getattr(self, self.valid_export_types.get(export_type), None)
+        if not export_method:
+            raise NotImplementedError
+        records = self.get_export_records(request, *args, **kwargs)
+        return export_method(records)
 
 
 class UserRegistrationView(viewsets.ViewSet):
@@ -562,10 +584,34 @@ class FieldsTrackingView(viewsets.ReadOnlyModelViewSet):
         return super().get_queryset().filter(content_type__app_label='bycing_org')
 
 
+class AdminOrganizationActionsViewMixin:
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrganizationOrReadOnlyPermission,)
+
+    def get_organization_object_permission(self, obj):
+        return obj.organization
+
+    def _check_org_permission(self, org):
+        member = self.request.user.member
+        if not (org and OrganizationMember.objects.filter(member=member, organization=org, is_active=True).filter(
+                Q(is_admin=True) | Q(is_master_admin=True)).exists()):
+            raise PermissionDenied('you dont have permission on this organization')
+
+    def perform_create(self, serializer):
+        self._check_org_permission(serializer.validated_data.get('organization'))
+        serializer.save(create_by=self.request.user)
+
+    def perform_update(self, serializer):
+        self._check_org_permission(serializer.instance.organization)
+        serializer.save(organization=serializer.instance.organization)
+
+    def perform_destroy(self, instance):
+        self._check_org_permission(instance.organization)
+        instance.delete()
+
+
 class RaceView(viewsets.ModelViewSet):
     queryset = Race.objects.all()
     serializer_class = RaceSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrganizationOrReadOnlyPermission,)
     filterset_class = RaceFilter
     ordering = '-id'
     ordering_fields = '__all__'
@@ -574,29 +620,8 @@ class RaceView(viewsets.ModelViewSet):
     def get_queryset(self):
         return super().get_queryset().select_related('event')
 
-    def get_organization_object_permission(self, obj):
-        return obj.organization
 
-    def _check_org_permission(self, org):
-        member = self.request.user.member
-        if not (org and OrganizationMember.objects.filter(member=member, organization=org, is_active=True).filter(
-                Q(is_admin=True) | Q(is_master_admin=True)).exists()):
-            raise PermissionDenied('you dont have permission on this organization')
-
-    def perform_create(self, serializer):
-        self._check_org_permission(serializer.validated_data.get('organization'))
-        serializer.save(create_by=self.request.user)
-
-    def perform_update(self, serializer):
-        self._check_org_permission(serializer.instance.organization)
-        serializer.save(organization=serializer.instance.organization)
-
-    def perform_destroy(self, instance):
-        self._check_org_permission(instance.organization)
-        return super().perform_destroy(instance=instance)
-
-
-class RaceResultView(viewsets.ModelViewSet):
+class RaceResultView(AdminOrganizationActionsViewMixin, ExportViewMixin, viewsets.ModelViewSet):
     queryset = RaceResult.objects.all()
     serializer_class = RaceResultSerializer
     filterset_class = RaceResultFilter
@@ -604,32 +629,38 @@ class RaceResultView(viewsets.ModelViewSet):
     ordering_fields = '__all__'
     search_fields = ['rider__first_name', 'rider__last_name', 'race__name', 'more_data__first_name',
                      'more_data__last_name']
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrganizationOrReadOnlyPermission,)
-    _current_org = None
 
-    def get_organization_object_permission(self, obj):
-        return obj.organization
+    valid_export_types = {
+        'csv': 'export_csv',
+    }
 
     def get_queryset(self):
         return super().get_queryset().select_related('race', 'rider', 'organization', 'rider__user', 'race__event')
 
-    def _check_org_permission(self, org):
-        member = self.request.user.member
-        if not (org and OrganizationMember.objects.filter(member=member, organization=org, is_active=True).filter(
-                Q(is_admin=True) | Q(is_master_admin=True)).exists()):
-            raise PermissionDenied('you dont have permission on this organization')
-
-    def perform_create(self, serializer):
-        self._check_org_permission(serializer.validated_data.get('organization'))
-        serializer.save(create_by=self.request.user)
-
-    def perform_update(self, serializer):
-        self._check_org_permission(serializer.instance.organization)
-        serializer.save(organization=serializer.instance.organization)
-
-    def perform_destroy(self, instance):
-        self._check_org_permission(instance.organization)
-        return super().perform_destroy(instance=instance)
+    def export_csv(self, queryset):
+        response = HttpResponse(content_type='text/csv')
+        file_name = self.request.GET.get('_filename', None) or 'race-results'
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(file_name)
+        fields_map = [
+            ('id', 'Id'),
+            ('rider', 'Rider'),
+            ('race', 'Race'),
+            ('place', 'Place'),
+        ]
+        fields = [f[0] for f in fields_map]
+        writer = csv.DictWriter(response, fieldnames=fields)
+        writer.writerow(dict(fields_map))
+        for obj in queryset:
+            row = to_dict(obj, fields=fields, fields_map=dict(
+                race=lambda: str(obj.race),
+                rider=lambda: obj.rider and str(obj.rider),
+            ))
+            if not row['rider']:
+                more_data = obj.more_data or {}
+                row['rider'] = '{} {}'.format(more_data.get('first_name') or '',
+                                              more_data.get('last_name') or '').strip()
+            writer.writerow(row)
+        return response
 
     @transaction.atomic()
     def _import_csv_row(self, row, org, race):
@@ -690,6 +721,108 @@ class RaceResultView(viewsets.ModelViewSet):
         for row in reader:
             try:
                 self._import_csv_row(row, org=org, race=race)
+                successed += 1
+            except Exception:
+                traceback.print_exc()
+                failed.append(row)
+
+        return Response({'successed': successed, 'failed': failed}, status=status.HTTP_200_OK)
+
+
+class CategoryView(AdminOrganizationActionsViewMixin, viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    filterset_class = CategoryFilter
+    ordering = '-id'
+    ordering_fields = '__all__'
+    search_fields = ['title']
+
+
+class RaceSeriesView(AdminOrganizationActionsViewMixin, viewsets.ModelViewSet):
+    queryset = RaceSeries.objects.all()
+    serializer_class = RaceSeriesSerializer
+    filterset_class = RaceSeriesFilter
+    ordering = '-id'
+    ordering_fields = '__all__'
+    search_fields = ['name']
+
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('events', 'races', 'races__event', 'categories')
+
+
+class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelViewSet):
+    queryset = RaceSeriesResult.objects.all()
+    serializer_class = RaceSeriesResultSerializer
+    filterset_class = RaceSeriesResultFilter
+    ordering = '-id'
+    ordering_fields = '__all__'
+    search_fields = ['rider__first_name', 'rider__last_name', 'race_series__name']
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('race_series', 'rider', 'organization', 'rider__user')
+
+    @transaction.atomic()
+    def _import_csv_row(self, row, org, race_series):
+        user = self.request.user
+        row = {k: (v or None) for k, v in row.items()}
+        res_id = row['id'] = int(row.get('id'))
+        category_id = int(row.get('category'))
+        place = int(row.get('category_place'))
+        category = get_object_or_404(Category.objects.filter(pk=category_id, organization=org))
+
+        race_result = get_object_or_404(RaceResult.objects.filter(pk=res_id))
+
+        if race_result.rider_id:
+            r, _ = RaceSeriesResult.objects.update_or_create(
+                rider_id=race_result.rider_id, race_series=race_series, organization=org,
+                defaults=dict(place=place, category=category, more_data=row, create_by=user))
+        else:
+            r = RaceSeriesResult.objects.filter(
+                rider_id=None, race_series=race_series, organization=org, create_by=user, more_data__id=res_id).first()
+            if not r:
+                r = RaceSeriesResult(race_series=race_series, organization=org, create_by=user)
+            r.place = place
+            r.category = category
+            r.more_data = {**race_result.more_data, **row}
+            r.save()
+        return r
+
+    @staticmethod
+    def _unify_and_check_csv(csv_reader):
+        field_names = csv_reader.fieldnames
+        for i in range(len(field_names)):
+            f = field_names[i].lower().replace('-', ' ')
+            field_names[i] = '_'.join(f.split())
+        missed_fields = {'id', 'category', 'category_place'} - set(field_names)
+        if missed_fields:
+            return Response({'detail': f'missed this fields: {missed_fields}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['POST'], serializer_class=CsvFileImportSerializer,
+            url_path='organization/(?P<org_id>[0-9]+)/race_series/(?P<race_series_id>[0-9]+)/import_from_csv')
+    def import_from_csv(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        file = serializer.validated_data['file']
+        decoded_file = file.read().decode()
+        reader = csv.DictReader(io.StringIO(decoded_file))
+        self._unify_and_check_csv(reader)
+
+        failed = []
+        successed = 0
+        org_id = self.kwargs.get('org_id')
+        assert org_id, 'org_id is not specified in url pattern'
+        member = getattr(self.request.user, 'member', None)
+        org = get_object_or_404(Organization.objects.filter(pk=org_id).filter(
+            organizationmember__is_active=True, organizationmember__member=member).distinct())
+        self._check_org_permission(org)
+
+        race_series_id = self.kwargs.get('race_series_id')
+        assert race_series_id, 'race_series_id is not specified in url pattern'
+        race_series = get_object_or_404(RaceSeries.objects.filter(pk=race_series_id))
+
+        for row in reader:
+            try:
+                self._import_csv_row(row, org=org, race_series=race_series)
                 successed += 1
             except Exception:
                 traceback.print_exc()

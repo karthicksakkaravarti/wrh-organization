@@ -1,7 +1,9 @@
 from django.db.models import Q
 from django_filters import rest_framework as filters
 
-from ..models import Member, Organization, OrganizationMember, OrganizationMemberOrg, FieldsTracking, Race, RaceResult
+from ..models import Member, Organization, OrganizationMember, OrganizationMemberOrg, FieldsTracking, Race, RaceResult, \
+    Category, RaceSeries, RaceSeriesResult
+from ...usacycling.models import USACEvent
 
 
 class MemberFilter(filters.FilterSet):
@@ -53,6 +55,8 @@ class OrganizationMemberOrgFilter(filters.FilterSet):
 
 
 class RaceFilter(filters.FilterSet):
+    event = filters.ModelMultipleChoiceFilter(queryset=USACEvent.objects.all())
+
     class Meta:
         model = Race
         fields = '__all__'
@@ -88,4 +92,28 @@ class FieldsTrackingFilter(filters.FilterSet):
                   'user', 'content_type']
 
 
+class CategoryFilter(filters.FilterSet):
+    class Meta:
+        model = Category
+        fields = '__all__'
 
+
+class RaceSeriesFilter(filters.FilterSet):
+    class Meta:
+        model = RaceSeries
+        exclude = ['points_map']
+
+
+class RaceSeriesResultFilter(filters.FilterSet):
+    my = filters.BooleanFilter(method='my_method')
+
+    def my_method(self, queryset, name, value):
+        user = self.request and self.request.user
+        member = user and getattr(user, 'member', None)
+        if value:
+            queryset = queryset.filter(rider=member) if (user and user.is_authenticated and member) else queryset.none()
+        return queryset
+
+    class Meta:
+        model = RaceSeriesResult
+        exclude = ['more_data']

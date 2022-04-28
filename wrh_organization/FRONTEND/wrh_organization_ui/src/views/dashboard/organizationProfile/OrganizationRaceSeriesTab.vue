@@ -1,14 +1,14 @@
 <template>
-  <div class="organization-profile-races-tab">
+  <div class="organization-profile-race-series-tab">
     <v-card>
       <v-card-text class="pt-2 pb-2 pr-2 pl-2">
         <v-row>
           <v-col cols="12">
             <v-autocomplete
-                v-model="selectedEvent"
+                v-model="tableFiltering.events"
                 outlined
                 dense
-                label="Choose Event"
+                label="Filter by Event"
                 :items="events"
                 item-text="name"
                 item-value="id"
@@ -46,11 +46,11 @@
             <v-icon>{{icons.mdiRefresh}}</v-icon>
           </v-btn>
           <v-btn v-if="organization.my_level.is_admin" small color="primary" class="me-1"
-                 @click="$refs.formDialogRef.show(null, selectedEvent)" :disabled="!selectedEvent">
+                 @click="$refs.formDialogRef.show(null)">
             <v-icon size="18" class="me-1">
               {{ icons.mdiPlus }}
             </v-icon>
-            <span>New Race</span>
+            <span>New Race Series</span>
           </v-btn>
         </div>
 
@@ -78,21 +78,25 @@
         class="text-no-wrap"
         :footer-props="{'items-per-page-options': $const.DEFAULT_TABLE_PER_PAGE_OPTIONS, 'show-current-page': true, 'show-first-last-page': true}"
       >
-        <template #item.event="{item}">
-          <div class="d-flex flex-column">
-            <span class="text-truncate">
-              {{item._event.name}}
-            </span>
+        <template #item.events="{item}">
+          <div>
+            <v-chip lable small color="secondary" v-for="r in item._events" :key="r.id" class="mr-1">{{r.name}}</v-chip>
+          </div>
+        </template>
+        <template #item.races="{item}">
+          <div>
+            <v-chip lable small color="primary" v-for="r in item._races" :key="r.id" class="mr-1">{{r.name}}</v-chip>
+          </div>
+        </template>
+        <template #item.categories="{item}">
+          <div>
+            <v-chip lable small color="info" v-for="r in item._categories" :key="r.id" class="mr-1">{{r.title}}</v-chip>
           </div>
         </template>
         <template #item.name="{item}">
             <span class="text-truncate font-weight-semibold">
               {{item.name}}
             </span>
-        </template>
-        <template #item.start_datetime="{item}">
-          <span class="pr-1">{{$utils.formatDate(item.start_datetime, 'MMM D, YYYY')}}</span>
-          <span class="text-caption">{{$utils.formatDate(item.start_datetime, 'HH:mm')}}</span>
         </template>
         <template #item.create_datetime="{item}">
           <span class="pr-1">{{$utils.formatDate(item.create_datetime, 'M/D/YY')}}</span>
@@ -117,9 +121,9 @@
 
       </v-data-table>
     </v-card>
-    <organization-race-form-dialog :organization="organization" ref="formDialogRef" @save-successed="loadRecords(1)"
+    <organization-race-series-form-dialog :organization="organization" ref="formDialogRef" @save-successed="loadRecords(1)"
                                     @delete-successed="loadRecords(1)">
-    </organization-race-form-dialog>
+    </organization-race-series-form-dialog>
   </div>
 </template>
 
@@ -142,11 +146,11 @@ import {
 import { ref, reactive, watch, onMounted } from '@vue/composition-api'
 import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess, refineVTableOptions} from "@/composables/utils";
-import OrganizationRaceFormDialog from "./OrganizationRaceFormDialog";
 import _ from "lodash";
+import OrganizationRaceSeriesFormDialog from "./OrganizationRaceSeriesFormDialog";
 
 export default {
-  components: {OrganizationRaceFormDialog},
+  components: {OrganizationRaceSeriesFormDialog},
   props: {
     organization: {
       type: Object,
@@ -162,28 +166,24 @@ export default {
     const tableColumns = [
       {text: '#ID', value: 'id', align: 'start',},
       {text: 'NAME', value: 'name'},
-      {text: 'STARTED AT', value: 'start_datetime'},
-      {text: 'EVENT', value: 'event', cellClass: 'event-td'},
+      {text: 'EVENTS', value: 'events', cellClass: 'events-td', sortable: false},
+      {text: 'RACES', value: 'races', cellClass: 'races-td', sortable: false},
+      {text: 'CATEGORIES', value: 'categories', cellClass: 'categories-td', sortable: false},
       {text: 'CREATED AT', value: 'create_datetime'},
     ];
     if (props.organization.my_level.is_admin) {
-      tableColumns.push({text: 'ACTIONS', value: 'actions', align: 'end', sortable: false,})
+      tableColumns.push({text: 'ACTIONS', value: 'actions', align: 'end', sortable: false})
     }
     const events = ref([]);
     const eventSearchInput = ref('');
-    const selectedEvent = ref(null);
     const findingEvents = ref(false);
 
     watch(eventSearchInput, () => {
       findEventsDebounce(eventSearchInput.value);
     });
-    watch(selectedEvent, () => {
-      loadRecords(1);
-    });
 
-    const findEvents = (search) => {
+    const findEvents = (search, ids) => {
       if (findingEvents.value) {
-        events.value = [];
         return;
       }
       findingEvents.value = true;
@@ -203,11 +203,13 @@ export default {
         tableOptions.value.page = page;
       }
       const params = Object.assign({organization: props.organization.id}, tableFiltering.value, refineVTableOptions(tableOptions.value));
-      if (selectedEvent.value) {
-        params.event = selectedEvent.value.event_id
+      if (params.events) {
+        params.events = params.events.event_id
+      } else {
+        delete params.events;
       }
       loading.value = true;
-      axios.get("bycing_org/race/", {params: params}).then((response) => {
+      axios.get("bycing_org/race_series/", {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
         pagination.value = response.data.pagination;
@@ -229,7 +231,6 @@ export default {
       records,
       eventSearchInput,
       events,
-      selectedEvent,
       findEvents,
       findEventsDebounce,
       findingEvents,
@@ -259,12 +260,9 @@ export default {
 </script>
 
 <style lang="scss">
-.organization-profile-races-tab {
+.organization-profile-race-series-tab {
   .search-input {
     max-width: 10.625rem;
-  }
-  td.event-td {
-    max-width: 250px;
   }
 }
 </style>

@@ -36,6 +36,24 @@ class RaceResultAdmin(admin.ModelAdmin):
     list_filter = ('race',)
 
 
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'organization')
+    search_fields = ('title',)
+    list_filter = ('organization',)
+
+
+class RaceSeriesAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'organization')
+    search_fields = ('name',)
+    list_filter = ('organization',)
+
+
+class RaceSeriesResultAdmin(admin.ModelAdmin):
+    list_display = ('id', 'rider', 'race_series', 'category', 'place',)
+    search_fields = ('race_series__name',)
+    list_filter = ('race_series',)
+
+
 class FieldsTrackingAdmin(admin.ModelAdmin):
     list_display = ('id', 'object_id', 'content_type', 'object_repr', 'datetime', 'user')
     search_fields = ('object_repr',)
@@ -48,4 +66,7 @@ admin.site.register(models.OrganizationMember, OrganizationMemberAdmin)
 admin.site.register(models.OrganizationMemberOrg, OrganizationMemberOrgAdmin)
 admin.site.register(models.Race, RaceAdmin)
 admin.site.register(models.RaceResult, RaceResultAdmin)
+admin.site.register(models.RaceSeriesResult, RaceSeriesResultAdmin)
 admin.site.register(models.FieldsTracking, FieldsTrackingAdmin)
+admin.site.register(models.Category, CategoryAdmin)
+admin.site.register(models.RaceSeries, RaceSeriesAdmin)

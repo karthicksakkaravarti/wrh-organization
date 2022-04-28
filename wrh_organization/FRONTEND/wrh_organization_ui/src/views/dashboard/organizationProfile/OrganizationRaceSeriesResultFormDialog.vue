@@ -6,15 +6,14 @@
   >
     <v-card>
       <v-card-title>
-        <span class="headline">{{isEditMode? `Edit Race Result #${record.id}`: 'New Race Result'}}</span>
+        <span class="headline">{{isEditMode? `Edit Race Series Result #${record.id}`: 'New Race Series Result'}}</span>
       </v-card-title>
       <v-form @submit.prevent="save">
         <v-card-text>
           <v-container>
             <v-row>
-              <v-col cols="12" v-if="record._race || currentRace">
-                <div>Event: <span class="font-weight-semibold">{{(record._race || currentRace)._event.name}}</span></div>
-                <div>Race: <span class="font-weight-semibold">{{(record._race || currentRace).name}}</span></div>
+              <v-col cols="12" v-if="record._race_series || currentRaceSeries">
+                <div>Race Series: <span class="font-weight-semibold">{{(record._race_series || currentRaceSeries).name}}</span></div>
               </v-col>
               <v-col cols="12 pt-0">
                 <v-divider></v-divider>
@@ -81,9 +80,21 @@
                 <v-text-field v-model="record.more_data.last_name" label="Last Name" dense></v-text-field>
               </v-col>
               <v-col cols="12">
+                <v-autocomplete
+                    v-model="record._category"
+                    dense
+                    label="Category"
+                    :items="categories"
+                    item-text="title"
+                    item-value="id"
+                    return-object
+                >
+                </v-autocomplete>
+              </v-col>
+
+              <v-col cols="12">
                 <v-text-field type="number" min="1" step="1" v-model="record.place" dense label="Place"></v-text-field>
               </v-col>
-    
             </v-row>
           </v-container>
         </v-card-text>
@@ -131,19 +142,32 @@ export default {
   setup(props, context) {
     const isVisible = ref(false);
     const record = ref({more_data: {}});
-    const currentRace = ref(null);
+    const currentRaceSeries = ref(null);
     const saving = ref(false);
     const deleting = ref(false);
     const confirmDelete = ref(false);
     const findingMembers = ref(false);
     const members = ref([]);
     const memberSearchInput = ref('');
+    const categories = ref([]);
 
     watch(memberSearchInput, () => {
       findMembersDebounce(memberSearchInput.value);
     });
 
     const isEditMode = computed(() => !!record.value.id);
+
+    const loadCategories = () => {
+      var params = {
+        organization: props.organization.id,
+        page_size: 0
+      };
+      axios.get("bycing_org/category/", {params: params}).then((response) => {
+        categories.value = response.data.results;
+      }, (error) => {
+        notifyDefaultServerError(error, true)
+      });
+    };
 
     const findMembers = (search) => {
       if (findingMembers.value || (search || '').length < 3) {
@@ -171,7 +195,7 @@ export default {
 
     const deleteRecord = () => {
       deleting.value = true;
-      axios.delete(`bycing_org/race_result/${record.value.id}`).then((response) => {
+      axios.delete(`bycing_org/race_series_result/${record.value.id}`).then((response) => {
         deleting.value = false;
         notifySuccess(`Record #${record.value.id} deleted.`);
         hide();
@@ -186,17 +210,18 @@ export default {
       var data = Object.assign({}, record.value);
       data.rider = data._rider? data._rider.id: null;
       delete data._rider;
-      var url = "bycing_org/race_result",
+      var url = "bycing_org/race_series_result",
           httpMethod = axios.post,
-          successMsg = "Race Result added successfully.";
+          successMsg = "Race Series Result added successfully.";
       if (isEditMode.value) {
-        url = `bycing_org/race_result/${record.value.id}`;
+        url = `bycing_org/race_series_result/${record.value.id}`;
         httpMethod = axios.patch;
-        successMsg = "Race Result updated successfully."
+        successMsg = "Race Series Result updated successfully."
       } else {
-        data.race = currentRace.value.id;
+        data.race_series = currentRaceSeries.value.id;
         data.organization = props.organization.id;
       }
+      data.category = data._category && data._category.id;
       saving.value = true;
       httpMethod(url, data).then((response) => {
         saving.value = false;
@@ -214,12 +239,13 @@ export default {
     };
     const show = (r, race) => {
       record.value = Object.assign({more_data: {}}, r);
-      currentRace.value = race || null;
+      currentRaceSeries.value = race || null;
       confirmDelete.value = false;
       deleting.value = false;
       saving.value = false;
       isVisible.value = true;
       findMembers();
+      loadCategories();
     };
 
     return {
@@ -230,6 +256,7 @@ export default {
       saving,
       deleting,
       findingMembers,
+      categories,
       findMembers,
       findMembersDebounce,
       members,
@@ -238,7 +265,7 @@ export default {
       hide,
       show,
       save,
-      currentRace,
+      currentRaceSeries,
       icons: {
         mdiDelete,
         mdiAlert,

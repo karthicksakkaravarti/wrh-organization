@@ -3,6 +3,7 @@ import { createToastInterface } from "vue-toastification";
 import {Config} from "@/Config";
 import {conformToMask} from 'text-mask-core';
 import {countries} from "@/composables/countries";
+import _ from "lodash";
 
 export const momentLib = moment;
 export const countryPhoneCodes = {};
@@ -67,10 +68,15 @@ export const addQSParm = (url, name, value, override) => {
   return url;
 };
 
-export const combineURLs = (baseURL, relativeURL) => {
-  return (
-      baseURL.replace(/\/+$/, "") + "/" + relativeURL.replace(/^\/+/, "")
-  );
+export const combineURLs = (baseURL, relativeURL, getParams) => {
+  var url = baseURL.replace(/\/+$/, "");
+  if (relativeURL) {
+    url = url + "/" + relativeURL.replace(/^\/+/, "");
+  }
+  _.each(getParams || {}, function(v, k) {
+    url = addQSParm(url, k, v);
+  });
+  return url;
 };
 
 export const randomId = (n) => {

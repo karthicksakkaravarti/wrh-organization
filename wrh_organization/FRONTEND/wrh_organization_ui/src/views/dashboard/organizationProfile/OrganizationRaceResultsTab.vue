@@ -92,6 +92,17 @@
             </template>
             <span>Import results from CSV file</span>
           </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <v-btn v-bind="attrs" v-on="on" small outlined color="error" class="me-1" :href="exportUrl" target="_blank">
+                <v-icon size="18" class="me-1">
+                  {{ icons.mdiFileExcelOutline }}
+                </v-icon>
+                <span>Export</span>
+              </v-btn>
+            </template>
+            <span>Export results to CSV file</span>
+          </v-tooltip>
         </div>
 
         <v-spacer></v-spacer>
@@ -201,12 +212,13 @@ import {
 import { ref, reactive, watch, onMounted } from '@vue/composition-api'
 import store from '@/store'
 import axios from "@/axios";
-import {notifyDefaultServerError, notifySuccess, refineVTableOptions} from "@/composables/utils";
+import {combineURLs, notifyDefaultServerError, notifySuccess, refineVTableOptions} from "@/composables/utils";
 import {avatarText} from "@core/utils/filter";
 import OrganizationRaceResultFormDialog from "./OrganizationRaceResultFormDialog";
 import _ from "lodash";
 import OrganizationImportRaceResultsDialog
   from "@/views/dashboard/organizationProfile/OrganizationImportRaceResultsDialog";
+import {computed} from "@vue/composition-api/dist/vue-composition-api";
 
 export default {
   components: {OrganizationImportRaceResultsDialog, OrganizationRaceResultFormDialog},
@@ -239,6 +251,16 @@ export default {
     const selectedEvent = ref(null);
     const selectedRace = ref(null);
     const findingEvents = ref(false);
+
+    const exportUrl = computed(() => {
+      const params = Object.assign({organization: props.organization.id}, tableFiltering.value);
+      if (selectedRace.value) {
+        params.race = selectedRace.value.id
+      } else if (selectedEvent.value) {
+        params.event = selectedEvent.value.event_id
+      }
+      return combineURLs(axios.defaults.baseURL, `bycing_org/race_result/export/csv`, params);
+    });
 
     watch(eventSearchInput, () => {
       findEventsDebounce(eventSearchInput.value);
@@ -346,6 +368,7 @@ export default {
       avatarText,
       loadRecords,
       loadRaces,
+      exportUrl,
       icons: {
         mdiPlus,
         mdiPencilOutline,

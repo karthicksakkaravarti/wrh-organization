@@ -1,21 +1,21 @@
 <template>
-  <div class="organization-profile-races-tab">
+  <div class="organization-profile-race-results-tab">
     <v-card>
       <v-card-text class="pt-2 pb-2 pr-2 pl-2">
         <v-row>
           <v-col cols="12">
             <v-autocomplete
-                v-model="selectedEvent"
+                v-model="selectedRaceSeries"
                 outlined
                 dense
-                label="Choose Event"
-                :items="events"
+                label="Choose a Race-Series"
+                :items="raceSeries"
                 item-text="name"
                 item-value="id"
                 hide-details
-                :search-input.sync="eventSearchInput"
-                :loading="findingEvents"
-                no-data-text="No Result Found! Type here to Search event"
+                :search-input.sync="raceSeriesSearchInput"
+                :loading="findingRaceSeries"
+                no-data-text="No Result Found! Type here to Search Race-Series"
                 :menu-props="{contentClass:'list-style'}"
                 return-object
                 clearable
@@ -31,7 +31,9 @@
                     {{ data.item.name }}
                   </v-list-item-title>
                   <v-list-item-subtitle>
-                    {{ $utils.formatDate(data.item.start_date, 'MMM D, YYYY') }} - {{ $utils.formatDate(data.item.end_date, 'MMM D, YYYY') }}
+                    <v-chip x-small v-for="e in (data.item._events || [])" :key="e.event_id" class="mr-1">
+                      {{e.name}}
+                    </v-chip>
                   </v-list-item-subtitle>
                 </v-list-item-content>
               </template>
@@ -46,12 +48,23 @@
             <v-icon>{{icons.mdiRefresh}}</v-icon>
           </v-btn>
           <v-btn v-if="organization.my_level.is_admin" small color="primary" class="me-1"
-                 @click="$refs.formDialogRef.show(null, selectedEvent)" :disabled="!selectedEvent">
+                 @click="$refs.formDialogRef.show(null, selectedRaceSeries)" :disabled="!selectedRaceSeries">
             <v-icon size="18" class="me-1">
               {{ icons.mdiPlus }}
             </v-icon>
-            <span>New Race</span>
+            <span>Race Series Result</span>
           </v-btn>
+          <v-tooltip v-if="organization.my_level.is_admin" bottom>
+            <template #activator="{ on, attrs }">
+              <v-btn v-bind="attrs" v-on="on" small outlined color="info" class="me-1" :disabled="!selectedRaceSeries" @click="$refs.importDialogRef.show(selectedRaceSeries)">
+                <v-icon size="18" class="me-1">
+                  {{ icons.mdiFileExcelOutline }}
+                </v-icon>
+                <span>Import</span>
+              </v-btn>
+            </template>
+            <span>Import results from CSV file</span>
+          </v-tooltip>
         </div>
 
         <v-spacer></v-spacer>
@@ -78,25 +91,40 @@
         class="text-no-wrap"
         :footer-props="{'items-per-page-options': $const.DEFAULT_TABLE_PER_PAGE_OPTIONS, 'show-current-page': true, 'show-first-last-page': true}"
       >
-        <template #item.event="{item}">
+        <template #item.rider="{item}">
+          <div class="d-flex align-center">
+            <v-avatar color="success" class="v-avatar-light-bg success--text" size="30">
+              <v-img v-if="item._rider && item._rider._user.avatar" :src="item._rider._user.avatar"></v-img>
+              <span v-else class="font-weight-medium">
+                {{ avatarText(item._rider? item._rider.first_name: (item.more_data.first_name || 'N/A')) }}
+              </span>
+            </v-avatar>
+
+            <div class="d-flex flex-column pl-1">
+              <span href="javascript:" class="font-weight-semibold text-truncate text-decoration-none">
+                <v-icon v-if="item._rider" small>{{icons.mdiAccountCheck}}</v-icon> {{ displayRiderName(item) }}
+              </span>
+            </div>
+          </div>
+        </template>
+
+        <template #item.race_series="{item}">
           <div class="d-flex flex-column">
-            <span class="text-truncate">
-              {{item._event.name}}
+            <span class="font-weight-semibold text-truncate">
+              {{item._race_series.name}}
             </span>
           </div>
         </template>
-        <template #item.name="{item}">
-            <span class="text-truncate font-weight-semibold">
-              {{item.name}}
-            </span>
-        </template>
-        <template #item.start_datetime="{item}">
-          <span class="pr-1">{{$utils.formatDate(item.start_datetime, 'MMM D, YYYY')}}</span>
-          <span class="text-caption">{{$utils.formatDate(item.start_datetime, 'HH:mm')}}</span>
+        <template #item.category="{item}">
+          <span class="font-weight-medium text-truncate">{{item._category.title}}</span>
         </template>
         <template #item.create_datetime="{item}">
           <span class="pr-1">{{$utils.formatDate(item.create_datetime, 'M/D/YY')}}</span>
           <span class="text-caption">{{$utils.formatDate(item.create_datetime, 'HH:mm')}}</span>
+        </template>
+        <template #item.place="{item}">
+          <span class="font-weight-semibold">{{item.place}}</span>
+          <v-icon size="20" color="warning" v-if="item.place == 1" class="ml-1">{{ icons.mdiPodiumGold }}</v-icon>
         </template>
 
         <!-- actions -->
@@ -117,9 +145,12 @@
 
       </v-data-table>
     </v-card>
-    <organization-race-form-dialog :organization="organization" ref="formDialogRef" @save-successed="loadRecords(1)"
-                                    @delete-successed="loadRecords(1)">
-    </organization-race-form-dialog>
+    <organization-race-series-result-form-dialog :organization="organization" ref="formDialogRef" @save-successed="loadRecords(1)"
+                                          @delete-successed="loadRecords(1)">
+    </organization-race-series-result-form-dialog>
+    <organization-import-race-series-results-dialog ref="importDialogRef" :organization="organization"
+                                             @import-successed="loadRecords(1)">
+    </organization-import-race-series-results-dialog>
   </div>
 </template>
 
@@ -140,13 +171,24 @@ import {
 } from '@mdi/js'
 
 import { ref, reactive, watch, onMounted } from '@vue/composition-api'
+import store from '@/store'
 import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess, refineVTableOptions} from "@/composables/utils";
-import OrganizationRaceFormDialog from "./OrganizationRaceFormDialog";
+import {avatarText} from "@core/utils/filter";
+import OrganizationRaceResultFormDialog from "./OrganizationRaceResultFormDialog";
 import _ from "lodash";
+import OrganizationImportRaceResultsDialog
+  from "@/views/dashboard/organizationProfile/OrganizationImportRaceResultsDialog";
+import OrganizationRaceSeriesResultFormDialog
+  from "@/views/dashboard/organizationProfile/OrganizationRaceSeriesResultFormDialog";
+import OrganizationImportRaceSeriesResultsDialog
+  from "@/views/dashboard/organizationProfile/OrganizationImportRaceSeriesResultsDialog";
 
 export default {
-  components: {OrganizationRaceFormDialog},
+  components: {
+    OrganizationImportRaceSeriesResultsDialog,
+    OrganizationRaceSeriesResultFormDialog
+  },
   props: {
     organization: {
       type: Object,
@@ -161,53 +203,65 @@ export default {
     const tableFiltering = ref({});
     const tableColumns = [
       {text: '#ID', value: 'id', align: 'start',},
-      {text: 'NAME', value: 'name'},
-      {text: 'STARTED AT', value: 'start_datetime'},
-      {text: 'EVENT', value: 'event', cellClass: 'event-td'},
+      {text: 'RIDER', value: 'rider'},
+      {text: 'RACE-SERIES', value: 'race_series', cellClass: 'race-series-td'},
+      {text: 'CATEGORY', value: 'category'},
+      {text: 'PLACE', value: 'place'},
       {text: 'CREATED AT', value: 'create_datetime'},
     ];
     if (props.organization.my_level.is_admin) {
       tableColumns.push({text: 'ACTIONS', value: 'actions', align: 'end', sortable: false,})
     }
-    const events = ref([]);
-    const eventSearchInput = ref('');
-    const selectedEvent = ref(null);
-    const findingEvents = ref(false);
+    const raceSeries = ref([]);
+    const races = ref([]);
+    const raceSeriesSearchInput = ref('');
+    const selectedRaceSeries = ref(null);
+    const findingRaceSeries = ref(false);
 
-    watch(eventSearchInput, () => {
-      findEventsDebounce(eventSearchInput.value);
+    watch(raceSeriesSearchInput, () => {
+      findRaceSeriesDebounce(raceSeriesSearchInput.value);
     });
-    watch(selectedEvent, () => {
+    watch(selectedRaceSeries, () => {
       loadRecords(1);
     });
 
-    const findEvents = (search) => {
-      if (findingEvents.value) {
-        events.value = [];
+    const findRaceSeries = (search) => {
+      if (findingRaceSeries.value) {
+        raceSeries.value = [];
         return;
       }
-      findingEvents.value = true;
-      axios.get("usacycling/event/", {params: {search: search}}).then((response) => {
-        findingEvents.value = false;
-        events.value = response.data.results;
+      findingRaceSeries.value = true;
+      axios.get("bycing_org/race_series/", {params: {search: search}}).then((response) => {
+        findingRaceSeries.value = false;
+        raceSeries.value = response.data.results;
       }, (error) => {
-        findingEvents.value = false;
+        findingRaceSeries.value = false;
         notifyDefaultServerError(error, true)
       });
     };
 
-    const findEventsDebounce = _.debounce(findEvents, 500);
+    const findRaceSeriesDebounce = _.debounce(findRaceSeries, 500);
+
+    const displayRiderName = (r) => {
+      var name = '';
+      if (r._rider) {
+        name = `${r._rider.first_name} ${r._rider.last_name}`.trim();
+      } else {
+        name = `${r.more_data.first_name || ''} ${r.more_data.last_name || ''}`.trim();
+      }
+      return name || 'N/A'
+    };
 
     const loadRecords = (page) => {
       if (page) {
         tableOptions.value.page = page;
       }
       const params = Object.assign({organization: props.organization.id}, tableFiltering.value, refineVTableOptions(tableOptions.value));
-      if (selectedEvent.value) {
-        params.event = selectedEvent.value.event_id
+      if (selectedRaceSeries.value) {
+        params.race_series = selectedRaceSeries.value.id
       }
       loading.value = true;
-      axios.get("bycing_org/race/", {params: params}).then((response) => {
+      axios.get("bycing_org/race_series_result/", {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
         pagination.value = response.data.pagination;
@@ -215,6 +269,7 @@ export default {
         loading.value = false;
         notifyDefaultServerError(error, true)
       });
+
     };
     watch(() => tableFiltering, (currentValue, oldValue) => {
         loadRecords(1);
@@ -227,17 +282,20 @@ export default {
 
     return {
       records,
-      eventSearchInput,
-      events,
-      selectedEvent,
-      findEvents,
-      findEventsDebounce,
-      findingEvents,
+      raceSeriesSearchInput,
+      raceSeries,
+      races,
+      selectedRaceSeries,
+      findRaceSeries,
+      findRaceSeriesDebounce,
+      findingRaceSeries,
+      displayRiderName,
       tableColumns,
       tableOptions,
       tableFiltering,
       loading,
       pagination,
+      avatarText,
       loadRecords,
       icons: {
         mdiPlus,
@@ -259,11 +317,11 @@ export default {
 </script>
 
 <style lang="scss">
-.organization-profile-races-tab {
+.organization-profile-race-results-tab {
   .search-input {
     max-width: 10.625rem;
   }
-  td.event-td {
+  td.race-td {
     max-width: 250px;
   }
 }

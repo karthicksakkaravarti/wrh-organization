@@ -1,13 +1,13 @@
 <template>
   <div id="organization-profile-view">
     <v-row v-if="organization.id">
-      <v-col cols="12" md="5" lg="4">
+      <v-col cols="12" md="4" lg="3">
         <organization-bio-panel :organization="organization"
                                 @edit-click="$refs.editDialogRef.show(organization)">
         </organization-bio-panel>
       </v-col>
 
-      <v-col cols="12" md="7" lg="8">
+      <v-col cols="12" md="8" lg="9">
         <v-tabs v-model="tab" show-arrows class="organization-profile-tabs">
           <v-tab>
             <v-icon size="20" class="me-3">{{ icons.mdiAccountMultipleOutline }}</v-icon>
@@ -17,17 +17,41 @@
             <v-icon size="20" class="me-3">{{ icons.mdiHomeGroup }}</v-icon>
             <span>Member Orgs</span>
           </v-tab>
-          <v-tab v-if="organization.my_level.is_admin">
-            <v-icon size="20" class="me-3">{{ icons.mdiFormatListText }}</v-icon>
-            <span>Member Fields</span>
-          </v-tab>
-          <v-tab>
-            <v-icon size="20" class="me-3">{{ icons.mdiCheckerboard }}</v-icon>
-            <span>Races</span>
-          </v-tab>
           <v-tab>
             <v-icon size="20" class="me-3">{{ icons.mdiFlagCheckered }}</v-icon>
             <span>Race Results</span>
+          </v-tab>
+          <v-tab>
+            <v-icon size="20" class="me-3">{{ icons.mdiFlagCheckered }}</v-icon>
+            <span>Race-Series Results</span>
+          </v-tab>
+          <v-tab class="pl-0 pr-0">
+            <v-menu bottom left>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  text
+                  class="align-self-center p-0 more-btn"
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-icon size="20" class="mr-1">{{icons.mdiMenu}}</v-icon>
+                  More
+                </v-btn>
+              </template>
+
+              <v-list class="grey lighten-3">
+                <v-list-item @click="tab=4; moreTab={id: 0, name: 'Races'}">
+                  <v-icon size="20" class="me-3">{{ icons.mdiCheckerboard }}</v-icon> Races
+                </v-list-item>
+                <v-list-item @click="tab=4; moreTab={id: 1, name: 'Race-Series'}">
+                  <v-icon size="20" class="me-3">{{ icons.mdiCheckerboard }}</v-icon> Race-Series
+                </v-list-item>
+                <v-list-item @click="tab=4; moreTab={id: 2, name: 'Member Fields'}" v-if="organization.my_level.is_admin">
+                  <v-icon size="20" class="me-3">{{ icons.mdiFormatListText }}</v-icon> Member Fields
+                </v-list-item>
+              </v-list>
+            </v-menu>
+
           </v-tab>
         </v-tabs>
 
@@ -38,16 +62,22 @@
           <v-tab-item>
             <organization-member-orgs-tab :organization="organization"></organization-member-orgs-tab>
           </v-tab-item>
-          <v-tab-item v-if="organization.my_level.is_admin">
-            <organization-member-fields-tab :organization="organization"></organization-member-fields-tab>
-          </v-tab-item>
-          <v-tab-item>
-            <organization-races-tab :organization="organization"></organization-races-tab>
-          </v-tab-item>
           <v-tab-item>
             <organization-race-results-tab :organization="organization"></organization-race-results-tab>
           </v-tab-item>
-
+          <v-tab-item>
+            <organization-race-series-results-tab :organization="organization"></organization-race-series-results-tab>
+          </v-tab-item>
+          <v-tab-item>
+            <organization-races-tab v-if="!moreTab.id || moreTab.id == 0" :organization="organization"></organization-races-tab>
+            <organization-race-series-tab v-else-if="moreTab.id == 1" :organization="organization"></organization-race-series-tab>
+            <organization-member-fields-tab v-else-if="moreTab.id == 2 && organization.my_level.is_admin"
+                                            :organization="organization"></organization-member-fields-tab>
+          </v-tab-item>
+          <v-tab-item>
+          </v-tab-item>
+          <v-tab-item v-if="organization.my_level.is_admin">
+          </v-tab-item>
         </v-tabs-items>
       </v-col>
     </v-row>
@@ -67,7 +97,8 @@ import {
   mdiCheckerboard,
   mdiHomeGroup,
   mdiFormatListText,
-  mdiFlagCheckered
+  mdiFlagCheckered,
+  mdiMenu,
 } from '@mdi/js'
 import OrganizationBioPanel from "./OrganizationBioPanel";
 import OrganizationRacesTab from "./OrganizationRacesTab";
@@ -80,9 +111,13 @@ import {useRouter} from "@core/utils";
 import ProfileOrganizationFormDialog from "@/views/dashboard/memberProfile/ProfileOrganizationFormDialog";
 import OrganizationMemberOrgsTab from "./OrganizationMemberOrgsTab";
 import OrganizationMemberFieldsTab from "./OrganizationMemberFieldsTab";
+import OrganizationRaceSeriesTab from "./OrganizationRaceSeriesTab";
+import OrganizationRaceSeriesResultsTab from "./OrganizationRaceSeriesResultsTab";
 
 export default {
   components: {
+    OrganizationRaceSeriesResultsTab,
+    OrganizationRaceSeriesTab,
     OrganizationMemberFieldsTab,
     OrganizationMemberOrgsTab,
     ProfileOrganizationFormDialog,
@@ -94,6 +129,7 @@ export default {
   setup() {
     const { route } = useRouter();
     const tab = ref(null);
+    const moreTab = ref({});
 
     const organization = ref({my_level: {}});
     const loadOrganization = () => {
@@ -114,13 +150,15 @@ export default {
       organization,
       loadOrganization,
       tab,
+      moreTab,
       icons: {
         mdiAccountMultipleOutline,
         mdiCalendarMultiple,
         mdiCheckerboard,
         mdiHomeGroup,
         mdiFormatListText,
-        mdiFlagCheckered
+        mdiFlagCheckered,
+        mdiMenu
       }
     }
   },
@@ -134,6 +172,9 @@ export default {
 
 // user view
 #organization-profile-view {
+  .more-btn {
+    height: 100% !important;
+  }
   .organization-profile-tabs {
     &.v-tabs:not(.v-tabs--vertical) {
       box-shadow: none !important;

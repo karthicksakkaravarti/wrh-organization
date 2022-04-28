@@ -21,6 +21,7 @@ class USACyclingClubFilter(django_filters.FilterSet):
 
 
 class USACEventFilter(django_filters.FilterSet):
+    event_id__in = django_filters.BaseInFilter(field_name='event_id')
     start_date = django_filters.CharFilter(lookup_expr='iexact')
     start_date__gte = django_filters.CharFilter(field_name='start_date', lookup_expr='gte')
     start_date__lte = django_filters.CharFilter(field_name='start_date', lookup_expr='lte')

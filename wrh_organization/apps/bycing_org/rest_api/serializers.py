@@ -6,7 +6,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
-    FieldsTracking, Race, RaceResult
+    FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult
 from apps.usacycling.models import USACEvent
 from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField
 
@@ -273,6 +273,62 @@ class RaceResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerial
 
     class Meta:
         model = RaceResult
+        fields = '__all__'
+        extra_kwargs = {
+            'organization': {'required': True},
+            'create_by': {'read_only': True},
+        }
+
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        if not res['more_data']:
+            res['more_data'] = {}
+        return res
+
+
+class CategorySerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = '__all__'
+        extra_kwargs = {
+            'create_by': {'read_only': True},
+        }
+
+
+class NestedCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('id', 'title',)
+
+
+class RaceSeriesSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    _events = NestedEventSerializer(read_only=True, source='events', many=True)
+    _races = RaceSerializer(read_only=True, source='races', many=True)
+    _categories = NestedCategorySerializer(read_only=True, source='categories', many=True)
+
+    class Meta:
+        model = RaceSeries
+        fields = '__all__'
+        extra_kwargs = {
+            'create_by': {'read_only': True},
+        }
+
+
+class NestedRaceSeriesSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = RaceSeries
+        fields = ['id', 'name']
+
+
+class RaceSeriesResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    _rider = NestedMember2Serializer(read_only=True, source='rider')
+    _race_series = NestedRaceSeriesSerializer(read_only=True, source='race_series')
+    _category = NestedCategorySerializer(read_only=True, source='category')
+
+    class Meta:
+        model = RaceSeriesResult
         fields = '__all__'
         extra_kwargs = {
             'organization': {'required': True},

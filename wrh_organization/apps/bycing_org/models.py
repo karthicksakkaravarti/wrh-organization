@@ -375,3 +375,55 @@ class RaceResult(models.Model):
 
     def __str__(self):
         return f'{self.place}-{self.rider}'
+
+
+class Category(models.Model):
+    title = models.CharField(max_length=256, unique=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='categories')
+    create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    create_datetime = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (('title', 'organization'),)
+
+    def __str__(self):
+        return self.title
+
+
+class RaceSeries(models.Model):
+    name = models.CharField(max_length=256)
+    events = models.ManyToManyField(USACEvent, related_name='race_series')
+    races = models.ManyToManyField(Race, related_name='race_series')
+    categories = models.ManyToManyField(Category, related_name='race_series')
+    points_map = models.JSONField(null=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='race_series')
+    create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    create_datetime = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (('name', 'organization'),)
+
+    def __str__(self):
+        return self.name
+
+
+class RaceSeriesResult(models.Model):
+    rider = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, related_name='race_series_results')
+    race_series = models.ForeignKey(RaceSeries, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    place = models.IntegerField(validators=[MinValueValidator(1)])
+    more_data = models.JSONField(null=True)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    create_datetime = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (('rider', 'race_series', 'organization'),)
+
+    def save(self, *args, **kwargs):
+        if not self.more_data:
+            self.more_data = {}
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.place}-{self.rider}'

@@ -6,7 +6,7 @@
   >
     <v-card>
       <v-card-title>
-        <span class="headline">{{isEditMode? `Edit Race Result #${record.id}`: 'New Race Result'}}</span>
+        <span class="headline">{{isEditMode? `Edit Race #${record.id}`: 'New Race'}}</span>
       </v-card-title>
       <v-form @submit.prevent="save">
         <v-card-text>
@@ -39,7 +39,7 @@
 
         <v-card-text v-if="confirmDelete">
           <v-alert type="warning" dense text :icon="icons.mdiAlert">
-            <p>If you delete an organization, all related records will be deleted! Are you sure?</p>
+            <p>If you delete it, all related records will be deleted! Are you sure?</p>
             <v-btn color="error" outlined small :loading="deleting" @click="deleteRecord()">Yes, Delete It</v-btn>
             <v-btn color="secondary" @click="confirmDelete=false" small text class="ml-1">Cancel</v-btn>
           </v-alert>
