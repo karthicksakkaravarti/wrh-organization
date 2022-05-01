@@ -1,0 +1,1 @@
+0 *     * * *   appuser /opt/webapps/wrh_organization/env/bin/python manage.py usac_event_sync && /opt/webapps/wrh_organization/env/bin/python manage.py usac_club_import
