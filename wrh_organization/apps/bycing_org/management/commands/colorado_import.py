@@ -1,4 +1,6 @@
 import argparse
+import getpass
+
 import mysql.connector
 import json
 import traceback
@@ -20,7 +22,7 @@ class Command(BaseCommand):
         parser.add_argument('--orgid', type=int, help='Colorado org id', required=True)
 
         parser.add_argument('--username', type=str, help='mysql username', required=True)
-        parser.add_argument('--password', type=str, help='mysql password', required=True)
+        parser.add_argument('--password', type=str, help='mysql password')
         parser.add_argument('--host', type=str, help='mysql host', default='localhost')
         parser.add_argument('--port', type=int, help='mysql host', default=3306)
         parser.add_argument('--db', type=str, help='mysql database', required=True)
@@ -213,6 +215,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         org = Organization.objects.get(pk=options.get('orgid'))
+        if not options.get('password'):
+            options['password'] = getpass.getpass('Enter Database Password: ')
 
         conn = mysql.connector.connect(user=options.get('username'), password=options.get('password'),
                                       host=options.get('host'),
