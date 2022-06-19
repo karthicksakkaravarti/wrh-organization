@@ -173,10 +173,10 @@ export default {
       }
       var params = {search: search};
       if (ids && ids.length) {
-        params.event_id__in = ids.join();
+        params.id__in = ids.join();
       }
       findingEvents.value = true;
-      axios.get("usacycling/event/", {params: params}).then((response) => {
+      axios.get("bycing_org/event/", {params: params}).then((response) => {
         findingEvents.value = false;
         events.value = response.data.results.concat(record.value._events || []);
       }, (error) => {
@@ -193,7 +193,7 @@ export default {
         return;
       }
       var params = {
-        event: record.value._events.map(r => r.event_id),
+        event: record.value._events.map(r => r.id),
         page_size: 0
       };
       axios.get("bycing_org/race/", {params: params}).then((response) => {
@@ -248,7 +248,7 @@ export default {
       } else {
         data.organization = props.organization.id;
       }
-      data.events = data._events.map(r => r.event_id);
+      data.events = data._events.map(r => r.id);
       data.races = data._races.map(r => r.id);
       data.categories = data._categories.map(r => r.id);
       delete data._events;

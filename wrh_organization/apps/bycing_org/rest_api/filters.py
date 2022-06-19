@@ -2,14 +2,13 @@ from django.db.models import Q
 from django_filters import rest_framework as filters
 
 from ..models import Member, Organization, OrganizationMember, OrganizationMemberOrg, FieldsTracking, Race, RaceResult, \
-    Category, RaceSeries, RaceSeriesResult
-from ...usacycling.models import USACEvent
+    Category, RaceSeries, RaceSeriesResult, Event
 
 
 class MemberFilter(filters.FilterSet):
     class Meta:
         model = Member
-        exclude = ['social_media']
+        exclude = ['social_media', 'more_data']
 
 
 class OrganizationFilter(filters.FilterSet):
@@ -55,11 +54,11 @@ class OrganizationMemberOrgFilter(filters.FilterSet):
 
 
 class RaceFilter(filters.FilterSet):
-    event = filters.ModelMultipleChoiceFilter(queryset=USACEvent.objects.all())
+    event = filters.ModelMultipleChoiceFilter(queryset=Event.objects.all())
 
     class Meta:
         model = Race
-        fields = '__all__'
+        exclude = ['more_data']
 
 
 class RaceResultFilter(filters.FilterSet):
@@ -117,3 +116,12 @@ class RaceSeriesResultFilter(filters.FilterSet):
     class Meta:
         model = RaceSeriesResult
         exclude = ['more_data']
+
+
+class EventFilter(filters.FilterSet):
+    id__in = filters.BaseInFilter(field_name='id')
+    class Meta:
+        model = Event
+        exclude = ['more_data']
+
+

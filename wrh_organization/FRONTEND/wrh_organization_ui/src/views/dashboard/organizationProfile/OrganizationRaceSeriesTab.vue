@@ -187,7 +187,7 @@ export default {
         return;
       }
       findingEvents.value = true;
-      axios.get("usacycling/event/", {params: {search: search}}).then((response) => {
+      axios.get("bycing_org/event/", {params: {search: search}}).then((response) => {
         findingEvents.value = false;
         events.value = response.data.results;
       }, (error) => {
@@ -204,7 +204,7 @@ export default {
       }
       const params = Object.assign({organization: props.organization.id}, tableFiltering.value, refineVTableOptions(tableOptions.value));
       if (params.events) {
-        params.events = params.events.event_id
+        params.events = params.events.id
       } else {
         delete params.events;
       }

@@ -7,8 +7,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from model_utils import FieldTracker
 from phonenumber_field.modelfields import PhoneNumberField
+from rest_framework.utils.encoders import JSONEncoder
 
-from apps.usacycling.models import USACEvent
 from wrh_organization.helpers.fields_tracking import BaseFieldsTracking
 
 User = get_user_model()
@@ -42,7 +42,7 @@ class OrganizationMember(models.Model):
     org_member_uid = models.CharField(max_length=256, null=True, blank=True)
     start_date = models.DateField(null=True)
     exp_date = models.DateField(null=True)
-    member_fields = models.JSONField(null=True)
+    member_fields = models.JSONField(null=True, encoder=JSONEncoder)
     status = models.CharField(max_length=16, null=True, choices=STATUS_CHOICES)
     datetime = models.DateTimeField(auto_now_add=True)
     _tracker = FieldTracker()
@@ -103,7 +103,7 @@ class OrganizationMemberOrg(models.Model):
     is_active = models.BooleanField(default=True, null=True)
     start_date = models.DateField(null=True)
     exp_date = models.DateField(null=True)
-    member_fields = models.JSONField(null=True)
+    member_fields = models.JSONField(null=True, encoder=JSONEncoder)
     status = models.CharField(max_length=16, null=True, choices=STATUS_CHOICES)
     datetime = models.DateTimeField(auto_now_add=True)
     _tracker = FieldTracker()
@@ -294,6 +294,7 @@ class Member(models.Model):
                                  validators=[MinValueValidator(1), MaxValueValidator(3)])
 
     social_media = models.JSONField(null=True, blank=True)
+    more_data = models.JSONField(null=True, encoder=JSONEncoder)
     is_verified = models.BooleanField(default=None, null=True)
     user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='member', null=True)
 
@@ -341,11 +342,29 @@ class Member(models.Model):
         return f'{self.first_name} {self.last_name}'
 
 
+class Event(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True)
+    organizer_email = models.CharField(max_length=300, null=True, blank=True)
+    country = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=255, blank=True, null=True)
+    state = models.CharField(max_length=255, blank=True, null=True)
+    more_data = models.JSONField(null=True, encoder=JSONEncoder)
+    create_datetime = models.DateTimeField(auto_now_add=True)
+    update_datetime = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Race(models.Model):
     name = models.CharField(max_length=256)
-    event = models.ForeignKey(USACEvent, on_delete=models.CASCADE)
-    start_datetime = models.DateTimeField()
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    start_datetime = models.DateTimeField(null=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, related_name='races')
+    more_data = models.JSONField(null=True, encoder=JSONEncoder)
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
 
@@ -359,8 +378,8 @@ class Race(models.Model):
 class RaceResult(models.Model):
     rider = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, related_name='race_results')
     race = models.ForeignKey(Race, on_delete=models.CASCADE)
-    place = models.IntegerField(validators=[MinValueValidator(1)])
-    more_data = models.JSONField(null=True)
+    place = models.IntegerField(validators=[MinValueValidator(1)], null=True)
+    more_data = models.JSONField(null=True, encoder=JSONEncoder)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
@@ -392,7 +411,7 @@ class Category(models.Model):
 
 class RaceSeries(models.Model):
     name = models.CharField(max_length=256)
-    events = models.ManyToManyField(USACEvent, related_name='race_series')
+    events = models.ManyToManyField(Event, related_name='race_series')
     races = models.ManyToManyField(Race, related_name='race_series')
     categories = models.ManyToManyField(Category, related_name='race_series')
     points_map = models.JSONField(null=True)
@@ -411,8 +430,8 @@ class RaceSeriesResult(models.Model):
     rider = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, related_name='race_series_results')
     race_series = models.ForeignKey(RaceSeries, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    place = models.IntegerField(validators=[MinValueValidator(1)])
-    more_data = models.JSONField(null=True)
+    place = models.IntegerField(validators=[MinValueValidator(1)], null=True)
+    more_data = models.JSONField(null=True, encoder=JSONEncoder)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)

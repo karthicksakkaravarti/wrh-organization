@@ -6,12 +6,13 @@ from django.db import transaction
 from rest_framework import serializers
 
 from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
-    FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult
-from apps.usacycling.models import USACEvent
+    FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult, Event
 from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField
 
 
 class MemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    extra_fields = ['more_data']
+
     class Meta:
         model = Member
         fields = "__all__"
@@ -31,7 +32,7 @@ class MyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializ
     user = UserMyMemberSerializer(allow_null=True, required=False)
     email = serializers.EmailField(allow_null=True, required=False)
     summary = serializers.SerializerMethodField(read_only=True)
-    extra_fields = ['summary',]
+    extra_fields = ['summary', 'more_data']
 
     def get_summary(self, obj):
         race_results_count = obj.race_results.count()
@@ -251,11 +252,13 @@ class FieldsTrackingSerializer(DynamicFieldsSerializerMixin, serializers.ModelSe
 
 class NestedEventSerializer(serializers.ModelSerializer):
     class Meta:
-        model = USACEvent
-        fields = ('event_id', 'name',)
+        model = Event
+        fields = ('id', 'name',)
 
 
 class RaceSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    extra_fields = ['more_data']
+
     _event = NestedEventSerializer(read_only=True, source='event')
 
     class Meta:
@@ -268,6 +271,8 @@ class RaceSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
 
 
 class RaceResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    extra_fields = ['more_data']
+
     _rider = NestedMember2Serializer(read_only=True, source='rider')
     _race = RaceSerializer(read_only=True, source='race')
 
@@ -281,7 +286,7 @@ class RaceResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerial
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
-        if not res['more_data']:
+        if 'more_data' in res and not res['more_data']:
             res['more_data'] = {}
         return res
 
@@ -323,6 +328,8 @@ class NestedRaceSeriesSerializer(DynamicFieldsSerializerMixin, serializers.Model
 
 
 class RaceSeriesResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    extra_fields = ['more_data']
+
     _rider = NestedMember2Serializer(read_only=True, source='rider')
     _race_series = NestedRaceSeriesSerializer(read_only=True, source='race_series')
     _category = NestedCategorySerializer(read_only=True, source='category')
@@ -337,6 +344,13 @@ class RaceSeriesResultSerializer(DynamicFieldsSerializerMixin, serializers.Model
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
-        if not res['more_data']:
+        if 'more_data' in res and not res['more_data']:
             res['more_data'] = {}
         return res
+
+
+class EventSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = Event
+        fields = '__all__'

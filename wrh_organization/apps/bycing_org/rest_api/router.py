@@ -13,6 +13,7 @@ rest_router.register(r'organization/(?P<org_id>[^/.]+)/members', views.Organizat
 rest_router.register(r'organization/(?P<org_id>[^/.]+)/member_orgs', views.OrganizationMemberOrgView,
                      basename='organization_member_orgs')
 rest_router.register(r'users/registration', views.UserRegistrationView, basename='user_registration')
+rest_router.register(r'event', views.EventView)
 rest_router.register(r'race', views.RaceView)
 rest_router.register(r'race_result', views.RaceResultView)
 rest_router.register(r'category', views.CategoryView)

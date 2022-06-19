@@ -21,16 +21,16 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 
 from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
-    FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult
+    FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult, Event
 from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter, OrganizationMemberFilter, \
     OrganizationMemberOrgFilter, FieldsTrackingFilter, RaceFilter, RaceResultFilter, CategoryFilter, RaceSeriesFilter, \
-    RaceSeriesResultFilter
+    RaceSeriesResultFilter, EventFilter
 from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationSerializer, SignupUserSerializer, \
     ActivationEmailSerializer, MyMemberSerializer, MemberOTPVerifySerializer, OrganizationMemberSerializer, \
     NestedMemberSerializer, UserSendRecoverPasswordSerializer, UserRecoverPasswordSerializer, \
     CsvFileImportSerializer, OrganizationMemberMyRequestsSerializer, OrganizationMemberOrgSerializer, \
     NestedOrganizationSerializer, FieldsTrackingSerializer, RaceSerializer, RaceResultSerializer, CategorySerializer, \
-    RaceSeriesSerializer, RaceSeriesResultSerializer
+    RaceSeriesSerializer, RaceSeriesResultSerializer, EventSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
     IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token, to_dict
 
@@ -331,7 +331,7 @@ class OrganizationView(viewsets.ModelViewSet):
     ordering = ('id',)
 
     def get_queryset(self):
-        return super().get_queryset().prefetch_related('members')
+        return super().get_queryset()
 
     def perform_create(self, serializer):
         super().perform_create(serializer)
@@ -609,7 +609,7 @@ class AdminOrganizationActionsViewMixin:
         instance.delete()
 
 
-class RaceView(viewsets.ModelViewSet):
+class RaceView(AdminOrganizationActionsViewMixin, viewsets.ModelViewSet):
     queryset = Race.objects.all()
     serializer_class = RaceSerializer
     filterset_class = RaceFilter
@@ -829,3 +829,12 @@ class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelView
                 failed.append(row)
 
         return Response({'successed': successed, 'failed': failed}, status=status.HTTP_200_OK)
+
+
+class EventView(AdminOrganizationActionsViewMixin, viewsets.ReadOnlyModelViewSet):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    filterset_class = EventFilter
+    ordering = '-id'
+    ordering_fields = '__all__'
+    search_fields = ['name', 'description']

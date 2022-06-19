@@ -112,7 +112,7 @@ export default {
         httpMethod = axios.patch;
         successMsg = "Race updated successfully."
       } else {
-        data.event = currentEvent.value.event_id;
+        data.event = currentEvent.value.id;
         data.organization = props.organization.id;
       }
       saving.value = true;

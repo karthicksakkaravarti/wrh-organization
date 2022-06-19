@@ -31,7 +31,7 @@
                     {{ data.item.name }}
                   </v-list-item-title>
                   <v-list-item-subtitle>
-                    <v-chip x-small v-for="e in (data.item._events || [])" :key="e.event_id" class="mr-1">
+                    <v-chip x-small v-for="e in (data.item._events || [])" :key="e.id" class="mr-1">
                       {{e.name}}
                     </v-chip>
                   </v-list-item-subtitle>

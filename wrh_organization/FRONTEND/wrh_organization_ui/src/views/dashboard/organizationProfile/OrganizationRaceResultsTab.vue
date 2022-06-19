@@ -257,7 +257,7 @@ export default {
       if (selectedRace.value) {
         params.race = selectedRace.value.id
       } else if (selectedEvent.value) {
-        params.event = selectedEvent.value.event_id
+        params.event = selectedEvent.value.id
       }
       return combineURLs(axios.defaults.baseURL, `bycing_org/race_result/export/csv`, params);
     });
@@ -280,7 +280,7 @@ export default {
         return;
       }
       findingEvents.value = true;
-      axios.get("usacycling/event/", {params: {search: search}}).then((response) => {
+      axios.get("bycing_org/event/", {params: {search: search}}).then((response) => {
         findingEvents.value = false;
         events.value = response.data.results;
       }, (error) => {
@@ -310,7 +310,7 @@ export default {
       if (selectedRace.value) {
         params.race = selectedRace.value.id
       } else if (selectedEvent.value) {
-        params.event = selectedEvent.value.event_id
+        params.event = selectedEvent.value.id
       }
       loading.value = true;
       axios.get("bycing_org/race_result/", {params: params}).then((response) => {
@@ -329,7 +329,7 @@ export default {
         return
       }
       loadingRaces.value = true;
-      axios.get("bycing_org/race/", {params: {event: selectedEvent.value.event_id, page_size: 0}}).then((response) => {
+      axios.get("bycing_org/race/", {params: {event: selectedEvent.value.id, page_size: 0}}).then((response) => {
         loadingRaces.value = false;
         races.value = response.data.results;
       }, (error) => {
