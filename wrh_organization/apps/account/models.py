@@ -2,6 +2,7 @@ from pathlib import Path
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from rest_framework.utils.encoders import JSONEncoder
 
 
 def avatar_file_path_func(instance, filename):
@@ -25,4 +26,5 @@ class User(AbstractUser):
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default=GENDER_UNKNOWN)
     birth_date = models.DateField(null=True, blank=True)
     avatar = models.ImageField(blank=True, null=True, upload_to=avatar_file_path_func)
+    more_data = models.JSONField(null=True, encoder=JSONEncoder, editable=False)
     # verified_email = models.BooleanField(default=False)

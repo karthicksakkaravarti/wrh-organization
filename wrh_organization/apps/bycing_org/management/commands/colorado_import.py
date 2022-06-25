@@ -10,6 +10,7 @@ from django.core.management import BaseCommand
 from backports.zoneinfo import ZoneInfo
 from django.db import transaction
 from django.utils.dateparse import parse_date
+from docutils.nodes import status
 
 from apps.bycing_org.models import Member, Organization, OrganizationMember, Event, RaceResult, Race
 
@@ -55,8 +56,9 @@ class Command(BaseCommand):
         if birth_date and isinstance(birth_date, str):
             birth_date = parse_date(birth_date)
         phone = r.get('phoneCell') or r.get('phoneWork') or r.get('phoneHome') or None
+        email = (r.get('email') or '').lower() or None,
         member = Member.objects.create(
-            email=(r.get('email') or '').lower() or None,
+            email=email,
             phone=phone,
             first_name=r.get('firstName') or None,
             last_name=r.get('lastName') or None,
@@ -71,7 +73,8 @@ class Command(BaseCommand):
             more_data={'imported': True, 'src': 'colorado'}
         )
         r.update({'imported': True, 'src': 'colorado'})
-        OrganizationMember.objects.create(organization=org, member=member, org_member_uid=uid, member_fields=r)
+        OrganizationMember.objects.create(organization=org, member=member, org_member_uid=uid, member_fields=r,
+                                          status=OrganizationMember.STATUS_WAITING)
         return member
 
     @transaction.atomic()

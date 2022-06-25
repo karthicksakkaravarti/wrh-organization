@@ -198,14 +198,8 @@ class SignupUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'password': list(e.messages)})
         user = super().create(validated_data)
         user.set_password(password)
+        user.more_data = {'member_data': member_data}
         user.save()
-        member_data.update(first_name=user.first_name, last_name=user.last_name, gender=user.gender,
-                           birth_date=user.birth_date, user=user, email=user.email)
-        Member.objects.create(**member_data)
-        # member = Member.objects.update_or_create(
-        #     defaults=member_data,
-        #     email=user.email
-        # )
         return user
 
 

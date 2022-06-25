@@ -85,18 +85,27 @@ class UserRegistrationView(viewsets.ViewSet):
             return self._activate_get(request, user, *args, **kwargs)
 
         user.is_active = True
-        user.save()
         member = getattr(user, 'member', None)
-        if member:
-            flt = Q(email=member.email)
-            update_fields = ['email_verified']
-            if member.phone:
-                flt = flt | Q(phone=member.phone)
-            if not Member.objects.exclude(user=user).filter(flt).exists():
-                member.is_verified = True
-                update_fields.append('is_verified')
-            member.email_verified = True
-            member.save(update_fields=update_fields)
+        if not member or not member.email_verified:
+            existing_member = Member.objects.exclude(user=user).filter(email=user.email
+                                                                       ).order_by('email_verified').first()
+            member = existing_member or member
+
+        member = Member() if member is None else member
+
+        member.email_verified = True
+        member.is_verified = True
+        member.user = user
+        member_data = (user.more_data or {}).get('member_data') or {}
+        fields = ('phone', 'address1', 'address2', 'country', 'city', 'state', 'zipcode')
+        member_data = {k: member_data.get(k) for k in fields}
+        member_data.update(first_name=user.first_name, last_name=user.last_name, gender=user.gender,
+                           birth_date=user.birth_date, user=user, email=user.email)
+        for k, v in member_data.items():
+            if not getattr(member, k, None):
+                setattr(member, k, v)
+
+        member.save()
 
         login(request, user)
         next = request.GET.get('redirect') or settings.SIGNUP_ACTIVATION_REDIRECT_URL
@@ -142,9 +151,11 @@ class UserRegistrationView(viewsets.ViewSet):
     def send_recover_password(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        user = User.objects.filter(is_active=True, email=serializer.validated_data.get('email')).first()
+        user = User.objects.filter(email=serializer.validated_data.get('email')).first()
         if not user:
             return Response({'error': 'User with this email does not exists!'}, status=status.HTTP_404_NOT_FOUND)
+        if not user.is_active:
+            return Response({'error': 'User with this email is inactive.'}, status=status.HTTP_403_FORBIDDEN)
 
         subject = 'Reset Your Password'
         message = render_to_string('bycing_org/email/user_recover_password.html', {

@@ -261,7 +261,7 @@ LOGGING = {
 AUTH_USER_MODEL='account.User'
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
+    'django.contrib.auth.backends.AllowAllUsersModelBackend',
 ]
 
 # dbbackup settings
