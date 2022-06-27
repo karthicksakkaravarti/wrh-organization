@@ -84,6 +84,9 @@
               {{item._event.name}}
             </span>
           </div>
+          <span class="text-caption">
+            {{ $utils.formatDate(item._event.start_date, 'MMM D, YYYY') }} - {{ $utils.formatDate(item._event.end_date, 'MMM D, YYYY') }}
+          </span>
         </template>
         <template #item.name="{item}">
             <span class="text-truncate font-weight-semibold">
@@ -91,8 +94,11 @@
             </span>
         </template>
         <template #item.start_datetime="{item}">
-          <span class="pr-1">{{$utils.formatDate(item.start_datetime, 'MMM D, YYYY')}}</span>
-          <span class="text-caption">{{$utils.formatDate(item.start_datetime, 'HH:mm')}}</span>
+          <span v-if="!item.start_datetime">-</span>
+          <template v-else>
+            <span class="pr-1">{{$utils.formatDate(item.start_datetime, 'MMM D, YYYY')}}</span>
+            <span class="text-caption">{{$utils.formatDate(item.start_datetime, 'HH:mm')}}</span>
+          </template>
         </template>
         <template #item.create_datetime="{item}">
           <span class="pr-1">{{$utils.formatDate(item.create_datetime, 'M/D/YY')}}</span>

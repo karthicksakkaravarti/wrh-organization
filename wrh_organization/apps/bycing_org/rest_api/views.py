@@ -626,6 +626,9 @@ class RaceView(AdminOrganizationActionsViewMixin, viewsets.ModelViewSet):
     filterset_class = RaceFilter
     ordering = '-id'
     ordering_fields = '__all__'
+    extra_ordering_fields = {
+        'event': ('event__name', 'event__start_date'),
+    }
     search_fields = ['name', 'event__name']
 
     def get_queryset(self):
@@ -638,6 +641,9 @@ class RaceResultView(AdminOrganizationActionsViewMixin, ExportViewMixin, viewset
     filterset_class = RaceResultFilter
     ordering = '-id'
     ordering_fields = '__all__'
+    extra_ordering_fields = {
+        'event': ('race__event__name', 'race__event__start_date'),
+    }
     search_fields = ['rider__first_name', 'rider__last_name', 'race__name', 'more_data__first_name',
                      'more_data__last_name']
 

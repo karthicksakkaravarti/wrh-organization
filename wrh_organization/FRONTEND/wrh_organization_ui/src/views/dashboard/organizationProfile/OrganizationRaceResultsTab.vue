@@ -94,7 +94,7 @@
           </v-tooltip>
           <v-tooltip bottom>
             <template #activator="{ on, attrs }">
-              <v-btn v-bind="attrs" v-on="on" small outlined color="error" class="me-1" :href="exportUrl" target="_blank">
+              <v-btn v-bind="attrs" v-on="on" small outlined color="error" class="me-1" :href="exportUrl" target="_blank" :disabled="!selectedEvent">
                 <v-icon size="18" class="me-1">
                   {{ icons.mdiFileExcelOutline }}
                 </v-icon>
@@ -151,10 +151,17 @@
             <span class="font-weight-semibold text-truncate">
               {{item._race.name}}
             </span>
-            <span class="text-xs text-truncate">
+          </div>
+        </template>
+        <template #item.event="{item}">
+          <div class="d-flex flex-column">
+            <span class="text-truncate">
               {{item._race._event.name}}
             </span>
           </div>
+          <span class="text-caption">
+            {{ $utils.formatDate(item._race._event.start_date, 'MMM D, YYYY') }} - {{ $utils.formatDate(item._race._event.end_date, 'MMM D, YYYY') }}
+          </span>
         </template>
         <template #item.create_datetime="{item}">
           <span class="pr-1">{{$utils.formatDate(item.create_datetime, 'M/D/YY')}}</span>
@@ -238,9 +245,10 @@ export default {
     const tableColumns = [
       {text: '#ID', value: 'id', align: 'start',},
       {text: 'RIDER', value: 'rider'},
-      {text: 'RACE', value: 'race', cellClass: 'race-td'},
       {text: 'PLACE', value: 'place'},
-      {text: 'CREATED AT', value: 'create_datetime'},
+      {text: 'RACE', value: 'race', cellClass: 'race-td'},
+      {text: 'EVENT', value: 'event', cellClass: 'event-td'},
+      // {text: 'CREATED AT', value: 'create_datetime'},
     ];
     if (props.organization.my_level.is_admin) {
       tableColumns.push({text: 'ACTIONS', value: 'actions', align: 'end', sortable: false,})
@@ -394,6 +402,9 @@ export default {
     max-width: 10.625rem;
   }
   td.race-td {
+    max-width: 250px;
+  }
+  td.event-td {
     max-width: 250px;
   }
 }

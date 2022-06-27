@@ -247,7 +247,7 @@ class FieldsTrackingSerializer(DynamicFieldsSerializerMixin, serializers.ModelSe
 class NestedEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ('id', 'name',)
+        fields = ('id', 'name', 'start_date', 'end_date')
 
 
 class RaceSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):

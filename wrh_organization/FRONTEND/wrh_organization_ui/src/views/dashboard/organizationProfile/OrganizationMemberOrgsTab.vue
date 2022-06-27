@@ -103,7 +103,7 @@
           <span v-else>{{item.status || '-'}}</span>
         </template>
         <template #item.member_org="{item}">
-          <div class="d-flex align-center">
+          <div class="d-flex align-center cursor-pointer" @click="$refs.formDialogRef.show(item)">
             <v-avatar color="success" class="v-avatar-light-bg success--text" size="30">
               <v-img v-if="item._member_org.logo" :src="item._member_org.logo"></v-img>
               <span v-else class="font-weight-medium">

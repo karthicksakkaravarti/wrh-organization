@@ -38,18 +38,60 @@
                           <v-list-item-title>
                             {{ record._member_org.name }}
                           </v-list-item-title>
-
                         </v-list-item-content>
+                        <v-chip small :color="($const.ORGANIZATION_TYPE_MAP[record._member_org.type] || {}).css">
+                          {{($const.ORGANIZATION_TYPE_MAP[record._member_org.type] || {}).title || record._member_org.type}}
+                        </v-chip>
                       </v-list-item>
                     </v-list>
-                    <v-list>
+                    <v-list dense class="member-org-info-list">
                       <v-list-item>
-                        <v-list-item-title>
-                          <v-chip small :color="($const.ORGANIZATION_TYPE_MAP[record._member_org.type] || {}).css">
-                            {{($const.ORGANIZATION_TYPE_MAP[record._member_org.type] || {}).title || record._member_org.type}}
-                          </v-chip>
-                          {{record._member_org.website || '[NO WEBSITE]'}}
-                        </v-list-item-title>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Website</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member_org.website || '[NO WEBSITE]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>E-Mail</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member_org.email || '[NO E-MAIL]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Phone</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member_org.phone? $utils.formatPhone(record._member_org.phone): '[NO PHONE]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Country</v-list-item-subtitle>
+                          <v-list-item-title v-text="($const.COUNTRY_MAP[record._member_org.country] || {}).name || record._member_org.country || '[NO COUNTRY]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>City</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member_org.city || '[NO CITY]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>State</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member_org.state || '[NO STATE]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Zipcode</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member_org.zipcode || '[NO ZIPCODE]'"></v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Address1</v-list-item-subtitle>
+                          <v-list-item-title v-text="record._member_org.address || '[NO ADDRESS]'"></v-list-item-title>
+                        </v-list-item-content>
                       </v-list-item>
                     </v-list>
                   </v-card>
@@ -298,3 +340,9 @@ export default {
   },
 }
 </script>
+<style scoped>
+.member-org-info-list .v-list-item {
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+</style>
