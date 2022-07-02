@@ -35,6 +35,34 @@
                   </v-list-item-subtitle>
                 </v-list-item-content>
               </template>
+              <template #prepend-item>
+                <v-row class="pl-1 pr-1 mb-1">
+                  <v-col cols="12" md="6">
+                    <v-menu v-model="eventFromDate" :close-on-content-click="false"
+                        :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-text-field class="pt-0 pb-0" v-model="eventFiltering.from_date" label="From Date" hide-details
+                                      v-bind="attrs" v-on="on" dense readonly clearable filled>
+                        </v-text-field>
+                      </template>
+                      <v-date-picker v-model="eventFiltering.from_date" color="primary" @input="eventFromDate = false">
+                      </v-date-picker>
+                    </v-menu>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-menu v-model="eventToDate" :close-on-content-click="false"
+                        :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-text-field class="pt-0 pb-0" v-model="eventFiltering.to_date" label="To Date" hide-details
+                                      v-bind="attrs" v-on="on" dense readonly clearable filled>
+                        </v-text-field>
+                      </template>
+                      <v-date-picker v-model="eventFiltering.to_date" color="primary" @input="eventToDate = false">
+                      </v-date-picker>
+                    </v-menu>
+                  </v-col>
+                </v-row>
+              </template>
             </v-autocomplete>
           </v-col>
         </v-row>
@@ -165,6 +193,10 @@ export default {
     const loading = ref(false);
     const tableOptions = ref({});
     const tableFiltering = ref({});
+    const eventFromDate = ref();
+    const eventToDate = ref();
+    const eventFiltering = ref({});
+
     const tableColumns = [
       {text: '#ID', value: 'id', align: 'start',},
       {text: 'NAME', value: 'name'},
@@ -186,14 +218,26 @@ export default {
     watch(selectedEvent, () => {
       loadRecords(1);
     });
+    watch(() => eventFiltering, (currentValue, oldValue) => {
+        findEvents(eventSearchInput.value);
+      },
+      { deep: true }
+    );
 
     const findEvents = (search) => {
       if (findingEvents.value) {
         events.value = [];
         return;
       }
+      var params = {search: search};
+      if (eventFiltering.value.from_date) {
+        params.start_date__gte = eventFiltering.value.from_date
+      }
+      if (eventFiltering.value.to_date) {
+        params.start_date__lte = eventFiltering.value.to_date
+      }
       findingEvents.value = true;
-      axios.get("bycing_org/event/", {params: {search: search}}).then((response) => {
+      axios.get("bycing_org/event/", {params: params}).then((response) => {
         findingEvents.value = false;
         events.value = response.data.results;
       }, (error) => {
@@ -245,6 +289,9 @@ export default {
       loading,
       pagination,
       loadRecords,
+      eventFromDate,
+      eventToDate,
+      eventFiltering,
       icons: {
         mdiPlus,
         mdiPencilOutline,

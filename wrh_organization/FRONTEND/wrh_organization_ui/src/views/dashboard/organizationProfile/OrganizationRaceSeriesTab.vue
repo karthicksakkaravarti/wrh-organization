@@ -84,9 +84,16 @@
           </div>
         </template>
         <template #item.races="{item}">
-          <div>
-            <v-chip lable small color="primary" v-for="r in item._races" :key="r.id" class="mr-1">{{r.name}}</v-chip>
-          </div>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <div v-on="on" v-bind="attrs" class="text-truncate">
+                <v-chip lable small color="primary" v-for="r in item._races" :key="r.id" class="mr-1">{{r.name}}</v-chip>
+              </div>
+            </template>
+            <span>
+              <v-chip lable small color="primary" v-for="r in item._races" :key="r.id" class="mr-1">{{r.name}}</v-chip>
+            </span>
+          </v-tooltip>
         </template>
         <template #item.categories="{item}">
           <div>
@@ -264,5 +271,9 @@ export default {
   .search-input {
     max-width: 10.625rem;
   }
+  td.races-td {
+    max-width: 250px;
+  }
+
 }
 </style>

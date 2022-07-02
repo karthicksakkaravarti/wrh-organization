@@ -56,6 +56,9 @@ class OrganizationMemberOrgFilter(filters.FilterSet):
 class RaceFilter(filters.FilterSet):
     event = filters.ModelMultipleChoiceFilter(queryset=Event.objects.all())
 
+    event_start_date__gte = filters.DateFilter(field_name='event__start_date', lookup_expr='gte')
+    event_start_date__lte = filters.DateFilter(field_name='event__start_date', lookup_expr='lte')
+
     class Meta:
         model = Race
         exclude = ['more_data']
@@ -120,6 +123,9 @@ class RaceSeriesResultFilter(filters.FilterSet):
 
 class EventFilter(filters.FilterSet):
     id__in = filters.BaseInFilter(field_name='id')
+    start_date__gte = filters.DateFilter(field_name='start_date', lookup_expr='gte')
+    start_date__lte = filters.DateFilter(field_name='start_date', lookup_expr='lte')
+
     class Meta:
         model = Event
         exclude = ['more_data']

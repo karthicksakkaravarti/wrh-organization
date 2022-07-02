@@ -2,7 +2,7 @@
   <v-dialog
     v-model="isVisible"
     persistent
-    max-width="600px"
+    max-width="700px"
   >
     <v-card>
       <v-card-title>
@@ -49,6 +49,34 @@
                       </v-list-item-subtitle>
                     </v-list-item-content>
                   </template>
+                  <template #prepend-item>
+                    <v-row class="pl-1 pr-1 mb-1">
+                      <v-col cols="12" md="6">
+                        <v-menu v-model="eventFromDate" :close-on-content-click="false"
+                            :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-text-field class="pt-0 pb-0" v-model="eventFiltering.from_date" label="From Date" hide-details
+                                          v-bind="attrs" v-on="on" dense readonly clearable filled>
+                            </v-text-field>
+                          </template>
+                          <v-date-picker v-model="eventFiltering.from_date" color="primary" @input="eventFromDate = false">
+                          </v-date-picker>
+                        </v-menu>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-menu v-model="eventToDate" :close-on-content-click="false"
+                            :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-text-field class="pt-0 pb-0" v-model="eventFiltering.to_date" label="To Date" hide-details
+                                          v-bind="attrs" v-on="on" dense readonly clearable filled>
+                            </v-text-field>
+                          </template>
+                          <v-date-picker v-model="eventFiltering.to_date" color="primary" @input="eventToDate = false">
+                          </v-date-picker>
+                        </v-menu>
+                      </v-col>
+                    </v-row>
+                  </template>
                 </v-autocomplete>
               </v-col>
               <v-col cols="12">
@@ -80,7 +108,18 @@
                       </v-list-item-subtitle>
                     </v-list-item-content>
                   </template>
-
+                  <template #prepend-item>
+                    <v-list-item>
+                      <v-row align="center" justify="space-around">
+                        <v-btn depressed @click="record._races=[...races]">
+                          <v-icon>{{icons.mdiCheckboxMultipleMarkedOutline}}</v-icon> Select All
+                        </v-btn>
+                        <v-btn depressed @click="record._races=[]">
+                          <v-icon>{{icons.mdiCheckboxMultipleBlankOutline}}</v-icon> Unselect All
+                        </v-btn>
+                      </v-row>
+                    </v-list-item>
+                  </template>
                 </v-autocomplete>
               </v-col>
               <v-col cols="12">
@@ -134,11 +173,13 @@ import {
   mdiDelete,
   mdiAlert,
   mdiCalendar,
-  mdiClock
+  mdiClock,
+  mdiCheckboxMultipleMarkedOutline,
+  mdiCheckboxMultipleBlankOutline,
 } from '@mdi/js'
 import {ref, computed} from '@vue/composition-api'
 import axios from "@/axios";
-import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
+import {formatDate, notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import {watch} from "@vue/composition-api/dist/vue-composition-api";
 import _ from "lodash";
 import moment from "moment";
@@ -162,10 +203,19 @@ export default {
     const events = ref([]);
     const eventSearchInput = ref('');
     const findingEvents = ref(false);
+    const eventFromDate = ref();
+    const eventToDate = ref();
+    const eventFiltering = ref({});
 
     watch(eventSearchInput, () => {
       findEventsDebounce(eventSearchInput.value);
     });
+
+    watch(() => eventFiltering, (currentValue, oldValue) => {
+        findEvents(eventSearchInput.value);
+      },
+      { deep: true }
+    );
 
     const findEvents = (search, ids) => {
       if (findingEvents.value) {
@@ -175,10 +225,16 @@ export default {
       if (ids && ids.length) {
         params.id__in = ids.join();
       }
+      if (eventFiltering.value.from_date) {
+        params.start_date__gte = eventFiltering.value.from_date
+      }
+      if (eventFiltering.value.to_date) {
+        params.start_date__lte = eventFiltering.value.to_date
+      }
       findingEvents.value = true;
       axios.get("bycing_org/event/", {params: params}).then((response) => {
         findingEvents.value = false;
-        events.value = response.data.results.concat(record.value._events || []);
+        events.value = _.unionBy(response.data.results, record.value._events || [], r => r.id);
       }, (error) => {
         findingEvents.value = false;
         notifyDefaultServerError(error, true)
@@ -197,7 +253,7 @@ export default {
         page_size: 0
       };
       axios.get("bycing_org/race/", {params: params}).then((response) => {
-        races.value = response.data.results.concat(record.value._races || []);
+        races.value = _.unionBy(response.data.results, record.value._races || [], r => r.id);
       }, (error) => {
         notifyDefaultServerError(error, true)
       });
@@ -302,11 +358,16 @@ export default {
       findingEvents,
       findEvents,
       findEventsDebounce,
+      eventFromDate,
+      eventToDate,
+      eventFiltering,
       icons: {
         mdiDelete,
         mdiAlert,
         mdiCalendar,
-        mdiClock
+        mdiClock,
+        mdiCheckboxMultipleMarkedOutline,
+        mdiCheckboxMultipleBlankOutline,
       },
     }
   },
