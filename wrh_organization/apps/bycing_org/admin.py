@@ -37,9 +37,15 @@ class RaceResultAdmin(admin.ModelAdmin):
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'organization')
+    list_display = ('id', 'title', 'organization', 'create_by')
     search_fields = ('title',)
     list_filter = ('organization',)
+    exclude = ('create_by',)
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.create_by = request.user
+        super().save_model(request, obj, form, change)
 
 
 class RaceSeriesAdmin(admin.ModelAdmin):

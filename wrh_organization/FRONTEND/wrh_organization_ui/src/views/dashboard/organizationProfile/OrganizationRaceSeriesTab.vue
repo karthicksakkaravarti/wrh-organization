@@ -79,9 +79,16 @@
         :footer-props="{'items-per-page-options': $const.DEFAULT_TABLE_PER_PAGE_OPTIONS, 'show-current-page': true, 'show-first-last-page': true}"
       >
         <template #item.events="{item}">
-          <div>
-            <v-chip lable small color="secondary" v-for="r in item._events" :key="r.id" class="mr-1">{{r.name}}</v-chip>
-          </div>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <div v-on="on" v-bind="attrs" class="text-truncate">
+                <v-chip lable small color="secondary" v-for="r in item._events" :key="r.id" class="mr-1">{{r.name}}</v-chip>
+              </div>
+            </template>
+            <span>
+              <v-chip lable small color="secondary" v-for="r in item._events" :key="r.id" class="mr-1">{{r.name}}</v-chip>
+            </span>
+          </v-tooltip>
         </template>
         <template #item.races="{item}">
           <v-tooltip bottom>
@@ -96,14 +103,21 @@
           </v-tooltip>
         </template>
         <template #item.categories="{item}">
-          <div>
-            <v-chip lable small color="info" v-for="r in item._categories" :key="r.id" class="mr-1">{{r.title}}</v-chip>
-          </div>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <div v-on="on" v-bind="attrs" class="text-truncate">
+                <v-chip lable small color="info" v-for="r in item._categories" :key="r.id" class="mr-1">{{r.title}}</v-chip>
+              </div>
+            </template>
+            <span>
+              <v-chip lable small color="info" v-for="r in item._categories" :key="r.id" class="mr-1">{{r.title}}</v-chip>
+            </span>
+          </v-tooltip>
         </template>
         <template #item.name="{item}">
-            <span class="text-truncate font-weight-semibold">
-              {{item.name}}
-            </span>
+          <span class="text-truncate font-weight-semibold">
+            {{item.name}}
+          </span>
         </template>
         <template #item.create_datetime="{item}">
           <span class="pr-1">{{$utils.formatDate(item.create_datetime, 'M/D/YY')}}</span>
@@ -176,7 +190,7 @@ export default {
       {text: 'EVENTS', value: 'events', cellClass: 'events-td', sortable: false},
       {text: 'RACES', value: 'races', cellClass: 'races-td', sortable: false},
       {text: 'CATEGORIES', value: 'categories', cellClass: 'categories-td', sortable: false},
-      {text: 'CREATED AT', value: 'create_datetime'},
+      // {text: 'CREATED AT', value: 'create_datetime'},
     ];
     if (props.organization.my_level.is_admin) {
       tableColumns.push({text: 'ACTIONS', value: 'actions', align: 'end', sortable: false})
@@ -272,6 +286,12 @@ export default {
     max-width: 10.625rem;
   }
   td.races-td {
+    max-width: 250px;
+  }
+  td.events-td {
+    max-width: 250px;
+  }
+  td.categories-td {
     max-width: 250px;
   }
 

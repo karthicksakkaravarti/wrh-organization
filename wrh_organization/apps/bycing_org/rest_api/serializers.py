@@ -59,7 +59,7 @@ class MyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializ
 class NestedUserAvatarSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'avatar')
+        fields = ('id', 'username', 'avatar')
 
 
 class NestedMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -286,6 +286,8 @@ class RaceResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerial
 
 
 class CategorySerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+
+    _create_by = NestedUserAvatarSerializer(source='create_by', read_only=True)
 
     class Meta:
         model = Category

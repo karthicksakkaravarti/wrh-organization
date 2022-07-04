@@ -403,6 +403,7 @@ class Category(models.Model):
     create_datetime = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name_plural = 'Categories'
         unique_together = (('title', 'organization'),)
 
     def __str__(self):

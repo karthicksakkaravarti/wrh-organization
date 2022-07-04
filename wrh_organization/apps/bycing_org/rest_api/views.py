@@ -752,6 +752,9 @@ class CategoryView(AdminOrganizationActionsViewMixin, viewsets.ModelViewSet):
     filterset_class = CategoryFilter
     ordering = '-id'
     ordering_fields = '__all__'
+    extra_ordering_fields = {
+        'create_by': ('create_by__username'),
+    }
     search_fields = ['title']
 
 

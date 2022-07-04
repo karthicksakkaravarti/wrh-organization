@@ -40,13 +40,16 @@
               </template>
 
               <v-list class="grey lighten-3">
-                <v-list-item @click="tab=4; moreTab={id: 0, name: 'Races'}">
+                <v-list-item @click="tab=4; moreTab={id: 'races', name: 'Races'}">
                   <v-icon size="20" class="me-3">{{ icons.mdiCheckerboard }}</v-icon> Races
                 </v-list-item>
-                <v-list-item @click="tab=4; moreTab={id: 1, name: 'Race-Series'}">
+                <v-list-item @click="tab=4; moreTab={id: 'race-series', name: 'Race-Series'}">
                   <v-icon size="20" class="me-3">{{ icons.mdiCheckerboard }}</v-icon> Race-Series
                 </v-list-item>
-                <v-list-item @click="tab=4; moreTab={id: 2, name: 'Member Fields'}" v-if="organization.my_level.is_admin">
+                <v-list-item @click="tab=4; moreTab={id: 'categories', name: 'Categories'}">
+                  <v-icon size="20" class="me-3">{{ icons.mdiFamilyTree }}</v-icon> Categories
+                </v-list-item>
+                <v-list-item @click="tab=4; moreTab={id: 'member-fields', name: 'Member Fields'}" v-if="organization.my_level.is_admin">
                   <v-icon size="20" class="me-3">{{ icons.mdiFormatListText }}</v-icon> Member Fields
                 </v-list-item>
               </v-list>
@@ -69,10 +72,12 @@
             <organization-race-series-results-tab :organization="organization"></organization-race-series-results-tab>
           </v-tab-item>
           <v-tab-item>
-            <organization-races-tab v-if="!moreTab.id || moreTab.id == 0" :organization="organization"></organization-races-tab>
-            <organization-race-series-tab v-else-if="moreTab.id == 1" :organization="organization"></organization-race-series-tab>
-            <organization-member-fields-tab v-else-if="moreTab.id == 2 && organization.my_level.is_admin"
+            <organization-races-tab v-if="!moreTab.id || moreTab.id == 'races'" :organization="organization"></organization-races-tab>
+            <organization-race-series-tab v-else-if="moreTab.id == 'race-series'" :organization="organization"></organization-race-series-tab>
+            <organization-member-fields-tab v-else-if="moreTab.id == 'member-fields' && organization.my_level.is_admin"
                                             :organization="organization"></organization-member-fields-tab>
+            <organization-categories-tab v-else-if="moreTab.id == 'categories' && organization.my_level.is_admin"
+                                            :organization="organization"></organization-categories-tab>
           </v-tab-item>
           <v-tab-item>
           </v-tab-item>
@@ -99,6 +104,7 @@ import {
   mdiFormatListText,
   mdiFlagCheckered,
   mdiMenu,
+  mdiFamilyTree,
 } from '@mdi/js'
 import OrganizationBioPanel from "./OrganizationBioPanel";
 import OrganizationRacesTab from "./OrganizationRacesTab";
@@ -113,9 +119,11 @@ import OrganizationMemberOrgsTab from "./OrganizationMemberOrgsTab";
 import OrganizationMemberFieldsTab from "./OrganizationMemberFieldsTab";
 import OrganizationRaceSeriesTab from "./OrganizationRaceSeriesTab";
 import OrganizationRaceSeriesResultsTab from "./OrganizationRaceSeriesResultsTab";
+import OrganizationCategoriesTab from "@/views/dashboard/organizationProfile/OrganizationCategoriesTab";
 
 export default {
   components: {
+    OrganizationCategoriesTab,
     OrganizationRaceSeriesResultsTab,
     OrganizationRaceSeriesTab,
     OrganizationMemberFieldsTab,
@@ -158,7 +166,8 @@ export default {
         mdiHomeGroup,
         mdiFormatListText,
         mdiFlagCheckered,
-        mdiMenu
+        mdiMenu,
+        mdiFamilyTree,
       }
     }
   },

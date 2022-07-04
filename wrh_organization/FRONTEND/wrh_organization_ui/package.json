@@ -1,7 +1,7 @@
 {
-  "name": "materio-vuetify-vuejs-admin-template",
-  "description": "Production Ready, Carefully Crafted, Extensive Vuetifty Admin Template",
-  "version": "0.0.26",
+  "name": "wrh_organization_ui",
+  "description": "WRH-Organization Frontend",
+  "version": "0.0.27",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
