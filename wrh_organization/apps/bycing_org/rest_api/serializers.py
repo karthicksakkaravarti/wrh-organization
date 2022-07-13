@@ -323,10 +323,20 @@ class NestedRaceSeriesSerializer(DynamicFieldsSerializerMixin, serializers.Model
         fields = ['id', 'name']
 
 
+class NestedRaceResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+
+    _rider = NestedMember2Serializer(read_only=True, source='rider')
+    _race = RaceSerializer(read_only=True, source='race')
+
+    class Meta:
+        model = RaceResult
+        fields = ['id', '_rider', '_race', 'more_data']
+
+
 class RaceSeriesResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     extra_fields = ['more_data']
 
-    _rider = NestedMember2Serializer(read_only=True, source='rider')
+    _race_result = NestedRaceResultSerializer(read_only=True, source='race_result')
     _race_series = NestedRaceSeriesSerializer(read_only=True, source='race_series')
     _category = NestedCategorySerializer(read_only=True, source='category')
 

@@ -776,10 +776,12 @@ class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelView
     filterset_class = RaceSeriesResultFilter
     ordering = '-id'
     ordering_fields = '__all__'
-    search_fields = ['rider__first_name', 'rider__last_name', 'race_series__name']
+    search_fields = ['race_result__rider__first_name', 'race_result__rider__last_name', 'race_result__race__name',
+                     'race_series__name']
 
     def get_queryset(self):
-        return super().get_queryset().select_related('race_series', 'rider', 'organization', 'rider__user')
+        return super().get_queryset().select_related('race_series', 'race_result', 'race_result__rider',
+                                                     'race_result__race', 'organization', 'race_result__rider__user')
 
     @transaction.atomic()
     def _import_csv_row(self, row, org, race_series):
@@ -794,13 +796,14 @@ class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelView
 
         if race_result.rider_id:
             r, _ = RaceSeriesResult.objects.update_or_create(
-                rider_id=race_result.rider_id, race_series=race_series, organization=org,
+                rider_id=race_result.rider_id, race_series=race_series, organization=org, race_result=race_result,
                 defaults=dict(place=place, category=category, more_data=row, create_by=user))
         else:
             r = RaceSeriesResult.objects.filter(
-                rider_id=None, race_series=race_series, organization=org, create_by=user, more_data__id=res_id).first()
+                rider_id=None, race_series=race_series, organization=org, create_by=user, race_result=race_result
+            ).first()
             if not r:
-                r = RaceSeriesResult(race_series=race_series, organization=org, create_by=user)
+                r = RaceSeriesResult(race_series=race_series, organization=org, create_by=user, race_result=race_result)
             r.place = place
             r.category = category
             r.more_data = {**race_result.more_data, **row}
@@ -849,6 +852,10 @@ class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelView
                 failed.append(row)
 
         return Response({'successed': successed, 'failed': failed}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='export/(?P<export_type>.+)')
+    def standing_points(self, request, *args, **kwargs):
+        pass
 
 
 class EventView(AdminOrganizationActionsViewMixin, viewsets.ReadOnlyModelViewSet):

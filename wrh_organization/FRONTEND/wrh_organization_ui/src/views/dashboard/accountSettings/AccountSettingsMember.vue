@@ -112,12 +112,36 @@
           </v-col>
 
           <v-col cols="12" md="6">
-            <v-text-field
-              v-model="accountData.birth_date"
-              outlined
-              dense
-              label="Birth Date"
-            ></v-text-field>
+            <v-menu
+              ref="birthDateMenuRef"
+              v-model="showBirthDateMenu"
+              :close-on-content-click="false"
+              transition="scale-transition"
+              offset-y
+              min-width="auto"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-text-field
+                  v-model="accountData.birth_date"
+                  label="Birth Date"
+                  :append-icon="icons.mdiCalendar"
+                  readonly
+                  v-bind="attrs"
+                  v-on="on"
+                  outlined
+                  dense
+                ></v-text-field>
+              </template>
+
+              <v-date-picker
+                ref="birthDatePickerRef"
+                v-model="accountData.birth_date"
+                :max="new Date().toISOString().slice(0, 10)"
+                min="1940-01-01"
+                color="primary"
+                @change="(d) => {$refs.birthDateMenuRef.save(d)}"
+              ></v-date-picker>
+            </v-menu>
           </v-col>
 
           <v-col cols="12" md="6">
@@ -248,7 +272,7 @@
 </template>
 
 <script>
-import { mdiAlertOutline, mdiCloudUploadOutline, mdiEmailSend } from '@mdi/js'
+import { mdiAlertOutline, mdiCloudUploadOutline, mdiEmailSend, mdiCalendar} from '@mdi/js'
 import {nextTick, onMounted, ref} from '@vue/composition-api'
 import axios from "@/axios";
 import store from "@/store";
@@ -260,6 +284,7 @@ import {
 } from "@/composables/utils";
 import EventBus from "@/EventBus";
 import VerifyDialog from "@/views/dashboard/accountSettings/VerifyDialog";
+import {watch} from "@vue/composition-api/dist/vue-composition-api";
 
 export default {
   components: {VerifyDialog},
@@ -274,6 +299,13 @@ export default {
     const avatarChosenFileData = ref(null);
     const avatarImageRef = ref(null);
     const phoneMask = ref(null);
+    const showBirthDateMenu = ref(false);
+    const birthDatePickerRef = ref(null);
+
+    watch(showBirthDateMenu, val => {
+      // eslint-disable-next-line no-return-assign
+      val && setTimeout(() => (birthDatePickerRef.value.activePicker = 'YEAR'));
+    });
 
     const cloneData = () => {
         var data = Object.assign({}, accountDataOrig.value);
@@ -366,10 +398,13 @@ export default {
       verifyDialogFailed,
       save,
       phoneMask,
+      showBirthDateMenu,
+      birthDatePickerRef,
       icons: {
         mdiAlertOutline,
         mdiCloudUploadOutline,
-        mdiEmailSend
+        mdiEmailSend,
+        mdiCalendar,
       },
     }
   },

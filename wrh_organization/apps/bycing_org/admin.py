@@ -55,7 +55,7 @@ class RaceSeriesAdmin(admin.ModelAdmin):
 
 
 class RaceSeriesResultAdmin(admin.ModelAdmin):
-    list_display = ('id', 'rider', 'race_series', 'category', 'place',)
+    list_display = ('id', 'race_series', 'category', 'place',)
     search_fields = ('race_series__name',)
     list_filter = ('race_series',)
 

@@ -20,65 +20,51 @@
               </v-col>
             </v-row>
             <v-row>
-              <v-col cols="12">
-                <v-autocomplete
-                    v-model="record._rider"
-                    :search-input.sync="memberSearchInput"
-                    :loading="findingMembers"
-                    :items="members"
-                    no-data-text="Enter part of name or email."
-                    chips
-                    label="Linked Rider"
-                    item-text="first_name"
-                    item-value="id"
-                    :menu-props="{contentClass:'list-style'}"
-                    return-object
-                    dense
-                >
-                  <template #selection="data">
-                    <v-chip
-                        v-bind="data.attrs"
-                        :input-value="data.selected"
-                        close
-                        @click="data.select"
-                        @click:close="record._rider = null"
-                    >
-                      <v-avatar left>
-                        <v-img :src="data.item._user.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
-                      </v-avatar>
-                      <div class="d-flex flex-column ms-3">
-                        <span class="d-block text--success font-weight-semibold text-truncate">
-                          {{ `${data.item.first_name} ${data.item.last_name}` }}
-                        </span>
-                      </div>
-                    </v-chip>
-                  </template>
+              <template v-if="isEditMode">
+                <v-col cols="12">
+                  <div class="d-flex align-center">
+                    <span class="mr-2">Rider: </span>
+                    <v-avatar color="success" class="v-avatar-light-bg success--text" size="30">
+                      <v-img v-if="record._race_result._rider && record._race_result._rider._user.avatar" :src="record._race_result._rider._user.avatar"></v-img>
+                      <span v-else class="font-weight-medium">
+                        {{ avatarText(record._race_result._rider? record._race_result._rider.first_name: (record._race_result.more_data.first_name || 'N/A')) }}
+                      </span>
+                    </v-avatar>
 
-                  <template #item="data">
-                    <template>
-                      <v-list-item-avatar>
-                        <v-img :src="data.item._user.avatar || require('@/assets/images/misc/no-profile.png')"></v-img>
-                      </v-list-item-avatar>
+                    <div class="d-flex flex-column pl-1">
+                      <span href="javascript:" class="font-weight-semibold text-truncate text-decoration-none">
+                        <v-icon v-if="record._race_result._rider" small>{{icons.mdiAccountCheck}}</v-icon> {{ displayRiderName(record) }}
+                      </span>
+                    </div>
+                  </div>
+                </v-col>
+                <v-col cols="12 pt-0">
+                  <v-divider></v-divider>
+                </v-col>
+                <v-col cols="12">
+                  <div class="d-flex">
+                    <span class="mr-2">Race: </span>
+                    <div class="d-flex flex-column">
+                      <span class="font-weight-semibold text-truncate">
+                        {{record._race_result._race.name}}
+                      </span>
+                      <span class="text-xs text-truncate">
+                        {{record._race_result._race._event.name}}
+                      </span>
+                    </div>
+                  </div>
+                </v-col>
+                <v-col cols="12 pt-0">
+                  <v-divider></v-divider>
+                </v-col>
+              </template>
 
-                      <v-list-item-content>
-                        <v-list-item-title>
-                          {{ `${data.item.first_name} ${data.item.last_name}` }}
-                        </v-list-item-title>
-                        <v-list-item-subtitle>
-                          {{ data.item.email || '[NO E-MAIL]' }}
-                        </v-list-item-subtitle>
-                      </v-list-item-content>
-                    </template>
-                  </template>
-                </v-autocomplete>
+            </v-row>
+            <v-row>
+              <v-col cols="12" v-if="!isEditMode">
+                <v-text-field type="number" v-model="record.race_result" label="Race-Result ID" dense></v-text-field>
+              </v-col>
 
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="record.more_data.first_name" label="First Name" dense></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="record.more_data.last_name" label="Last Name" dense></v-text-field>
-              </v-col>
               <v-col cols="12">
                 <v-autocomplete
                     v-model="record._category"
@@ -131,6 +117,7 @@ import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import {watch} from "@vue/composition-api/dist/vue-composition-api";
 import _ from "lodash";
+import {avatarText} from "@core/utils/filter";
 
 export default {
   props: {
@@ -146,14 +133,7 @@ export default {
     const saving = ref(false);
     const deleting = ref(false);
     const confirmDelete = ref(false);
-    const findingMembers = ref(false);
-    const members = ref([]);
-    const memberSearchInput = ref('');
     const categories = ref([]);
-
-    watch(memberSearchInput, () => {
-      findMembersDebounce(memberSearchInput.value);
-    });
 
     const isEditMode = computed(() => !!record.value.id);
 
@@ -169,30 +149,6 @@ export default {
       });
     };
 
-    const findMembers = (search) => {
-      if (findingMembers.value || (search || '').length < 3) {
-        members.value = [];
-        if (record.value._rider) {
-          members.value = [record.value._rider]
-        }
-        return;
-      }
-      findingMembers.value = true;
-      axios.get("bycing_org/member/find", {params: {search: search}}).then((response) => {
-        findingMembers.value = false;
-        members.value = response.data.results;
-        if (record.value._rider) {
-          members.value = [record.value._rider]
-        }
-
-      }, (error) => {
-        findingMembers.value = false;
-        notifyDefaultServerError(error, true)
-      });
-    };
-
-    const findMembersDebounce = _.debounce(findMembers, 500);
-
     const deleteRecord = () => {
       deleting.value = true;
       axios.delete(`bycing_org/race_series_result/${record.value.id}`).then((response) => {
@@ -204,6 +160,16 @@ export default {
         deleting.value = false;
         notifyDefaultServerError(error, true);
       });
+    };
+
+    const displayRiderName = (r) => {
+      var name = '';
+      if (r._race_result._rider) {
+        name = `${r._race_result._rider.first_name} ${r._race_result._rider.last_name}`.trim();
+      } else {
+        name = `${r._race_result.more_data.first_name || ''} ${r._race_result.more_data.last_name || ''}`.trim();
+      }
+      return name || 'N/A'
     };
 
     const save = () => {
@@ -244,7 +210,6 @@ export default {
       deleting.value = false;
       saving.value = false;
       isVisible.value = true;
-      findMembers();
       loadCategories();
     };
 
@@ -255,17 +220,14 @@ export default {
       record,
       saving,
       deleting,
-      findingMembers,
       categories,
-      findMembers,
-      findMembersDebounce,
-      members,
-      memberSearchInput,
       deleteRecord,
       hide,
       show,
       save,
+      avatarText,
       currentRaceSeries,
+      displayRiderName,
       icons: {
         mdiDelete,
         mdiAlert,

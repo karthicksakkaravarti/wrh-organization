@@ -123,7 +123,10 @@
             <v-list-item dense class="px-0 mb-n2">
               <span class="font-weight-medium me-2">Birth Date:</span>
               <span class="text--secondary">
-                {{ $utils.formatDate(memberData.birth_date, 'MMM D, YYYY') }} ({{$utils.ageFormat(memberData.birth_date)}})
+                <template v-if="memberData.birth_date">
+                  {{ $utils.formatDate(memberData.birth_date, 'MMM D, YYYY') }} ({{$utils.ageFormat(memberData.birth_date)}})
+                </template>
+                <template v-else>-</template>
               </span>
             </v-list-item>
 

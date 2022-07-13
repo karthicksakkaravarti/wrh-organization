@@ -428,8 +428,8 @@ class RaceSeries(models.Model):
 
 
 class RaceSeriesResult(models.Model):
-    rider = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, related_name='race_series_results')
     race_series = models.ForeignKey(RaceSeries, on_delete=models.CASCADE)
+    race_result = models.ForeignKey(RaceResult, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     place = models.IntegerField(validators=[MinValueValidator(1)], null=True)
     more_data = models.JSONField(null=True, encoder=JSONEncoder)
@@ -438,7 +438,7 @@ class RaceSeriesResult(models.Model):
     create_datetime = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = (('rider', 'race_series', 'organization'),)
+        unique_together = (('race_series', 'race_result', 'category', 'organization'),)
 
     def save(self, *args, **kwargs):
         if not self.more_data:
@@ -446,4 +446,4 @@ class RaceSeriesResult(models.Model):
         return super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.place}-{self.rider}'
+        return f'{self.category}-{self.place}'

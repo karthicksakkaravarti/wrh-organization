@@ -94,17 +94,27 @@
         <template #item.rider="{item}">
           <div class="d-flex align-center">
             <v-avatar color="success" class="v-avatar-light-bg success--text" size="30">
-              <v-img v-if="item._rider && item._rider._user.avatar" :src="item._rider._user.avatar"></v-img>
+              <v-img v-if="item._race_result._rider && item._race_result._rider._user.avatar" :src="item._race_result._rider._user.avatar"></v-img>
               <span v-else class="font-weight-medium">
-                {{ avatarText(item._rider? item._rider.first_name: (item.more_data.first_name || 'N/A')) }}
+                {{ avatarText(item._race_result._rider? item._race_result._rider.first_name: (item._race_result.more_data.first_name || 'N/A')) }}
               </span>
             </v-avatar>
 
             <div class="d-flex flex-column pl-1">
               <span href="javascript:" class="font-weight-semibold text-truncate text-decoration-none">
-                <v-icon v-if="item._rider" small>{{icons.mdiAccountCheck}}</v-icon> {{ displayRiderName(item) }}
+                <v-icon v-if="item._race_result._rider" small>{{icons.mdiAccountCheck}}</v-icon> {{ displayRiderName(item) }}
               </span>
             </div>
+          </div>
+        </template>
+        <template #item.race="{item}">
+          <div class="d-flex flex-column">
+            <span class="font-weight-semibold text-truncate">
+              {{item._race_result._race.name}}
+            </span>
+            <span class="text-xs text-truncate">
+              {{item._race_result._race._event.name}}
+            </span>
           </div>
         </template>
 
@@ -117,10 +127,6 @@
         </template>
         <template #item.category="{item}">
           <span class="font-weight-medium text-truncate">{{item._category.title}}</span>
-        </template>
-        <template #item.create_datetime="{item}">
-          <span class="pr-1">{{$utils.formatDate(item.create_datetime, 'M/D/YY')}}</span>
-          <span class="text-caption">{{$utils.formatDate(item.create_datetime, 'HH:mm')}}</span>
         </template>
         <template #item.place="{item}">
           <span class="font-weight-semibold">{{item.place}}</span>
@@ -203,11 +209,11 @@ export default {
     const tableFiltering = ref({});
     const tableColumns = [
       {text: '#ID', value: 'id', align: 'start',},
-      {text: 'RIDER', value: 'rider'},
       {text: 'RACE-SERIES', value: 'race_series', cellClass: 'race-series-td'},
+      {text: 'RACE', value: 'race'},
+      {text: 'RIDER', value: 'rider'},
       {text: 'CATEGORY', value: 'category'},
       {text: 'PLACE', value: 'place'},
-      {text: 'CREATED AT', value: 'create_datetime'},
     ];
     if (props.organization.my_level.is_admin) {
       tableColumns.push({text: 'ACTIONS', value: 'actions', align: 'end', sortable: false,})
@@ -244,10 +250,10 @@ export default {
 
     const displayRiderName = (r) => {
       var name = '';
-      if (r._rider) {
-        name = `${r._rider.first_name} ${r._rider.last_name}`.trim();
+      if (r._race_result._rider) {
+        name = `${r._race_result._rider.first_name} ${r._race_result._rider.last_name}`.trim();
       } else {
-        name = `${r.more_data.first_name || ''} ${r.more_data.last_name || ''}`.trim();
+        name = `${r._race_result.more_data.first_name || ''} ${r._race_result.more_data.last_name || ''}`.trim();
       }
       return name || 'N/A'
     };

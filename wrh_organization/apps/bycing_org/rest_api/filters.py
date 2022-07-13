@@ -65,7 +65,7 @@ class RaceFilter(filters.FilterSet):
 
 
 class RaceResultFilter(filters.FilterSet):
-    event = filters.NumberFilter(field_name='race__event')
+    event = filters.ModelMultipleChoiceFilter(queryset=Event.objects.all(), field_name='race__event')
     my = filters.BooleanFilter(method='my_method')
 
     def my_method(self, queryset, name, value):
@@ -108,12 +108,15 @@ class RaceSeriesFilter(filters.FilterSet):
 
 class RaceSeriesResultFilter(filters.FilterSet):
     my = filters.BooleanFilter(method='my_method')
+    race = filters.ModelMultipleChoiceFilter(queryset=Race.objects.all(), field_name='race_result__race', label='Race')
+
 
     def my_method(self, queryset, name, value):
         user = self.request and self.request.user
         member = user and getattr(user, 'member', None)
         if value:
-            queryset = queryset.filter(rider=member) if (user and user.is_authenticated and member) else queryset.none()
+            queryset = queryset.filter(race_result__rider=member) if (user and user.is_authenticated and member) \
+                else queryset.none()
         return queryset
 
     class Meta:
