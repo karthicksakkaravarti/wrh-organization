@@ -800,11 +800,11 @@ class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelView
 
         if race_result.rider_id:
             r, _ = RaceSeriesResult.objects.update_or_create(
-                rider_id=race_result.rider_id, race_series=race_series, organization=org, race_result=race_result,
+                race_series=race_series, organization=org, race_result=race_result,
                 defaults=dict(place=place, category=category, more_data=row, create_by=user))
         else:
             r = RaceSeriesResult.objects.filter(
-                rider_id=None, race_series=race_series, organization=org, create_by=user, race_result=race_result
+                race_series=race_series, organization=org, create_by=user, race_result=race_result
             ).first()
             if not r:
                 r = RaceSeriesResult(race_series=race_series, organization=org, create_by=user, race_result=race_result)
