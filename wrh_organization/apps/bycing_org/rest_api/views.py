@@ -776,8 +776,12 @@ class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelView
     filterset_class = RaceSeriesResultFilter
     ordering = '-id'
     ordering_fields = '__all__'
+    extra_ordering_fields = {
+        'rider': (('race_result__rider__first_name', 'race_result__rider__last_name')),
+    }
+
     search_fields = ['race_result__rider__first_name', 'race_result__rider__last_name', 'race_result__race__name',
-                     'race_series__name']
+                     'race_series__name', 'category__title']
 
     def get_queryset(self):
         return super().get_queryset().select_related('race_series', 'race_result', 'race_result__rider',
@@ -853,9 +857,41 @@ class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelView
 
         return Response({'successed': successed, 'failed': failed}, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['get'], url_path='export/(?P<export_type>.+)')
+    @action(detail=False, methods=['get'], url_path='standing_points/(?P<race_series_id>[0-9]+)/(?P<category_id>[0-9]+)')
     def standing_points(self, request, *args, **kwargs):
-        pass
+        race_series = get_object_or_404(RaceSeries.objects.filter(pk=kwargs.get('race_series_id')))
+        category = get_object_or_404(Category.objects.filter(pk=kwargs.get('category_id')))
+        points_map = {int(k): int(v) if v else 0 for k, v in (race_series.points_map or {}).items()}
+        qs = RaceSeriesResult.objects.filter(race_series=race_series, category=category)
+        try:
+            org_id = int(request.GET.get('organization'))
+        except (KeyError, TypeError):
+            org_id = None
+        if org_id:
+            org = get_object_or_404(Organization.objects.filter(pk=org_id))
+        result = {}
+        for r in qs:
+            points = points_map.get(r.place) or 0
+            rider = r.race_result.rider
+            rider_id = rider and rider.id
+            if not rider:
+                more_data = r.race_result.more_data or {}
+                rider = rider_id = '{} {}'.format(more_data.get('first_name'), more_data.get('first_name'))
+                rider = {'first_name': more_data.get('first_name'), 'last_name': more_data.get('last_name')}
+            else:
+                rider_id = rider.id
+                user = rider.user
+                if user:
+                    user = {'id': user.id, 'username': user.username, 'avatar': user.avatar}
+                rider = {
+                    'first_name': rider.first_name, 'last_name': rider.last_name, 'birth_date': rider.birth_date,
+                    'id': rider_id, 'user': user
+                }
+
+            res = result.setdefault(rider_id, {'rider': rider, 'points': 0})
+            res['points'] += points
+        result = sorted(result.values(), key=lambda x: x.get('points'), reverse=True)
+        return Response({'results': result})
 
 
 class EventView(AdminOrganizationActionsViewMixin, viewsets.ReadOnlyModelViewSet):

@@ -46,6 +46,9 @@
                 <v-list-item @click="tab=4; moreTab={id: 'race-series', name: 'Race-Series'}">
                   <v-icon size="20" class="me-3">{{ icons.mdiCheckerboard }}</v-icon> Race-Series
                 </v-list-item>
+                <v-list-item @click="tab=4; moreTab={id: 'race-series-standings', name: 'Race-Series Standings'}">
+                  <v-icon size="20" class="me-3">{{ icons.mdiGold }}</v-icon> Race-Series Standings
+                </v-list-item>
                 <v-list-item @click="tab=4; moreTab={id: 'categories', name: 'Categories'}">
                   <v-icon size="20" class="me-3">{{ icons.mdiFamilyTree }}</v-icon> Categories
                 </v-list-item>
@@ -76,6 +79,8 @@
             <organization-race-series-tab v-else-if="moreTab.id == 'race-series'" :organization="organization"></organization-race-series-tab>
             <organization-member-fields-tab v-else-if="moreTab.id == 'member-fields' && organization.my_level.is_admin"
                                             :organization="organization"></organization-member-fields-tab>
+            <organization-race-series-standings-tab v-else-if="moreTab.id == 'race-series-standings' && organization.my_level.is_admin"
+                                            :organization="organization"></organization-race-series-standings-tab>
             <organization-categories-tab v-else-if="moreTab.id == 'categories' && organization.my_level.is_admin"
                                             :organization="organization"></organization-categories-tab>
           </v-tab-item>
@@ -100,6 +105,7 @@ import {
   mdiAccountMultipleOutline,
   mdiCalendarMultiple,
   mdiCheckerboard,
+  mdiGold,
   mdiHomeGroup,
   mdiFormatListText,
   mdiFlagCheckered,
@@ -119,12 +125,14 @@ import OrganizationMemberOrgsTab from "./OrganizationMemberOrgsTab";
 import OrganizationMemberFieldsTab from "./OrganizationMemberFieldsTab";
 import OrganizationRaceSeriesTab from "./OrganizationRaceSeriesTab";
 import OrganizationRaceSeriesResultsTab from "./OrganizationRaceSeriesResultsTab";
+import OrganizationRaceSeriesStandingsTab from "./OrganizationRaceSeriesStandingsTab";
 import OrganizationCategoriesTab from "@/views/dashboard/organizationProfile/OrganizationCategoriesTab";
 
 export default {
   components: {
     OrganizationCategoriesTab,
     OrganizationRaceSeriesResultsTab,
+    OrganizationRaceSeriesStandingsTab,
     OrganizationRaceSeriesTab,
     OrganizationMemberFieldsTab,
     OrganizationMemberOrgsTab,
@@ -163,6 +171,7 @@ export default {
         mdiAccountMultipleOutline,
         mdiCalendarMultiple,
         mdiCheckerboard,
+        mdiGold,
         mdiHomeGroup,
         mdiFormatListText,
         mdiFlagCheckered,
