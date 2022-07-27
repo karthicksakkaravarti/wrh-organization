@@ -103,6 +103,18 @@
             </template>
             <span>Export results to CSV file</span>
           </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <v-btn v-bind="attrs" v-on="on" v-if="organization.my_level.is_admin" small color="info" class="me-1"
+                     @click="$refs.raceSeriesResultsDialogRef.show(selectedRace, selectedRows)" :disabled="!selectedRace || !selectedRows.length">
+                <v-icon size="18" class="me-1">
+                  {{ icons.mdiPencilOutline }}
+                </v-icon>
+                <span>Race-Series Result</span>
+              </v-btn>
+            </template>
+            <span>Add/Update Race-Series Results of selected rows</span>
+          </v-tooltip>
         </div>
 
         <v-spacer></v-spacer>
@@ -127,6 +139,8 @@
         :server-items-length="pagination.total"
         :loading="loading"
         class="text-no-wrap"
+        :show-select="!!selectedRace"
+        v-model="selectedRows"
         :footer-props="{'items-per-page-options': $const.DEFAULT_TABLE_PER_PAGE_OPTIONS, 'show-current-page': true, 'show-first-last-page': true}"
       >
         <template #item.rider="{item}">
@@ -194,6 +208,8 @@
     <organization-race-result-form-dialog :organization="organization" ref="formDialogRef" @save-successed="loadRecords(1)"
                                           @delete-successed="loadRecords(1)">
     </organization-race-result-form-dialog>
+    <organization-race-series-results-form-dialog :organization="organization" ref="raceSeriesResultsDialogRef" >
+    </organization-race-series-results-form-dialog>
     <organization-import-race-results-dialog ref="importDialogRef" :organization="organization"
                                              @import-successed="loadRecords(1)">
     </organization-import-race-results-dialog>
@@ -226,9 +242,15 @@ import _ from "lodash";
 import OrganizationImportRaceResultsDialog
   from "@/views/dashboard/organizationProfile/OrganizationImportRaceResultsDialog";
 import {computed} from "@vue/composition-api/dist/vue-composition-api";
+import OrganizationRaceSeriesResultsFormDialog
+  from "@/views/dashboard/organizationProfile/OrganizationRaceSeriesResultsFormDialog";
 
 export default {
-  components: {OrganizationImportRaceResultsDialog, OrganizationRaceResultFormDialog},
+  components: {
+    OrganizationRaceSeriesResultsFormDialog,
+    OrganizationImportRaceResultsDialog,
+    OrganizationRaceResultFormDialog
+  },
   props: {
     organization: {
       type: Object,
@@ -242,6 +264,7 @@ export default {
     const loadingRaces = ref(false);
     const tableOptions = ref({});
     const tableFiltering = ref({});
+    const selectedRows = ref([]);
     const tableColumns = [
       {text: '#ID', value: 'id', align: 'start',},
       {text: 'RIDER', value: 'rider'},
@@ -279,6 +302,7 @@ export default {
       loadRaces();
     });
     watch(selectedRace, () => {
+      selectedRows.value = [];
       loadRecords(1);
     });
 
@@ -376,6 +400,7 @@ export default {
       avatarText,
       loadRecords,
       loadRaces,
+      selectedRows,
       exportUrl,
       icons: {
         mdiPlus,
