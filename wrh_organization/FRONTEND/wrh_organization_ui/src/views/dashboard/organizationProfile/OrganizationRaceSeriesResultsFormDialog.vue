@@ -86,7 +86,10 @@
               <th class="">#</th>
               <th class="">Rider</th>
               <th class="">Place</th>
-              <th class="">Category Place</th>
+              <th class="">
+                Category Place
+                <v-btn outlined color="error" x-small @click="autoFillPlaces()">Auto Fill</v-btn>
+              </th>
               <th class="actions text-center">Actions</th>
             </tr>
             </thead>
@@ -115,7 +118,7 @@
                 <span>{{r.place}}</span>
               </td>
               <td class="">
-                <v-text-field type="number" min="1" step="1" v-model="raceSeriesResultPlaces[r.id]" dense single-line hide-details placeholder="Place">
+                <v-text-field type="number" min="1" step="1" v-model.number="raceSeriesResultPlaces[r.id]" dense single-line hide-details placeholder="Place">
                 </v-text-field>
               </td>
               <td class="actions text-center">
@@ -138,7 +141,10 @@
       </v-card-text>
 
       <v-card-actions>
+        <v-btn color="warning" @click="resetPlaces()">Reset</v-btn>
+        <v-spacer></v-spacer>
         <v-btn color="secondary" outlined @click="hide()">Close</v-btn>
+        <v-btn color="primary" :loading="savingAll" @click="saveAll()" :disabled="!notSavedRecords.length">Save All</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -169,11 +175,13 @@ export default {
     const selectedRaceSeries = ref(null);
     const category = ref(null);
     const saving = ref({});
+    const savingAll = ref(false);
     const categories = ref([]);
     const raceSeries = ref([]);
     const raceSeriesResults = ref({});
     const raceSeriesResultPlaces = ref({});
     const records = ref([]);
+    const recordsOrig = ref([]);
     const raceSeriesSearchInput = ref('');
     const findingRaceSeries = ref(false);
 
@@ -186,6 +194,19 @@ export default {
     watch(category, () => {
       loadRaceSeriesResults();
     });
+
+    const notSavedRecords = computed(() => {
+      return records.value.filter(r => {
+        return raceSeriesResultPlaces.value[r.id] !== (raceSeriesResults.value[r.id] && raceSeriesResults.value[r.id].place);
+      })
+    });
+
+    const autoFillPlaces = () => {
+      records.value.forEach((r, idx) => {
+        // raceSeriesResultPlaces.value[r.id] = idx + 1;
+        set(raceSeriesResultPlaces.value, r.id, idx + 1);
+      });
+    };
 
     const findRaceSeries = (search) => {
       if (findingRaceSeries.value) {
@@ -252,7 +273,14 @@ export default {
       return name || 'N/A'
     };
 
-    const save = (r) => {
+    const saveAll = () => {
+      savingAll.value = true;
+      Promise.all(notSavedRecords.value.map((r) => save(r, true))).finally(() => {
+        savingAll.value = false;
+      });
+    };
+
+    const save = (r, ignoreSuccessNotify) => {
       var rid = raceSeriesResults.value[r.id]? raceSeriesResults.value[r.id].id: null;
       var data = {};
       var url = "bycing_org/race_series_result",
@@ -272,7 +300,7 @@ export default {
       httpMethod(url, data).then((response) => {
         set(saving.value, r.id, false);
         raceSeriesResults.value[r.id] = response.data;
-        notifySuccess(successMsg, 2000);
+        !ignoreSuccessNotify && notifySuccess(successMsg, 2000);
         context.emit('save-successed', response.data);
       }, (error) => {
         set(saving.value, r.id, false);
@@ -280,13 +308,22 @@ export default {
       });
     };
 
+    const resetPlaces = () => {
+      records.value = recordsOrig.value.map(r => Object.assign({}, r));
+      raceSeriesResultPlaces.value = {};
+      raceSeriesResults.value = {};
+      loadRaceSeriesResults();
+      loadCategories();
+    };
+
     const hide = () => {
       isVisible.value = false;
     };
     const show = (_race, _records) => {
       race.value = _race;
+      recordsOrig.value = _records;
       records.value = _records.map(r => Object.assign({}, r));
-      raceSeriesResultPlaces.value = [];
+      raceSeriesResultPlaces.value = {};
       raceSeriesResults.value = {};
       selectedRaceSeries.value = null;
       category.value = null;
@@ -306,15 +343,21 @@ export default {
       findRaceSeriesDebounce,
       findingRaceSeries,
       saving,
+      savingAll,
       categories,
       records,
+      recordsOrig,
       hide,
       show,
       save,
+      saveAll,
       avatarText,
       category,
       race,
       displayRiderName,
+      autoFillPlaces,
+      notSavedRecords,
+      resetPlaces,
       icons: {
         mdiDelete,
         mdiAlert,
