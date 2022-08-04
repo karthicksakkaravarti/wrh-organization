@@ -792,26 +792,18 @@ class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelView
         user = self.request.user
         row = {k: (v or None) for k, v in row.items()}
         res_id = row['id'] = int(row.get('id'))
-        category_id = int(row.get('category'))
+        try:
+            category_filters = {'pk': int(row.get('category'))}
+        except (TypeError, ValueError):
+            category_filters = {'title': row.get('category')}
+        category = get_object_or_404(Category.objects.filter(organization=org, **category_filters))
         place = int(row.get('category_place'))
-        category = get_object_or_404(Category.objects.filter(pk=category_id, organization=org))
 
         race_result = get_object_or_404(RaceResult.objects.filter(pk=res_id))
+        r, _ = RaceSeriesResult.objects.update_or_create(
+            race_series=race_series, organization=org, race_result=race_result, category=category,
+            defaults=dict(place=place, more_data=row, create_by=user))
 
-        if race_result.rider_id:
-            r, _ = RaceSeriesResult.objects.update_or_create(
-                race_series=race_series, organization=org, race_result=race_result,
-                defaults=dict(place=place, category=category, more_data=row, create_by=user))
-        else:
-            r = RaceSeriesResult.objects.filter(
-                race_series=race_series, organization=org, create_by=user, race_result=race_result
-            ).first()
-            if not r:
-                r = RaceSeriesResult(race_series=race_series, organization=org, create_by=user, race_result=race_result)
-            r.place = place
-            r.category = category
-            r.more_data = {**race_result.more_data, **row}
-            r.save()
         return r
 
     @staticmethod
