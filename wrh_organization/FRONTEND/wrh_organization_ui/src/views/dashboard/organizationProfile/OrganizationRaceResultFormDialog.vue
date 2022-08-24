@@ -81,7 +81,13 @@
                 <v-text-field v-model="record.more_data.last_name" label="Last Name" dense></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-text-field type="number" min="1" step="1" v-model="record.place" dense label="Place"></v-text-field>
+                <div class="d-flex">
+                  <v-text-field type="number" min="1" step="1" v-model="record.place" dense label="Place" :disabled="record.finish_status!='ok'">
+                  </v-text-field>
+                  <v-radio-group v-model="record.finish_status" row dense hide-details class="mt-0 mb-1">
+                    <v-radio v-for="o in $const.RACE_FINISH_STATUS_OPTIONS" :label="o.title" :value="o.value"></v-radio>
+                  </v-radio-group>
+                </div>
               </v-col>
     
             </v-row>

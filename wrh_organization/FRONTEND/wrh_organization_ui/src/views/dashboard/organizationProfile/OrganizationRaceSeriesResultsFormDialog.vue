@@ -277,6 +277,7 @@ export default {
       savingAll.value = true;
       Promise.all(notSavedRecords.value.map((r) => save(r, true))).finally(() => {
         savingAll.value = false;
+        notifySuccess('Saved All.');
       });
     };
 

@@ -5,7 +5,7 @@
   <v-card>
     <v-card-text>
       <v-row>
-        <v-col cols="4">
+        <v-col cols="12" md="4" sm="6">
           <v-autocomplete
               v-model="selectedEvent"
               dense
@@ -38,7 +38,7 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col cols="4">
+        <v-col cols="12" md="4" sm="6">
           <v-autocomplete
               :disabled="!selectedEvent"
               v-model="selectedRace"
@@ -66,8 +66,8 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col cols="4">
-          <div class="d-flex align-center pb-5">
+        <v-col cols="12" md="4" sm="6">
+          <div class="d-flex align-center">
             <v-text-field
                 :value="tableFiltering.search"
                 @change="value => $set(tableFiltering, 'search', value)"
@@ -81,6 +81,9 @@
             </v-btn>
           </div>
 
+        </v-col>
+        <v-col cols="12" md="4" sm="6">
+          <v-checkbox v-model="tableFiltering.include_dns_dnf" hide-details label="Include DNS/DNF?" class="mt-0"></v-checkbox>
         </v-col>
       </v-row>
     </v-card-text>
@@ -128,8 +131,13 @@
       </template>
 
       <template #item.place="{item}">
-        <span class="font-weight-semibold">{{item.place}}</span>
-        <v-icon size="20" color="warning" v-if="item.place == 1" class="ml-1">{{ icons.mdiPodiumGold }}</v-icon>
+        <template v-if="item.finish_status == 'ok'">
+          <span class="font-weight-semibold">{{item.place || 'N/A'}}</span>
+          <v-icon size="20" color="warning" v-if="item.place == 1" class="ml-1">{{ icons.mdiPodiumGold }}</v-icon>
+        </template>
+        <v-chip v-else outlined :color="($const.RACE_FINISH_STATUS_MAP[item.finish_status] || {}).css" small>
+          {{($const.RACE_FINISH_STATUS_MAP[item.finish_status] || {}).title || item.finish_status}}
+        </v-chip>
       </template>
 
       <!-- actions -->
@@ -211,6 +219,7 @@ export default {
       loadRaces();
     });
     watch(selectedRace, () => {
+      tableOptions.value.sortBy = ['place'];
       loadRecords(1);
     });
 
@@ -246,6 +255,10 @@ export default {
         tableOptions.value.page = page;
       }
       const params = Object.assign({}, tableFiltering.value, props.apiParams, refineVTableOptions(tableOptions.value));
+      if (!params.include_dns_dnf) {
+        params.finish_status = 'ok';
+      }
+      delete params.include_dns_dnf;
       if (selectedRace.value) {
         params.race = selectedRace.value.id
       } else if (selectedEvent.value) {

@@ -46,6 +46,17 @@ MEMBER_FIELDS_SCHEMA_TYPE_OPTIONS.forEach(function(v) {
   MEMBER_FIELDS_SCHEMA_TYPE_MAP[v.value] = v;
 });
 
+export const RACE_FINISH_STATUS_OPTIONS = [
+  { value: "ok", title: "Finished", css: "success" },
+  { value: "dns", title: "DNS", css: "warning" },
+  { value: "dnf", title: "DNF", css: "error" },
+];
+export const RACE_FINISH_STATUS_MAP = {};
+RACE_FINISH_STATUS_OPTIONS.forEach(function(v) {
+  RACE_FINISH_STATUS_MAP[v.value] = v;
+});
+
+
 export const DEFAULT_TABLE_PER_PAGE_OPTIONS = [5, 10, 25, 50, 100, -1];
 
 export const SOCIAL_ACCOUNTS = [

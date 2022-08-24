@@ -69,8 +69,8 @@
         </v-row>
       </v-card-text>
       <v-divider></v-divider>
-      <v-card-text class="d-flex align-center flex-wrap pb-0">
-        <div class="d-flex align-center pb-5">
+      <v-card-text>
+        <div class="align-center">
           <v-btn fab x-small color="info" class="mr-1" @click="loadRecords(1);">
             <v-icon>{{icons.mdiRefresh}}</v-icon>
           </v-btn>
@@ -116,19 +116,22 @@
             <span>Add/Update Race-Series Results of selected rows</span>
           </v-tooltip>
         </div>
-
-        <v-spacer></v-spacer>
-
-        <div class="d-flex align-center pb-5">
-          <v-text-field
-              :value="tableFiltering.search"
-              @change="value => $set(tableFiltering, 'search', value)"
-              @click:clear="$set(tableFiltering, 'search', null)"
-              dense clearable hide-details
-              placeholder="Search ..." class="me-3 search-input"
-          ></v-text-field>
-
-        </div>
+      </v-card-text>
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" md="4" sm="6">
+            <v-text-field
+                :value="tableFiltering.search"
+                @change="value => $set(tableFiltering, 'search', value)"
+                @click:clear="$set(tableFiltering, 'search', null)"
+                dense clearable hide-details
+                placeholder="Search ..." class="search-input"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="4" sm="6">
+            <v-checkbox v-model="tableFiltering.include_dns_dnf" hide-details label="Include DNS/DNF?" class="mt-1"></v-checkbox>
+          </v-col>
+        </v-row>
       </v-card-text>
 
       <v-data-table
@@ -182,10 +185,15 @@
           <span class="text-caption">{{$utils.formatDate(item.create_datetime, 'HH:mm')}}</span>
         </template>
 
-        <template #item.place="{item}">
-          <span class="font-weight-semibold">{{item.place}}</span>
+      <template #item.place="{item}">
+        <template v-if="item.finish_status == 'ok'">
+          <span class="font-weight-semibold">{{item.place || 'N/A'}}</span>
           <v-icon size="20" color="warning" v-if="item.place == 1" class="ml-1">{{ icons.mdiPodiumGold }}</v-icon>
         </template>
+        <v-chip v-else outlined :color="($const.RACE_FINISH_STATUS_MAP[item.finish_status] || {}).css" small>
+          {{($const.RACE_FINISH_STATUS_MAP[item.finish_status] || {}).title || item.finish_status}}
+        </v-chip>
+      </template>
 
         <!-- actions -->
         <template #item.actions="{item}">
@@ -303,6 +311,7 @@ export default {
     });
     watch(selectedRace, () => {
       selectedRows.value = [];
+      tableOptions.value.sortBy = ['place'];
       loadRecords(1);
     });
 
@@ -339,6 +348,10 @@ export default {
         tableOptions.value.page = page;
       }
       const params = Object.assign({organization: props.organization.id}, tableFiltering.value, refineVTableOptions(tableOptions.value));
+      if (!params.include_dns_dnf) {
+        params.finish_status = 'ok';
+      }
+      delete params.include_dns_dnf;
       if (selectedRace.value) {
         params.race = selectedRace.value.id
       } else if (selectedEvent.value) {

@@ -376,9 +376,19 @@ class Race(models.Model):
 
 
 class RaceResult(models.Model):
+    FINISH_STATUS_OK = 'ok'
+    FINISH_STATUS_DNS = 'dns'
+    FINISH_STATUS_DNF = 'dnf'
+    FINISH_STATUS_CHOICES = (
+        (FINISH_STATUS_OK, 'OK'),
+        (FINISH_STATUS_DNS, 'DNS'),
+        (FINISH_STATUS_DNF, 'DNF'),
+    )
+
     rider = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, related_name='race_results')
     race = models.ForeignKey(Race, on_delete=models.CASCADE)
     place = models.IntegerField(validators=[MinValueValidator(1)], null=True)
+    finish_status = models.CharField(max_length=16, default=FINISH_STATUS_OK, choices=FINISH_STATUS_CHOICES)
     more_data = models.JSONField(null=True, encoder=JSONEncoder)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -390,6 +400,8 @@ class RaceResult(models.Model):
     def save(self, *args, **kwargs):
         if not self.more_data:
             self.more_data = {}
+        if self.finish_status != self.FINISH_STATUS_OK:
+            self.place = None
         return super().save(*args, **kwargs)
 
     def __str__(self):
