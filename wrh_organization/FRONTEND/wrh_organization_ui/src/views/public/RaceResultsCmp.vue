@@ -218,8 +218,10 @@ export default {
       loadRecords(1);
       loadRaces();
     });
-    watch(selectedRace, () => {
-      tableOptions.value.sortBy = ['place'];
+    watch(selectedRace, (value) => {
+      if (value) {
+        tableOptions.value.sortBy = ['place'];
+      }
       loadRecords(1);
     });
 

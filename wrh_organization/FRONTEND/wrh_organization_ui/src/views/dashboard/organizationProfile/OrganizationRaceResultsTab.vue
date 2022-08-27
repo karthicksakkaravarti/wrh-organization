@@ -309,9 +309,11 @@ export default {
       loadRecords(1);
       loadRaces();
     });
-    watch(selectedRace, () => {
+    watch(selectedRace, (value) => {
       selectedRows.value = [];
-      tableOptions.value.sortBy = ['place'];
+      if (value) {
+        tableOptions.value.sortBy = ['place'];
+      }
       loadRecords(1);
     });
 
