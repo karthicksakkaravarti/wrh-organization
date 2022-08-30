@@ -9,6 +9,8 @@ export const routeNames = {
 
   PUBLIC_HOME: "public_home",
   PUBLIC_RACE_RESULTS: "public_race_results",
+  PUBLIC_RIDER_PROFILE: "public_rider_profile",
+  PUBLIC_ORG_PROFILE: "public_org_profile",
 
   DASHBOARD_HOME: "dashboard_home",
   DASHBOARD_EVENTS: "dashboard_events",
@@ -32,6 +34,22 @@ const routes = [
     path: '/home',
     name: routeNames.PUBLIC_HOME,
     component: () => import('@/views/public/PublicHome.vue'),
+    meta: {
+      layout: 'PublicLayout',
+    },
+  },
+  {
+    path: '/rider-profile/:record_id/',
+    name: routeNames.PUBLIC_RIDER_PROFILE,
+    component: () => import('@/views/public/PublicRiderProfile.vue'),
+    meta: {
+      layout: 'PublicLayout',
+    },
+  },
+  {
+    path: '/org-profile/:record_id/',
+    name: routeNames.PUBLIC_ORG_PROFILE,
+    component: () => import('@/views/public/PublicOrgProfile.vue'),
     meta: {
       layout: 'PublicLayout',
     },

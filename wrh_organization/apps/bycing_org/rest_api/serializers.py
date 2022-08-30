@@ -11,7 +11,14 @@ from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64I
 
 
 class MemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-    extra_fields = ['more_data']
+    summary = serializers.SerializerMethodField(read_only=True)
+    extra_fields = ['summary', 'more_data']
+
+    def get_summary(self, obj):
+        race_results_count = obj.race_results.count()
+        races_count = obj.race_results.distinct('race').count()
+        events_count = obj.race_results.distinct('race__event').count()
+        return {'races_count': races_count, 'events_count': events_count, 'race_results_count': race_results_count}
 
     class Meta:
         model = Member

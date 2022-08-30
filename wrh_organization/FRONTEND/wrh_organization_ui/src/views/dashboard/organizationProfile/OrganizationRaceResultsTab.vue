@@ -74,14 +74,14 @@
           <v-btn fab x-small color="info" class="mr-1" @click="loadRecords(1);">
             <v-icon>{{icons.mdiRefresh}}</v-icon>
           </v-btn>
-          <v-btn v-if="organization.my_level.is_admin" small color="primary" class="me-1"
+          <v-btn v-if="organization.my_level && organization.my_level.is_admin" small color="primary" class="me-1"
                  @click="$refs.formDialogRef.show(null, selectedRace)" :disabled="!selectedRace">
             <v-icon size="18" class="me-1">
               {{ icons.mdiPlus }}
             </v-icon>
             <span>Race Result</span>
           </v-btn>
-          <v-tooltip v-if="organization.my_level.is_admin" bottom>
+          <v-tooltip v-if="organization.my_level && organization.my_level.is_admin" bottom>
             <template #activator="{ on, attrs }">
               <v-btn v-bind="attrs" v-on="on" small outlined color="info" class="me-1" :disabled="!selectedRace" @click="$refs.importDialogRef.show(selectedRace)">
                 <v-icon size="18" class="me-1">
@@ -105,7 +105,7 @@
           </v-tooltip>
           <v-tooltip bottom>
             <template #activator="{ on, attrs }">
-              <v-btn v-bind="attrs" v-on="on" v-if="organization.my_level.is_admin" small color="info" class="me-1"
+              <v-btn v-bind="attrs" v-on="on" v-if="organization.my_level && organization.my_level.is_admin" small color="info" class="me-1"
                      @click="$refs.raceSeriesResultsDialogRef.show(selectedRace, selectedRows)" :disabled="!selectedRace || !selectedRows.length">
                 <v-icon size="18" class="me-1">
                   {{ icons.mdiPencilOutline }}
@@ -281,7 +281,7 @@ export default {
       {text: 'EVENT', value: 'event', cellClass: 'event-td'},
       // {text: 'CREATED AT', value: 'create_datetime'},
     ];
-    if (props.organization.my_level.is_admin) {
+    if (props.organization.my_level && props.organization.my_level.is_admin) {
       tableColumns.push({text: 'ACTIONS', value: 'actions', align: 'end', sortable: false,})
     }
     const events = ref([]);

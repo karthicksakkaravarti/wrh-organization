@@ -5,15 +5,15 @@
       <v-card class="pt-10">
         <v-card-title class="justify-center flex-column">
           <v-avatar
-            :color="memberData.user.avatar ? '' : 'primary'"
-            :class="memberData.user.avatar ? '' : 'v-avatar-light-bg primary--text'"
+            :color="memberData.user && memberData.user.avatar ? '' : 'primary'"
+            :class="memberData.user && memberData.user.avatar ? '' : 'v-avatar-light-bg primary--text'"
             size="120"
             rounded
             class="mb-4"
           >
             <v-img
-              v-if="memberData.user.avatar"
-              :src="memberData.user.avatar"
+              v-if="memberData.user && memberData.user.avatar"
+              :src="memberData.user && memberData.user.avatar"
             ></v-img>
             <span
               v-else
@@ -167,7 +167,7 @@
           </v-list>
         </v-card-text>
         <v-card-actions class="justify-center">
-          <v-btn color="warning" outlined class="me-3" :to="{name: $rns.DASHBOARD_ACCOUNT_SETTINGS}">
+          <v-btn v-if="!readOnly" color="warning" outlined class="me-3" :to="{name: $rns.DASHBOARD_ACCOUNT_SETTINGS}">
             <v-icon dark left>
               {{ icons.mdiAccountEditOutline }}
             </v-icon>Edit
@@ -189,6 +189,10 @@ export default {
     memberData: {
       type: Object,
       required: true
+    },
+    readOnly: {
+      type: Boolean,
+      default: false
     }
   },
   components: {

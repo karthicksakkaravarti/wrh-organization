@@ -187,6 +187,10 @@ export default {
     apiParams: {
       type: Object,
       required: false
+    },
+    hiddenColumns: {
+      type: Array,
+      required: false
     }
   },
   setup(props, context) {
@@ -202,7 +206,7 @@ export default {
       {text: 'RACE', value: 'race', cellClass: 'race-td'},
       {text: 'PLACE', value: 'place'},
       {text: 'CREATED AT', value: 'create_datetime'},
-    ];
+    ].filter(c => (props.hiddenColumns || []).findIndex(r => c.value === r) < 0);
     const events = ref([]);
     const races = ref([]);
     const eventSearchInput = ref('');

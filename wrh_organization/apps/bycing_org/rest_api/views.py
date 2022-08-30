@@ -15,9 +15,9 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import ValidationError, PermissionDenied, MethodNotAllowed
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 
 from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
@@ -893,3 +893,28 @@ class EventView(AdminOrganizationActionsViewMixin, viewsets.ReadOnlyModelViewSet
     ordering = '-id'
     ordering_fields = '__all__'
     search_fields = ['name', 'description']
+
+
+class PublicViewMixin:
+    permission_classes = (AllowAny,)
+
+    def list(self, request, *args, **kwargs):
+        raise MethodNotAllowed('list')
+
+
+class PublicMemberView(PublicViewMixin, viewsets.ReadOnlyModelViewSet):
+    queryset = Member.objects.all()
+    serializer_class = MemberSerializer
+    filterset_class = MemberFilter
+    search_fields = '__all__'
+    ordering_fields = '__all__'
+    ordering = ('id',)
+
+
+class PublicOrganizationView(PublicViewMixin, viewsets.ReadOnlyModelViewSet):
+    queryset = Organization.objects.all()
+    serializer_class = OrganizationSerializer
+    filterset_class = OrganizationFilter
+    search_fields = ('name', 'about', 'type', 'website')
+    ordering_fields = '__all__'
+    ordering = ('id',)

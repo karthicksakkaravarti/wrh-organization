@@ -3,7 +3,7 @@
     <!-- user profile -->
     <v-col cols="12">
       <v-card class="pt-10">
-        <v-btn small color="info" class="position-absolute back-org-btn" :to="{name: $rns.DASHBOARD_MEMBER_PROFILE, params: {tab: 1}}">
+        <v-btn v-if="!readOnly" small color="info" class="position-absolute back-org-btn" :to="{name: $rns.DASHBOARD_MEMBER_PROFILE, params: {tab: 1}}">
           <v-icon>{{icons.mdiKeyboardBackspace}}</v-icon>Organization List
         </v-btn>
         <v-card-title class="justify-center flex-column">
@@ -144,7 +144,7 @@
         </v-card-text>
 
         <v-card-actions class="justify-center">
-          <v-btn color="warning" outlined class="me-3" @click="$emit('edit-click')">
+          <v-btn v-if="!readOnly" color="warning" outlined class="me-3" @click="$emit('edit-click')">
             <v-icon dark left>
               {{ icons.mdiHomeEditOutline }}
             </v-icon>Edit
@@ -176,6 +176,10 @@ export default {
     organization: {
       type: Object,
       required: true
+    },
+    readOnly: {
+      type: Boolean,
+      default: false
     }
   },
   setup(props, context) {
