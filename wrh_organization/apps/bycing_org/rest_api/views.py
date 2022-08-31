@@ -30,7 +30,7 @@ from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationS
     NestedMemberSerializer, UserSendRecoverPasswordSerializer, UserRecoverPasswordSerializer, \
     CsvFileImportSerializer, OrganizationMemberMyRequestsSerializer, OrganizationMemberOrgSerializer, \
     NestedOrganizationSerializer, FieldsTrackingSerializer, RaceSerializer, RaceResultSerializer, CategorySerializer, \
-    RaceSeriesSerializer, RaceSeriesResultSerializer, EventSerializer
+    RaceSeriesSerializer, RaceSeriesResultSerializer, EventSerializer, PublicMemberSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
     IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token, to_dict
 
@@ -904,7 +904,7 @@ class PublicViewMixin:
 
 class PublicMemberView(PublicViewMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Member.objects.all()
-    serializer_class = MemberSerializer
+    serializer_class = PublicMemberSerializer
     filterset_class = MemberFilter
     search_fields = '__all__'
     ordering_fields = '__all__'
