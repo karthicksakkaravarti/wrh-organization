@@ -108,8 +108,11 @@
           </v-avatar>
 
           <div class="d-flex flex-column pl-1">
-            <span href="javascript:" class="font-weight-semibold text-truncate text-decoration-none">
+            <a v-if="item.rider" is="router-link" :to="{name: $rns.PUBLIC_RIDER_PROFILE, params:{record_id: item.rider}}" class="font-weight-semibold text-truncate text-decoration-none">
               <v-icon v-if="item._rider" small>{{icons.mdiAccountCheck}}</v-icon> {{ displayRiderName(item) }}
+            </a>
+            <span v-else class="font-weight-semibold text-truncate text-decoration-none">
+              {{ displayRiderName(item) }}
             </span>
           </div>
         </div>

@@ -1,6 +1,6 @@
 <template>
   <div class="profile-my-race-results-tab">
-    <race-results-cmp :api-params="{my: true}"></race-results-cmp>
+    <race-results-cmp :api-params="{my: true}" :hidden-columns="['rider']"></race-results-cmp>
   </div>
 </template>
 
