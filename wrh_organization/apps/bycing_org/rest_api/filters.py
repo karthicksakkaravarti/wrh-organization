@@ -18,7 +18,7 @@ class OrganizationFilter(filters.FilterSet):
     def my_method(self, queryset, name, value):
         user = self.request and self.request.user
         member = user and getattr(user, 'member', None)
-        if value and user and user.is_authenticated and member:
+        if value:
             ids = OrganizationMember.objects.filter(is_active=True, member=member).exclude(
                 status__in=(OrganizationMember.STATUS_REJECT, OrganizationMember.STATUS_WAITING)
             ).values_list('organization', flat=True)

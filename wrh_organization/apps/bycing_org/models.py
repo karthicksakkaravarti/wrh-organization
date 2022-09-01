@@ -335,6 +335,22 @@ class Member(models.Model):
             self.social_media = {}
         return super().save(*args, **kwargs)
 
+    def set_as_verified(self, user, commit=True):
+        self.email_verified = True
+        self.is_verified = True
+        self.user = user
+        member_data = (user.more_data or {}).get('member_data') or {}
+        fields = ('phone', 'address1', 'address2', 'country', 'city', 'state', 'zipcode')
+        member_data = {k: member_data.get(k) for k in fields}
+        member_data.update(first_name=user.first_name, last_name=user.last_name, gender=user.gender,
+                           birth_date=user.birth_date, user=user, email=user.email)
+        for k, v in member_data.items():
+            if not getattr(self, k, None):
+                setattr(self, k, v)
+
+        if commit:
+            self.save()
+
     class Meta:
         unique_together = (('email', 'email_verified'), ('phone', 'phone_verified'),)
 

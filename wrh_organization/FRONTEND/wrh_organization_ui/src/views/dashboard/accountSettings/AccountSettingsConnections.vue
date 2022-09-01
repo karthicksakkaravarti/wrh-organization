@@ -1,5 +1,5 @@
 <template>
-  <div class="user-tab-connection">
+  <div class="user-tab-connection" :class="{'no-member': !accountData.id}">
     <!-- social accounts -->
     <v-card class="mb-1">
       <v-card-title>
@@ -120,12 +120,14 @@ export default {
   components: {AccountSettingsConnectionDialog},
   setup() {
     const socialMediaData = ref({});
+    const accountData = ref({user: {}});
     const loading = ref(false);
 
     const loadSocialMedia = () => {
       loading.value = true;
-      axios.get("bycing_org/member/me", {params: {fields: 'social_media'}}).then((response) => {
+      axios.get("bycing_org/member/me", {params: {fields: 'id,social_media'}}).then((response) => {
         socialMediaData.value = response.data.social_media || {};
+        accountData.value = response.data;
         loading.value = false;
       }, (error) => {
         loading.value = false;
@@ -139,6 +141,7 @@ export default {
 
     return {
       socialMediaData,
+      accountData,
       loading,
       loadSocialMedia,
       icons: {
@@ -149,3 +152,10 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+  .no-member {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+</style>

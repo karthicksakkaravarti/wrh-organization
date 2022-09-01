@@ -1,7 +1,7 @@
 <template>
   <v-card
     flat
-    class="pa-3 mt-2"
+    class="pa-3 mt-2" :class="{'no-member': !accountData.id}"
   >
     <v-card-text class="d-flex">
       <v-avatar
@@ -410,3 +410,10 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+  .no-member {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+</style>
