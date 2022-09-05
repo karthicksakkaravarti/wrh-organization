@@ -1,5 +1,7 @@
 # We Race Here
 
+Using theme: materio-vuetify
+
 Load USA Events:
 ``python manage.py usac_event_sync``
 
