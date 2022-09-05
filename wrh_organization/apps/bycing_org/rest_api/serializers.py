@@ -12,6 +12,7 @@ from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64I
 
 class MemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     summary = serializers.SerializerMethodField(read_only=True)
+    age = serializers.IntegerField(read_only=True)
     extra_fields = ['summary', 'more_data']
 
     def get_summary(self, obj):
@@ -28,6 +29,7 @@ class MemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer
 
 class PublicMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     summary = serializers.SerializerMethodField(read_only=True)
+    age = serializers.IntegerField(read_only=True)
     extra_fields = ['summary', 'more_data']
 
     def get_summary(self, obj):
@@ -38,7 +40,7 @@ class PublicMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
 
     class Meta:
         model = Member
-        exclude = ('phone', 'phone_verified', 'email', 'email_verified', 'address1', 'address2', 'zipcode', 'more_data')
+        exclude = ('phone', 'phone_verified', 'email', 'email_verified', 'address1', 'address2', 'zipcode', 'more_data', 'birth_date')
         read_only_fields = ('user',)
 
 
@@ -55,6 +57,7 @@ class MyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializ
     user = UserMyMemberSerializer(allow_null=True, required=False)
     email = serializers.EmailField(allow_null=True, required=False)
     summary = serializers.SerializerMethodField(read_only=True)
+    age = serializers.IntegerField(read_only=True)
     extra_fields = ['summary', 'more_data']
 
     def get_summary(self, obj):

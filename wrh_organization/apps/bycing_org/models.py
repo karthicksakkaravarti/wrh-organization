@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils import timezone
 from model_utils import FieldTracker
 from phonenumber_field.modelfields import PhoneNumberField
 from rest_framework.utils.encoders import JSONEncoder
@@ -297,6 +298,12 @@ class Member(models.Model):
     more_data = models.JSONField(null=True, encoder=JSONEncoder)
     is_verified = models.BooleanField(default=None, null=True)
     user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='member', null=True)
+
+    @property
+    def age(self):
+        if not self.birth_date:
+            return
+        return timezone.now().year - self.birth_date.year
 
     def generate_verify_code(self, type='email'):
         '''
