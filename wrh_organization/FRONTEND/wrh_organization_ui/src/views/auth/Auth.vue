@@ -10,18 +10,29 @@
 
 <script>
 // eslint-disable-next-line object-curly-newline
-import { ref } from '@vue/composition-api'
+import {onMounted, ref} from '@vue/composition-api'
 import Login from "@/views/auth/Login";
 import Register from "@/views/auth/Register";
 import ForgotPassword from "@/views/auth/ForgotPassword";
+import {getQueryParams} from "@/composables/utils";
 
 export default {
   components: {Register, Login, ForgotPassword},
   setup() {
-    const activePage = ref("Login");
+    var pageParam = getQueryParams('page', window.location.href);
+    var pages = {'Login': 'Login', 'Register': 'Register', 'ForgotPassword': 'ForgotPassword'}
+    var defaultPage = pages[pageParam] || 'Login';
+    const activePage = ref(defaultPage);
+    onMounted(() => {
+      if (pages[route.value.params.page]) {
+        activePage.value = defaultPage[route.value.params.page] || 'Login' ;
+      }
+      loadMemberData();
+    });
     return {
       activePage,
     }
+
   },
 }
 </script>

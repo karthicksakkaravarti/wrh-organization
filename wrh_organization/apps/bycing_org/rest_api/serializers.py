@@ -291,7 +291,7 @@ class RaceSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
 
 
 class RaceResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-    extra_fields = ['more_data']
+    extra_fields = ['more_data', '_race.more_data']
 
     _rider = NestedMember2Serializer(read_only=True, source='rider')
     _race = RaceSerializer(read_only=True, source='race')
@@ -382,6 +382,7 @@ class RaceSeriesResultSerializer(DynamicFieldsSerializerMixin, serializers.Model
 
 
 class EventSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    extra_fields = ['more_data']
 
     class Meta:
         model = Event

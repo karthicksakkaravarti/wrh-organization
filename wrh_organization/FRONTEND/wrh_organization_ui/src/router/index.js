@@ -35,7 +35,7 @@ const routes = [
     name: routeNames.PUBLIC_HOME,
     component: () => import('@/views/public/PublicHome.vue'),
     meta: {
-      layout: 'PublicLayout',
+      layout: 'SiteLayout',
     },
   },
   {

@@ -28,6 +28,7 @@ import axios from '@/axios';
 import store from '@/store';
 import EventBus from '@/EventBus'
 
+import SiteLayout from '@/layouts/SiteLayout'
 import BlankLayout from '@/layouts/BlankLayout'
 import PublicLayout from '@/layouts/PublicLayout'
 import DashboardLayout from '@/layouts/DashboardLayout'
@@ -43,6 +44,7 @@ export default {
     AppVersionAlert,
     Auth,
     BlankLayout,
+    SiteLayout,
     PublicLayout,
     DashboardLayout,
   },

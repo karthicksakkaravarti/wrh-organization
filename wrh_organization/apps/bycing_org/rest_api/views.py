@@ -889,9 +889,6 @@ class EventView(AdminOrganizationActionsViewMixin, viewsets.ReadOnlyModelViewSet
 class PublicViewMixin:
     permission_classes = (AllowAny,)
 
-    def list(self, request, *args, **kwargs):
-        raise MethodNotAllowed('list')
-
 
 class PublicMemberView(PublicViewMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Member.objects.all()
@@ -901,6 +898,9 @@ class PublicMemberView(PublicViewMixin, viewsets.ReadOnlyModelViewSet):
     ordering_fields = '__all__'
     ordering = ('id',)
 
+    def list(self, request, *args, **kwargs):
+        raise MethodNotAllowed('list')
+
 
 class PublicOrganizationView(PublicViewMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Organization.objects.all()
@@ -909,3 +909,6 @@ class PublicOrganizationView(PublicViewMixin, viewsets.ReadOnlyModelViewSet):
     search_fields = ('name', 'about', 'type', 'website')
     ordering_fields = '__all__'
     ordering = ('id',)
+
+    def list(self, request, *args, **kwargs):
+        raise MethodNotAllowed('list')

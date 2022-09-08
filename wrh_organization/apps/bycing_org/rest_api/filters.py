@@ -128,6 +128,8 @@ class EventFilter(filters.FilterSet):
     id__in = filters.BaseInFilter(field_name='id')
     start_date__gte = filters.DateFilter(field_name='start_date', lookup_expr='gte')
     start_date__lte = filters.DateFilter(field_name='start_date', lookup_expr='lte')
+    end_date__gte = filters.DateFilter(field_name='end_date', lookup_expr='gte')
+    end_date__lte = filters.DateFilter(field_name='end_date', lookup_expr='lte')
 
     class Meta:
         model = Event
