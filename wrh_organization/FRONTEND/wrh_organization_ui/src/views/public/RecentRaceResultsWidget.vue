@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-title class="align-start">
-      <span>Recent Race Results (1<sub>st</sub>)</span>
+      <span>Recent Winners</span>
     </v-card-title>
     <v-divider></v-divider>
 

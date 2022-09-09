@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-title class="align-start">
-      <span>5 Next Events</span>
+      <span>Upcoming Events</span>
     </v-card-title>
     <v-divider></v-divider>
 

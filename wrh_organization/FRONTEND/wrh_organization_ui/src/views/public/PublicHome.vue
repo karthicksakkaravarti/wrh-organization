@@ -25,10 +25,10 @@
         <recent-race-results-widget class="home-widget"></recent-race-results-widget>
       </v-col>
       <v-col cols="12" md="6">
-        <next-events-widget class="home-widget"></next-events-widget>
+        <upcoming-events-widget class="home-widget"></upcoming-events-widget>
       </v-col>
       <v-col cols="12" md="6">
-        <team-orgs-widget class="home-widget"></team-orgs-widget>
+        <organizations-widget class="home-widget"></organizations-widget>
       </v-col>
       <v-col cols="12" md="6">
         <twitter-feeds-widget class="home-widget"></twitter-feeds-widget>
@@ -40,11 +40,11 @@
 <script>
 
 import RecentRaceResultsWidget from "@/views/public/RecentRaceResultsWidget";
-import NextEventsWidget from "@/views/public/NextEventsWidget";
-import TeamOrgsWidget from "@/views/public/TeamOrgsWidget";
+import UpcomingEventsWidget from "@/views/public/UpcomingEventsWidget";
 import TwitterFeedsWidget from "@/views/public/TwitterFeedsWidget";
+import OrganizationsWidget from "@/views/public/OrganizationsWidget";
 export default {
-  components: {TwitterFeedsWidget, TeamOrgsWidget, NextEventsWidget, RecentRaceResultsWidget},
+  components: {OrganizationsWidget, TwitterFeedsWidget, UpcomingEventsWidget, RecentRaceResultsWidget},
   setup() {
     return {
     }
