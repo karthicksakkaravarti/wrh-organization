@@ -6,7 +6,7 @@ export default {
   setup() {
     // eslint-disable-next-line object-curly-newline
     return {
-      navMenuItems: null
+      navMenuItems: []
     }
   },
 }

@@ -1,15 +1,15 @@
 <template>
   <v-card>
     <v-tabs v-model="tab" grow>
-      <v-tab><v-icon>{{ icons.mdiCalendar }}</v-icon> Calendar</v-tab>
       <v-tab><v-icon>{{ icons.mdiTable }}</v-icon> Table</v-tab>
+      <v-tab><v-icon>{{ icons.mdiCalendar }}</v-icon> Calendar</v-tab>
     </v-tabs>
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <events-calendar-widget></events-calendar-widget>
+        <events-table-widget></events-table-widget>
       </v-tab-item>
       <v-tab-item>
-        <events-table-widget></events-table-widget>
+        <events-calendar-widget></events-calendar-widget>
       </v-tab-item>
     </v-tabs-items>
   </v-card>

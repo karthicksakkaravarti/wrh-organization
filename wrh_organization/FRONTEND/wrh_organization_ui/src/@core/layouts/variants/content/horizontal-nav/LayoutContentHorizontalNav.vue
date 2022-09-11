@@ -16,7 +16,7 @@
 
     <!-- Horizontal Nav Menu -->
     <v-app-bar
-      v-if="navMenuItems && !menuIsMenuHidden"
+      v-if="navMenuItems && navMenuItems.length && !menuIsMenuHidden"
       class="navigation-menu"
       :class="{ 'bg-blur': appBarIsBlurred }"
       app
