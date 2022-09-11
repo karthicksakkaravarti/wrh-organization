@@ -367,9 +367,9 @@ class Member(models.Model):
 
 class Event(models.Model):
     name = models.CharField(max_length=200)
-    description = models.TextField(null=True)
+    description = models.TextField(null=True, blank=True)
     start_date = models.DateField()
-    end_date = models.DateField(null=True)
+    end_date = models.DateField(null=True, blank=True)
     organizer_email = models.CharField(max_length=300, null=True, blank=True)
     country = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=255, blank=True, null=True)
@@ -377,6 +377,11 @@ class Event(models.Model):
     more_data = models.JSONField(null=True, encoder=JSONEncoder)
     create_datetime = models.DateTimeField(auto_now_add=True)
     update_datetime = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.end_date and (self.end_date < self.start_date):
+            raise ValidationError({'end_date': 'end_date should be greater than start_date'})
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

@@ -27,4 +27,10 @@ class User(AbstractUser):
     birth_date = models.DateField(null=True, blank=True)
     avatar = models.ImageField(blank=True, null=True, upload_to=avatar_file_path_func)
     more_data = models.JSONField(null=True, encoder=JSONEncoder, editable=False)
+    prefs = models.JSONField(null=True, encoder=JSONEncoder, editable=False)
     # verified_email = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.prefs:
+            self.prefs = {}
+        return super().save(*args, **kwargs)

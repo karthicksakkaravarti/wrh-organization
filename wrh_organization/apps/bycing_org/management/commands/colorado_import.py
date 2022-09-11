@@ -1,8 +1,6 @@
-import argparse
 import getpass
 
 import mysql.connector
-import json
 import traceback
 from datetime import datetime
 
@@ -10,7 +8,6 @@ from django.core.management import BaseCommand
 from backports.zoneinfo import ZoneInfo
 from django.db import transaction
 from django.utils.dateparse import parse_date
-from docutils.nodes import status
 
 from apps.bycing_org.models import Member, Organization, OrganizationMember, Event, RaceResult, Race
 

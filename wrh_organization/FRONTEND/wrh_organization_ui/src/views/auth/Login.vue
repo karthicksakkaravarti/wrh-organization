@@ -4,7 +4,7 @@
     <v-card-title class="d-flex align-center justify-center py-7">
       <router-link
         :to="{name: $rns.ROOT}"
-        class="d-flex align-center"
+        class="d-flex align-center text-decoration-none"
       >
         <v-img
           :src="appLogo"
@@ -24,7 +24,7 @@
     <!-- title -->
     <v-card-text>
       <p class="text-2xl font-weight-semibold text--primary mb-2">
-        Login to Wrh-Organization
+        Login & Authentication
       </p>
       <p class="mb-2">
         Please sign-in to your account and start the adventure

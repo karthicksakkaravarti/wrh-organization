@@ -16,9 +16,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=200)),
-                ('description', models.TextField(null=True)),
+                ('description', models.TextField(null=True, blank=True)),
                 ('start_date', models.DateField()),
-                ('end_date', models.DateField(null=True)),
+                ('end_date', models.DateField(null=True, blank=True)),
                 ('organizer_email', models.CharField(blank=True, max_length=300, null=True)),
                 ('country', models.CharField(blank=True, max_length=255, null=True)),
                 ('city', models.CharField(blank=True, max_length=255, null=True)),

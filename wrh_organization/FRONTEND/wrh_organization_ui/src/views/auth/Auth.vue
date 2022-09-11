@@ -14,20 +14,20 @@ import {onMounted, ref} from '@vue/composition-api'
 import Login from "@/views/auth/Login";
 import Register from "@/views/auth/Register";
 import ForgotPassword from "@/views/auth/ForgotPassword";
-import {getQueryParams} from "@/composables/utils";
+import {useRouter} from "@core/utils";
 
 export default {
   components: {Register, Login, ForgotPassword},
   setup() {
-    var pageParam = getQueryParams('page', window.location.href);
-    var pages = {'Login': 'Login', 'Register': 'Register', 'ForgotPassword': 'ForgotPassword'}
-    var defaultPage = pages[pageParam] || 'Login';
-    const activePage = ref(defaultPage);
+    const pages = {'Login': 'Login', 'Register': 'Register', 'ForgotPassword': 'ForgotPassword'};
+    const { route } = useRouter();
+    const activePage = ref('Login');
     onMounted(() => {
       if (pages[route.value.params.page]) {
-        activePage.value = defaultPage[route.value.params.page] || 'Login' ;
+        activePage.value = pages[route.value.params.page] || 'Login' ;
+      } else if (pages[route.value.query.page]) {
+        activePage.value = pages[route.value.query.page] || 'Login' ;
       }
-      loadMemberData();
     });
     return {
       activePage,

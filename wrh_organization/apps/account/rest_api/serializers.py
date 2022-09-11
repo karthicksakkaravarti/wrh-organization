@@ -54,6 +54,12 @@ class UserSessionSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
         model = User
         exclude = ('password',)
 
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        if 'prefs' in res and not res['prefs']:
+            res['prefs'] = {}
+        return res
+
 
 class SessionSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=30)
@@ -66,5 +72,11 @@ class UserProfileSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'gender', 'birth_date', 'avatar')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'gender', 'birth_date', 'avatar', 'prefs')
         read_only_fields = ('email', 'username',)
+
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        if 'prefs' in res and not res['prefs']:
+            res['prefs'] = {}
+        return res

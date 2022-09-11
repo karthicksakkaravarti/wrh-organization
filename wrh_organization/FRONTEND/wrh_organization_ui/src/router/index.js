@@ -11,6 +11,7 @@ export const routeNames = {
   PUBLIC_RACE_RESULTS: "public_race_results",
   PUBLIC_RIDER_PROFILE: "public_rider_profile",
   PUBLIC_ORG_PROFILE: "public_org_profile",
+  PUBLIC_EVENTS: "public_events",
 
   DASHBOARD_HOME: "dashboard_home",
   DASHBOARD_EVENTS: "dashboard_events",
@@ -58,6 +59,14 @@ const routes = [
     path: '/race-results',
     name: routeNames.PUBLIC_RACE_RESULTS,
     component: () => import('@/views/public/PublicRaceResults.vue'),
+    meta: {
+      layout: 'PublicLayout',
+    },
+  },
+  {
+    path: '/events',
+    name: routeNames.PUBLIC_EVENTS,
+    component: () => import('@/views/public/PublicEvents.vue'),
     meta: {
       layout: 'PublicLayout',
     },

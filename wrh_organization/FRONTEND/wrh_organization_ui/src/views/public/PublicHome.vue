@@ -15,8 +15,14 @@
         <h3 class="mb-5">
           Create Your Account, Select Your Region, Find a Team or Club!
         </h3>
-        <v-btn outlined color="error" :to="{name: $rns.DASHBOARD_HOME, query:{page: 'Register'}}" x-large>
+        <v-btn v-if="!$store.getters.isAuthenticated" outlined color="error" :to="{name: $rns.DASHBOARD_HOME, query:{page: 'Register'}}" x-large>
           Sign Up
+        </v-btn>
+        <v-btn v-else outlined color="info" :to="{name: $rns.DASHBOARD_HOME}" x-large>
+          <v-icon>
+            {{icons.mdiApps}}
+          </v-icon>
+          Go to Panel
         </v-btn>
       </v-card-text>
     </v-card>
@@ -43,10 +49,14 @@ import RecentRaceResultsWidget from "@/views/public/RecentRaceResultsWidget";
 import UpcomingEventsWidget from "@/views/public/UpcomingEventsWidget";
 import TwitterFeedsWidget from "@/views/public/TwitterFeedsWidget";
 import OrganizationsWidget from "@/views/public/OrganizationsWidget";
+import {mdiApps} from "@mdi/js";
 export default {
   components: {OrganizationsWidget, TwitterFeedsWidget, UpcomingEventsWidget, RecentRaceResultsWidget},
   setup() {
     return {
+      icons: {
+        mdiApps
+      }
     }
   },
 }
@@ -67,6 +77,6 @@ export default {
     object-fit: cover;
   }
   .home-widget {
-    height: 425px;
+    min-height: 425px;
   }
 </style>

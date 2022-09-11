@@ -1,7 +1,9 @@
 <template>
   <v-card>
-    <v-card-title class="align-start">
+    <v-card-title class="align-start pb-3 pt-5">
       <span>Recent Winners</span>
+      <v-spacer></v-spacer>
+      <v-btn text color="info" :to="{name: $rns.PUBLIC_RACE_RESULTS}" x-small>View All</v-btn>
     </v-card-title>
     <v-divider></v-divider>
 

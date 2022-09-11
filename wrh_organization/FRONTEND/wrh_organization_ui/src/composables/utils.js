@@ -262,7 +262,7 @@ export const refineVTableOptions = (options) => {
   newOpt.page_size = newOpt.itemsPerPage === -1? 0: newOpt.itemsPerPage;
   newOpt.order_by = (newOpt.sortBy || []).map((o, i) => {
     return ((newOpt.sortDesc || [])[i]? '-': '') + o;
-  });
+  }).join(',');
   ["itemsPerPage", "sortBy", "sortDesc", "groupBy", "groupDesc", "mustSort", "multiSort"].forEach(o => {
     delete newOpt[o];
   });

@@ -60,6 +60,11 @@ class RaceSeriesResultAdmin(admin.ModelAdmin):
     list_filter = ('race_series',)
 
 
+class EventAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'start_date', 'end_date', 'country', 'city', 'state')
+    search_fields = ('name',)
+
+
 class FieldsTrackingAdmin(admin.ModelAdmin):
     list_display = ('id', 'object_id', 'content_type', 'object_repr', 'datetime', 'user')
     search_fields = ('object_repr',)
@@ -76,3 +81,4 @@ admin.site.register(models.RaceSeriesResult, RaceSeriesResultAdmin)
 admin.site.register(models.FieldsTracking, FieldsTrackingAdmin)
 admin.site.register(models.Category, CategoryAdmin)
 admin.site.register(models.RaceSeries, RaceSeriesAdmin)
+admin.site.register(models.Event, EventAdmin)

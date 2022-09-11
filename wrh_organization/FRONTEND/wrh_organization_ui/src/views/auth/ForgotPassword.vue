@@ -3,7 +3,7 @@
     <v-card-title class="d-flex align-center justify-center py-7">
       <router-link
         :to="{name: $rns.ROOT}"
-        class="d-flex align-center"
+        class="d-flex align-center text-decoration-none"
       >
         <v-img
           :src="appLogo"

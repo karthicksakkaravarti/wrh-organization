@@ -34,20 +34,25 @@
 
         <!-- Right Content: I18n, Light/Dark, Notification & User Dropdown -->
         <div class="d-flex align-center">
+          <v-btn v-if="!$store.getters.isAuthenticated" class="mr-4" outlined color="primary" :to="{name: $rns.DASHBOARD_HOME}">
+            Sign In
+          </v-btn>
+          <v-btn v-else class="mr-4" outlined color="info" :to="{name: $rns.DASHBOARD_HOME}">
+            <v-icon color="info">
+              {{icons.mdiApps}}
+            </v-icon>
+            Panel
+          </v-btn>
+          <!--
           <app-bar-search
             :shall-show-full-search.sync="shallShowFullSearch"
             :data="appBarSearchData"
             :filter="searchFilterFunc"
             :search-query.sync="appBarSearchQuery"
             class="me-4"
-          ></app-bar-search>
+          ></app-bar-search>-->
           <app-bar-theme-switcher></app-bar-theme-switcher>
           <app-bar-user-menu v-if="$store.getters.isAuthenticated" class="ms-2"></app-bar-user-menu>
-          <v-btn v-else icon class="ms-2" title="Login" @click="$router.push({name: $rns.DASHBOARD_HOME})">
-            <v-icon>
-              {{ icons.mdiLogin }}
-            </v-icon>
-          </v-btn>
         </div>
       </div>
       <v-overlay
@@ -80,7 +85,7 @@ import appBarSearchData from '@/assets/app-bar-search-data'
 import { ref, watch } from '@vue/composition-api'
 
 import themeConfig from '@themeConfig'
-import {mdiApps, mdiHeartOutline, mdiHomeOutline, mdiLogin, mdiFlagCheckered} from '@mdi/js'
+import {mdiApps, mdiHeartOutline, mdiHomeOutline, mdiLogin, mdiFlagCheckered, mdiCalendarMonth} from '@mdi/js'
 import AppFooter from "@/layouts/AppFooter";
 import {routeNames} from "@/router";
 
@@ -97,19 +102,14 @@ export default {
   setup() {
     const navMenuItems = [
       {
-        title: 'Home',
-        icon: mdiHomeOutline,
-        to: routeNames.PUBLIC_HOME,
-      },
-      {
         title: 'Race Results',
         icon: mdiFlagCheckered,
         to: routeNames.PUBLIC_RACE_RESULTS,
       },
       {
-        title: 'Dashboard',
-        icon: mdiApps,
-        to: routeNames.DASHBOARD_HOME,
+        title: 'Events',
+        icon: mdiCalendarMonth,
+        to: routeNames.PUBLIC_EVENTS,
       },
     ];
     // Search
@@ -168,6 +168,7 @@ export default {
       icons: {
         mdiHeartOutline,
         mdiLogin,
+        mdiApps,
       },
     }
   },

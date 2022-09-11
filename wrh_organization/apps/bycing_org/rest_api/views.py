@@ -883,7 +883,7 @@ class EventView(AdminOrganizationActionsViewMixin, viewsets.ReadOnlyModelViewSet
     filterset_class = EventFilter
     ordering = '-id'
     ordering_fields = '__all__'
-    search_fields = ['name', 'description']
+    search_fields = ['name', 'description', 'country', 'city', 'state']
 
 
 class PublicViewMixin:
