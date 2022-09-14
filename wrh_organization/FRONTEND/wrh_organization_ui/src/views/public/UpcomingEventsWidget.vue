@@ -22,7 +22,7 @@
                 <v-icon size="14">
                   {{ icons.mdiMapMarker }}
                 </v-icon>
-                {{ event.country || '' }}{{ event.state? ` - ${event.state}`:'' }}{{event.city? ` - ${event.city}`:'' }}
+                {{ event.country || '' }}{{ event.state? `, ${event.state}`:'' }}{{event.city? `, ${event.city}`:'' }}
               </v-list-item-subtitle>
             </v-list-item-content>
             <v-list-item-action>
@@ -56,17 +56,23 @@ import {onMounted, ref} from "@vue/composition-api";
 import moment from "moment";
 
 export default {
-  setup() {
+  props: {
+    apiParams: {
+      type: Object,
+      required: false
+    },
+  },
+  setup(props) {
     const loading = ref(false);
     const events = ref([]);
 
     const loadEvents = () => {
       loading.value = true;
-      var params = {
+      const params =  Object.assign({
         start_date__gte: moment().format("YYYY-MM-DD"),
         page_size: 5,
         order_by: 'start_date,name'
-      };
+      }, props.apiParams);
       axios.get(`bycing_org/event`, {params: params}).then((response) => {
         loading.value = false;
         events.value = response.data.results;

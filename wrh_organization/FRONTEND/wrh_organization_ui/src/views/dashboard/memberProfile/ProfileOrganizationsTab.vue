@@ -114,6 +114,31 @@
         <!-- actions -->
         <template #item.actions="{item}">
           <div class="d-flex align-end justify-end">
+            <v-tooltip bottom v-if="$store.getters.defaultRegionalOrg == item.id">
+              <template #activator="{ on, attrs }">
+                <v-btn x-small outlined color="error" v-bind="attrs" v-on="on"
+                       @click="setRegionalDefault(null)">
+                  <v-icon size="18" left>
+                    {{ icons.mdiBankCheck }}
+                  </v-icon>
+                  Default
+                </v-btn>
+              </template>
+              <span>Remove as default</span>
+            </v-tooltip>
+            <v-tooltip bottom v-else-if="item.type == 'regional'">
+              <template #activator="{ on, attrs }">
+                <v-btn x-small outlined color="secondary" class="set-default" v-bind="attrs" v-on="on"
+                       @click="setRegionalDefault(item.id)">
+                  <v-icon size="18" left>
+                    {{ icons.mdiBankCheck }}
+                  </v-icon>
+                  Default
+                </v-btn>
+              </template>
+              <span>Make this regional organization as default</span>
+            </v-tooltip>
+
             <v-tooltip bottom>
               <template #activator="{ on, attrs }">
                 <v-btn icon small v-bind="attrs" v-on="on" @click="$refs.formDialogRef.show(item)">
@@ -152,6 +177,7 @@ import {
   mdiPlus,
   mdiPencilOutline,
   mdiEyeOutline,
+  mdiBankCheck,
   mdiAccountGroupOutline,
   mdiAccountMultipleOutline,
   mdiClose,
@@ -166,6 +192,7 @@ import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess, refineVTableOptions} from "@/composables/utils";
 import {avatarText} from "@core/utils/filter";
 import ProfileOrganizationFormDialog from "./ProfileOrganizationFormDialog";
+import EventBus from "@/EventBus";
 
 export default {
   components: {ProfileOrganizationFormDialog},
@@ -181,7 +208,7 @@ export default {
       {text: '#ID', value: 'id', align: 'start',},
       {text: 'NAME', value: 'name'},
       {text: 'TYPE', value: 'type'},
-      {text: 'ACTIONS', value: 'actions', align: 'end', sortable: false,},
+      {text: 'ACTIONS', value: 'actions', align: 'end', sortable: false, cellClass: 'actions-td'},
     ];
 
     const loadRecords = (page) => {
@@ -199,6 +226,15 @@ export default {
         notifyDefaultServerError(error, true)
       });
 
+    };
+
+    const setRegionalDefault = (orgId) => {
+      axios.put("account/me/prefs", {default_regional_org: orgId}).then((response) => {
+        store.state.currentUser.prefs = response.data;
+        notifySuccess("Default regional organization changed!");
+      }, (response) => {
+        notifyDefaultServerError(response, true);
+      });
     };
 
     const loadMebershipRequests = () => {
@@ -245,10 +281,12 @@ export default {
       loadRecords,
       loadMebershipRequests,
       reviewMembershipRequest,
+      setRegionalDefault,
       icons: {
         mdiPlus,
         mdiPencilOutline,
         mdiEyeOutline,
+        mdiBankCheck,
         mdiAccountGroupOutline,
         mdiAccountMultipleOutline,
         mdiClose,
@@ -261,13 +299,22 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .member-profile-organization-tab {
   .organization-search {
     max-width: 10.625rem;
   }
   .organization-list-actions {
     max-width: 7.81rem;
+  }
+  .v-data-table tr td .v-btn.set-default {
+    display: none;
+  }
+  .v-data-table tr:hover td .v-btn.set-default {
+    display: inline-flex;
+  }
+  td.actions-td {
+    width: 185px;
   }
 }
 </style>

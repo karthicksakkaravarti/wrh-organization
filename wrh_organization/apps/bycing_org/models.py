@@ -152,6 +152,18 @@ class Organization(models.Model):
         },
     }
 
+    SOCIAL_MEDIA_SCHEMA = {
+        'youtube': {
+            'type': 'string', 'required': False, 'nullable': True, 'meta': {'title': 'Youtube'}
+        },
+        'facebook': {
+            'type': 'string', 'required': False, 'nullable': True, 'meta': {'title': 'Facebook'}
+        },
+        'instagram': {
+            'type': 'string', 'required': False, 'nullable': True, 'meta': {'title': 'Instagram'}
+        },
+    }
+
     TYPE_REGIONAL = 'regional'
     TYPE_TEAM = 'team'
     TYPE_ADVOCACY_VOLUNTEER = 'advocacy_volunteer'
@@ -235,6 +247,15 @@ class Organization(models.Model):
             self.member_fields_schema = v.document['member_fields_schema']
         else:
             self.member_fields_schema = []
+
+        if self.social_media:
+            v = Validator(self.SOCIAL_MEDIA_SCHEMA, allow_unknown=True)
+            if not v.validate(self.social_media):
+                raise ValidationError({'social_media': str(v.errors)})
+            self.social_media = v.document
+        else:
+            self.social_media = {}
+
         return super().save(*args, **kwargs)
 
     def __str__(self):
@@ -375,6 +396,7 @@ class Event(models.Model):
     city = models.CharField(max_length=255, blank=True, null=True)
     state = models.CharField(max_length=255, blank=True, null=True)
     more_data = models.JSONField(null=True, encoder=JSONEncoder)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, related_name='events')
     create_datetime = models.DateTimeField(auto_now_add=True)
     update_datetime = models.DateTimeField(auto_now=True)
 

@@ -67,6 +67,9 @@ export default new Vuex.Store({
     currentMemberId: function (state) {
       return state.currentMember.id;
     },
+    defaultRegionalOrg: function (state) {
+      return (state.currentUser.prefs || {}).default_regional_org || null;
+    }
   },
   modules: {
     appConfig: appConfigStoreModule,

@@ -67,6 +67,33 @@
           </v-autocomplete>
         </v-col>
         <v-col cols="12" md="4" sm="6">
+          <v-autocomplete
+              v-model="tableFiltering.organization"
+              dense
+              label="Filter by Organization"
+              :items="organizations"
+              item-text="name"
+              item-value="id"
+              :menu-props="{contentClass:'list-style'}"
+              :loading="loadingOrganizations"
+              no-data-text="No Organization Found!"
+              hide-details
+              clearable
+              return-object
+          >
+            <template #item="data">
+              <v-list-item-content>
+                <v-list-item-title class="text-sm">
+                  {{ data.item.name }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  {{ ($const.ORGANIZATION_TYPE_MAP[data.item.type] || {}).title || data.item.type }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </template>
+          </v-autocomplete>
+        </v-col>
+        <v-col cols="12" md="4" sm="6">
           <div class="d-flex align-center">
             <v-text-field
                 :value="tableFiltering.search"
@@ -75,10 +102,6 @@
                 dense clearable hide-details
                 placeholder="Search ..." class="me-3 search-input"
             ></v-text-field>
-            <v-spacer></v-spacer>
-            <v-btn fab x-small color="info" class="mr-1" @click="loadRecords(1);">
-              <v-icon>{{icons.mdiRefresh}}</v-icon>
-            </v-btn>
           </div>
 
         </v-col>
@@ -183,6 +206,7 @@ import axios from "@/axios";
 import {notifyDefaultServerError, refineVTableOptions} from "@/composables/utils";
 import {avatarText} from "@core/utils/filter";
 import _ from "lodash";
+import {useRouter} from "@core/utils";
 
 export default {
   components: {},
@@ -194,15 +218,17 @@ export default {
     hiddenColumns: {
       type: Array,
       required: false
-    }
+    },
   },
   setup(props, context) {
+    const { route } = useRouter();
     const records = ref([]);
     const pagination = ref({total: 0});
     const loading = ref(false);
     const loadingRaces = ref(false);
+    const loadingOrganizations = ref(false);
     const tableOptions = ref({});
-    const tableFiltering = ref({});
+    const tableFiltering = ref(route.value.query || {});
     const tableColumns = [
       {text: '#ID', value: 'id', align: 'start',},
       {text: 'RIDER', value: 'rider'},
@@ -212,6 +238,7 @@ export default {
     ].filter(c => (props.hiddenColumns || []).findIndex(r => c.value === r) < 0);
     const events = ref([]);
     const races = ref([]);
+    const organizations = ref([]);
     const eventSearchInput = ref('');
     const selectedEvent = ref(null);
     const selectedRace = ref(null);
@@ -274,6 +301,9 @@ export default {
         params.event = selectedEvent.value.id
       }
       loading.value = true;
+      if (params.organization && typeof params.organization === "object") {
+        params.organization = params.organization.id;
+      }
       axios.get("bycing_org/race_result/", {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
@@ -300,6 +330,21 @@ export default {
 
     };
 
+    const loadOrganizations = () => {
+      loadingOrganizations.value = true;
+      axios.get("bycing_org/organization/", {params: {page_size: 0}}).then((response) => {
+        loadingOrganizations.value = false;
+        organizations.value = response.data.results;
+        if (route.value.query.organization) {
+          tableFiltering.value.organization = _.find(organizations.value, {id: route.value.query.organization * 1});
+        }
+      }, (error) => {
+        loadingOrganizations.value = false;
+        notifyDefaultServerError(error, true)
+      });
+
+    };
+
     watch(() => tableFiltering, (currentValue, oldValue) => {
         loadRecords(1);
       },
@@ -307,6 +352,7 @@ export default {
     );
 
     onMounted(() => {
+      loadOrganizations();
     });
 
     return {
@@ -314,6 +360,7 @@ export default {
       eventSearchInput,
       events,
       races,
+      organizations,
       selectedEvent,
       selectedRace,
       findEvents,
@@ -325,6 +372,7 @@ export default {
       tableFiltering,
       loading,
       loadingRaces,
+      loadingOrganizations,
       pagination,
       avatarText,
       loadRecords,

@@ -6,7 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 
-from .serializers import SessionSerializer, UserProfileSerializer, SetPasswordSerializer, UserSessionSerializer
+from .serializers import SessionSerializer, UserProfileSerializer, SetPasswordSerializer, UserSessionSerializer, \
+    SetPrefsSerializer
 
 
 class SessionView(viewsets.ViewSet):
@@ -72,5 +73,17 @@ class ProfileView(viewsets.ViewSet):
         self.request.user.save(update_fields=['password'])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['GET', 'PUT'], serializer_class=SetPrefsSerializer)
+    def prefs(self, request, *args, **kwargs):
+        if request.method == 'PUT':
+            serializer = SetPrefsSerializer(data=request.data, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            prefs = self.request.user.prefs or {}
+            prefs.update(serializer.validated_data)
+            self.request.user.prefs = prefs
+            self.request.user.save(update_fields=['prefs'])
+
+        return Response(self.request.user.prefs)
 
     create = put

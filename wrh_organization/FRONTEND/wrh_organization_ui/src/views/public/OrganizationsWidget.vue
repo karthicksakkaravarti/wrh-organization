@@ -35,7 +35,7 @@
         </div>
       </template>
       <template #item.location="{item}">
-        {{ item.country || '' }}{{ item.state? ` - ${item.state}`:'' }}{{item.city? ` - ${item.city}`:'' }}
+        {{ item.country || '' }}{{ item.state? `, ${item.state}`:'' }}{{item.city? `, ${item.city}`:'' }}
       </template>
 
     </v-data-table>

@@ -3,7 +3,7 @@
     <v-card-title class="align-start pb-3 pt-5">
       <span>Recent Winners</span>
       <v-spacer></v-spacer>
-      <v-btn text color="info" :to="{name: $rns.PUBLIC_RACE_RESULTS}" x-small>View All</v-btn>
+      <v-btn text color="info" :to="{name: $rns.PUBLIC_RACE_RESULTS, query: {organization: (apiParams || {}).organization}}" x-small>View All</v-btn>
     </v-card-title>
     <v-divider></v-divider>
 
@@ -66,21 +66,27 @@ import {
 import {onMounted, ref} from "@vue/composition-api";
 import moment from "moment/moment";
 import axios from "@/axios";
-import {notifyDefaultServerError} from "@/composables/utils";
+import {notifyDefaultServerError, refineVTableOptions} from "@/composables/utils";
 import {avatarText} from "@core/utils/filter";
 
 export default {
-  setup() {
+  props: {
+    apiParams: {
+      type: Object,
+      required: false
+    },
+  },
+  setup(props) {
     const raceResults = ref([]);
     const loading = ref(false);
 
     const loadReceResults = () => {
       loading.value = true;
-      var params = {
+      const params = Object.assign({
         page_size: 6,
         place: 1,
         order_by: '-id'
-      };
+      }, props.apiParams);
       axios.get(`bycing_org/race_result`, {params: params}).then((response) => {
         loading.value = false;
         raceResults.value = response.data.results;

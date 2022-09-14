@@ -64,7 +64,7 @@
         {{$utils.formatDate(item.end_date, 'MMM D, YYYY', '-')}}
       </template>
       <template #item.location="{item}">
-        <span class="font-weight-medium">{{ item.country || '' }}{{ item.state? ` - ${item.state}`:'' }}{{item.city? ` - ${item.city}`:'' }}</span>
+        <span class="font-weight-medium">{{ item.country || '' }}{{ item.state? `, ${item.state}`:'' }}{{item.city? `, ${item.city}`:'' }}</span>
       </template>
 
     </v-data-table>

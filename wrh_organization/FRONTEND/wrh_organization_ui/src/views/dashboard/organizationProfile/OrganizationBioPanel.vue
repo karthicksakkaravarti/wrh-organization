@@ -79,6 +79,9 @@
         </v-card-text>
 
         <v-card-text>
+          <div class="text--secondary mb-2" v-if="organization.about">
+            <span v-html="organization.about">{{ organization.about }}</span>
+          </div>
           <h2 class="text-xl font-weight-semibold mb-2">
             Details
           </h2>
@@ -87,13 +90,8 @@
 
           <v-list>
             <v-list-item dense class="px-0 mb-n2">
-              <span class="font-weight-medium me-2">About:</span>
-              <span class="text--secondary">{{ organization.about || '-' }}</span>
-            </v-list-item>
-
-            <v-list-item dense class="px-0 mb-n2">
               <span class="font-weight-medium text-no-wrap me-2">Website:</span>
-              <span class="text--secondary">
+              <span class="text--secondary text-truncate">
                 <a v-if="organization.website" :href="organization.website" target="_blank"
                    class="text-decoration-none">{{organization.website}}</a>
                 <span v-else>-</span>
@@ -130,16 +128,13 @@
               <span class="text--secondary">{{ organization.address || '-' }}</span>
             </v-list-item>
 
-            <v-list-item dense class="px-0 mb-n2">
-              <span class="font-weight-medium text-no-wrap me-2">Instagram:</span>
-              <span class="text--secondary">-</span>
+            <v-list-item v-for="(value, key) in (organization.social_media || {})" :key="key" dense class="px-0 mb-n2">
+              <span class="font-weight-medium text-no-wrap me-2">{{title(key)}}:</span>
+              <span class="text--secondary text-truncate">
+                <a :href="value" target="_blank"
+                   class="text-decoration-none">{{value}}</a>
+              </span>
             </v-list-item>
-
-            <v-list-item dense class="px-0 mb-n2">
-              <span class="font-weight-medium text-no-wrap me-2">Youtube:</span>
-              <span class="text--secondary">-</span>
-            </v-list-item>
-
           </v-list>
         </v-card-text>
 
@@ -164,7 +159,7 @@ import {
   mdiHomeEditOutline,
   mdiKeyboardBackspace
 } from '@mdi/js';
-import { avatarText } from '@core/utils/filter';
+import { avatarText, title } from '@core/utils/filter';
 import {onMounted, ref} from "@vue/composition-api/dist/vue-composition-api";
 import axios from "@/axios";
 import {notifyDefaultServerError} from "@/composables/utils";
@@ -199,6 +194,7 @@ export default {
 
     return {
       avatarText,
+      title,
       orgSummary,
       loadOrgSummary,
       icons: {

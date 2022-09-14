@@ -16,7 +16,7 @@
             <div class="mb-1 font-weight-bold">{{ item.event.title}}</div>
             <div class="small mb-1 text-caption">
               <v-icon size="14" color="info">{{ icons.mdiMapMarker }}</v-icon>
-              {{ item.event.extendedProps.record.country || '' }}{{ item.event.extendedProps.record.state? ` - ${item.event.extendedProps.record.state}`:'' }}{{item.event.extendedProps.record.city? ` - ${item.event.extendedProps.record.city}`:'' }}
+              {{ item.event.extendedProps.record.country || '' }}{{ item.event.extendedProps.record.state? `, ${item.event.extendedProps.record.state}`:'' }}{{item.event.extendedProps.record.city? `, ${item.event.extendedProps.record.city}`:'' }}
             </div>
             <div class="small">
               <v-icon size="14" color="info">{{ icons.mdiCalendar }}</v-icon>

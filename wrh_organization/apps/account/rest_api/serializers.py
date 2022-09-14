@@ -32,6 +32,10 @@ class SetPasswordSerializer(serializers.Serializer):
         return new_password
 
 
+class SetPrefsSerializer(serializers.Serializer):
+    default_regional_org = serializers.IntegerField(allow_null=True)
+
+
 class PermissionSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Permission

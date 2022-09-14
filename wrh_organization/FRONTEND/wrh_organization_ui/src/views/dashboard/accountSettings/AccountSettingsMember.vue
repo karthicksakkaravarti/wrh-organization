@@ -251,12 +251,16 @@
           </v-col>
 
 
-          <v-col cols="12">
+          <v-col cols="12 d-flex">
             <v-btn color="primary" class="me-3 mt-4" @click.prevent="save()" type="submit">
               Save changes
             </v-btn>
-            <v-btn color="secondary" outlined class="mt-4" type="reset"
+            <v-btn color="warning" outlined class="mt-4" type="reset"
                    @click.prevent="loadAccountData(); clearChosenAvatar()">
+              Reset
+            </v-btn>
+            <v-spacer></v-spacer>
+            <v-btn link color="secondary" class="mt-4" :to="{name: $rns.DASHBOARD_MEMBER_PROFILE}">
               Cancel
             </v-btn>
           </v-col>

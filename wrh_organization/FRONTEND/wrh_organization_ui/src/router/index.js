@@ -52,7 +52,7 @@ const routes = [
     name: routeNames.PUBLIC_ORG_PROFILE,
     component: () => import('@/views/public/PublicOrgProfile.vue'),
     meta: {
-      layout: 'PublicLayout',
+      layout: 'SiteLayout',
     },
   },
   {
