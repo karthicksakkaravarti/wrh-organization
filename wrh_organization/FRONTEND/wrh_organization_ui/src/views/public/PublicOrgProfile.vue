@@ -87,7 +87,12 @@
                 </div>
               </div>
 
-              <v-btn color="success">
+              <v-btn color="primary" v-if="organization.my_level.is_admin || organization.my_level.is_member"
+                     :to="{name: $rns.DASHBOARD_ORGANIZATION_PROFILE, params: {record_id: organization.id}}">
+                Manage <v-icon right>{{icons.mdiOfficeBuildingCog}}</v-icon>
+              </v-btn>
+
+              <v-btn color="success" v-else>
                 Join <v-icon right>{{icons.mdiAccountPlus}}</v-icon>
               </v-btn>
             </div>
@@ -167,6 +172,7 @@ import { ref } from '@vue/composition-api'
 import {
   mdiFlagCheckered,
   mdiAccountPlus,
+  mdiOfficeBuildingCog,
   mdiAccountMultipleOutline,
   mdiCalendar,
   mdiEmail,
@@ -199,10 +205,13 @@ export default {
     const organization = ref({});
     const orgId = route.value.params.record_id;
     const loadOrganization = () => {
-      axios.get(`bycing_org/public/organization/${orgId}`).then((response) => {
+      axios.get(`bycing_org/public/organization/${orgId}`, {params: {exfields: 'my_level'}}).then((response) => {
         const org = response.data;
         if (!org.social_media) {
           org.social_media = {};
+        }
+        if (!org.my_level) {
+          org.my_level = {};
         }
         organization.value = org;
       }, (error) => {
@@ -233,6 +242,7 @@ export default {
       icons: {
         mdiFlagCheckered,
         mdiAccountPlus,
+        mdiOfficeBuildingCog,
         mdiAccountMultipleOutline,
         mdiCalendar,
         mdiEmail,

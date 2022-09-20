@@ -46,10 +46,10 @@
                 <v-list-item @click="tab=4; moreTab={id: 'race-series', name: 'Race-Series'}">
                   <v-icon size="20" class="me-3">{{ icons.mdiCheckerboard }}</v-icon> Race-Series
                 </v-list-item>
-                <v-list-item @click="tab=4; moreTab={id: 'race-series-standings', name: 'Race-Series Standings'}">
+                <v-list-item @click="tab=4; moreTab={id: 'race-series-standings', name: 'Race-Series Standings'}" v-if="organization.my_level.is_admin">
                   <v-icon size="20" class="me-3">{{ icons.mdiGold }}</v-icon> Race-Series Standings
                 </v-list-item>
-                <v-list-item @click="tab=4; moreTab={id: 'categories', name: 'Categories'}">
+                <v-list-item @click="tab=4; moreTab={id: 'categories', name: 'Categories'}" v-if="organization.my_level.is_admin">
                   <v-icon size="20" class="me-3">{{ icons.mdiFamilyTree }}</v-icon> Categories
                 </v-list-item>
                 <v-list-item @click="tab=4; moreTab={id: 'member-fields', name: 'Member Fields'}" v-if="organization.my_level.is_admin">
