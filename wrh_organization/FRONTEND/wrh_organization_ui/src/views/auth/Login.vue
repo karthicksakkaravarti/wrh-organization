@@ -127,9 +127,12 @@ import axios from "@/axios";
 import store from "@/store";
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import EventBus from "@/EventBus";
+import {useRouter} from "@core/utils";
+import {routeNames} from "@/router";
 
 export default {
   setup() {
+    const { router, route } = useRouter();
     const isPasswordVisible = ref(false);
     const logining = ref(false);
     const formValid = ref(false);
@@ -164,6 +167,8 @@ export default {
       axios.post("account/session", loginForm.value).then((response) => {
         store.state.currentUser = response.data;
         logining.value = false;
+        var next = (route.value.query.next || '').startsWith('/')? route.value.query.next: {name: route.value.query.next || routeNames.ROOT};
+        router.push(next);
         notifySuccess("Welcome to WRH!", 5000);
       }, (error) => {
         logining.value = false;

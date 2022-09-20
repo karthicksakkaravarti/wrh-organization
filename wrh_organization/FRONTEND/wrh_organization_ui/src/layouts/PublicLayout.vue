@@ -15,7 +15,7 @@
             v-if="$vuetify.breakpoint.mdAndDown"
           ></v-app-bar-nav-icon>
           <router-link
-            to="/"
+            :to="{name: $rns.PUBLIC_HOME}"
             class="d-flex align-center text-decoration-none"
           >
             <v-img
@@ -34,15 +34,20 @@
 
         <!-- Right Content: I18n, Light/Dark, Notification & User Dropdown -->
         <div class="d-flex align-center">
-          <v-btn v-if="!$store.getters.isAuthenticated" class="mr-4" outlined color="primary" :to="{name: $rns.DASHBOARD_HOME}">
+          <app-bar-switch-org v-if="$store.getters.isAuthenticated"></app-bar-switch-org>
+          <v-btn v-if="!$store.getters.isAuthenticated" outlined class="mr-4" color="primary" :to="{name: $rns.AUTH, query: {next: $route.fullPath}}">
             Sign In
           </v-btn>
-          <v-btn v-else class="mr-4" outlined color="info" :to="{name: $rns.DASHBOARD_HOME}">
-            <v-icon color="info">
-              {{icons.mdiApps}}
-            </v-icon>
-            Panel
-          </v-btn>
+          <v-tooltip bottom v-else>
+            <template #activator="{ on, attrs }">
+              <v-btn v-bind="attrs" v-on="on" icon class="mr-4" :to="{name: $rns.DASHBOARD_HOME}">
+                <v-icon class="mr-0">
+                  {{icons.mdiApps}}
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>Go to dashboard panel</span>
+          </v-tooltip>
           <!--
           <app-bar-search
             :shall-show-full-search.sync="shallShowFullSearch"
@@ -88,9 +93,11 @@ import themeConfig from '@themeConfig'
 import {mdiApps, mdiHeartOutline, mdiHomeOutline, mdiLogin, mdiFlagCheckered, mdiCalendarMonth} from '@mdi/js'
 import AppFooter from "@/layouts/AppFooter";
 import {routeNames} from "@/router";
+import AppBarSwitchOrg from "@/components/AppBarSwitchOrg";
 
 export default {
   components: {
+    AppBarSwitchOrg,
     AppFooter,
     LayoutContentHorizontalNav,
 

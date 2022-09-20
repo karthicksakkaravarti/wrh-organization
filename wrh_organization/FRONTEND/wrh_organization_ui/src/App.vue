@@ -1,16 +1,16 @@
 <template>
 
   <component
-    :is="loginRequired? 'BlankLayout': resolveLayoutVariant"
+    :is="resolveLayoutVariant"
     :class="`skin-variant--${appSkinVariant}`"
+    v-if="resolveLayoutVariant"
   >
     <transition
       :name="appRouteTransition"
       mode="out-in"
       appear
     >
-      <Auth v-if="loginRequired"></Auth>
-      <router-view v-else></router-view>
+      <router-view :key="$route.fullPath"></router-view>
     </transition>
     <app-version-alert v-if="mismatchVersion" :new-version="newAppVersion">
     </app-version-alert>
@@ -35,14 +35,12 @@ import DashboardLayout from '@/layouts/DashboardLayout'
 
 // Dynamic vh
 import useDynamicVh from '@core/utils/useDynamicVh'
-import Auth from "@/views/auth/Auth";
 import {notifyDefaultServerError} from "@/composables/utils";
 import AppVersionAlert from "@/components/AppVersionAlert";
 
 export default {
   components: {
     AppVersionAlert,
-    Auth,
     BlankLayout,
     SiteLayout,
     PublicLayout,
@@ -83,10 +81,10 @@ export default {
     handleBreakpointLayoutSwitch();
 
     const resolveLayoutVariant = computed(() => {
+      if (!route.value || !route.value.name) {
+        return
+      }
       return route.value.meta.layout || 'PublicLayout';
-    });
-    const loginRequired = computed(() => {
-      return (resolveLayoutVariant.value === 'DashboardLayout' && !store.getters.isAuthenticated);
     });
 
     onMounted(() => {
@@ -107,7 +105,6 @@ export default {
 
     return {
       resolveLayoutVariant,
-      loginRequired,
       appSkinVariant,
       appRouteTransition,
       mismatchVersion,

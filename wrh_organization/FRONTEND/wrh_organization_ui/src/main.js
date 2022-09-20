@@ -40,16 +40,16 @@ let app = new Vue({
   vuetify,
   render: h => h(App),
   created: () => {
-    axios.get("account/session").then(
-      (response) => {
-        store.state.currentUser = response.data;
-      },
-      (error) => {
-        if (401 !== (error.response && error.response.status)) {
-          alert(error);
-        }
-      }
-    );
+    // axios.get("account/session").then(
+    //   (response) => {
+    //     store.state.currentUser = response.data;
+    //   },
+    //   (error) => {
+    //     if (401 !== (error.response && error.response.status)) {
+    //       alert(error);
+    //     }
+    //   }
+    // );
     // axios.get("bycing_org/member/me").then(
     //   (response) => {
     //     store.state.currentMember = response.data;

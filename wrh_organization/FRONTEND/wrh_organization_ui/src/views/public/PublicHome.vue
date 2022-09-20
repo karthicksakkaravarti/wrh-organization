@@ -15,7 +15,7 @@
         <h3 class="mb-5">
           Create Your Account, Select Your Region, Find a Team or Club!
         </h3>
-        <v-btn v-if="!$store.getters.isAuthenticated" outlined color="error" :to="{name: $rns.DASHBOARD_HOME, query:{page: 'Register'}}" x-large>
+        <v-btn v-if="!$store.getters.isAuthenticated" outlined color="error" :to="{name: $rns.AUTH, query:{page: 'Register'}}" x-large>
           Sign Up
         </v-btn>
         <v-btn v-else outlined color="info" :to="{name: $rns.DASHBOARD_HOME}" x-large>

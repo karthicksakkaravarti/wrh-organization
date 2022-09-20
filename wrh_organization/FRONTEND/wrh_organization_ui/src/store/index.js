@@ -10,7 +10,8 @@ export default new Vuex.Store({
     currentUser: {
     },
     currentMember: {
-    }
+    },
+    checkedAuthentication: false,
   },
   mutations: {
   },

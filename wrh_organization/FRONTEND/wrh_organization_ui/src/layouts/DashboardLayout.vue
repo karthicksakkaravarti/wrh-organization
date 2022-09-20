@@ -51,14 +51,16 @@ import AppBarThemeSwitcher from "@core/layouts/components/app-bar/AppBarThemeSwi
 
 import {mdiMenu, mdiHeartOutline, mdiHomeOutline, mdiCalendarMultiselect, mdiAccountGroup, mdiBike} from '@mdi/js'
 
-import { getVuetify } from '@core/utils'
+import {getVuetify, useRouter} from '@core/utils'
 
 // Search Data
 import appBarSearchData from '@/assets/app-bar-search-data'
 
-import { ref, watch } from '@vue/composition-api'
+import {onMounted, onUnmounted, ref, watch} from '@vue/composition-api'
 import AppFooter from "./AppFooter";
 import {routeNames} from "@/router";
+import store from '@/store';
+import EventBus from "@/EventBus";
 
 export default {
   components: {
@@ -72,6 +74,7 @@ export default {
   },
   setup() {
     const $vuetify = getVuetify();
+    const { router, route } = useRouter();
 
     const navMenuItems = [
       {
@@ -111,6 +114,21 @@ export default {
         contacts: 0,
       }
     })
+
+    const onSessionExpired = () => {
+      router.replace({name: routeNames.AUTH, query: {next: route.value.fullPath}});
+    };
+
+    onMounted(() => {
+      EventBus.on("user:session-expired", onSessionExpired);
+      if (!store.getters.isAuthenticated) {
+        onSessionExpired();
+      }
+    });
+    onUnmounted(() => {
+      EventBus.off("user:session-expired", onSessionExpired);
+    });
+
 
     // NOTE: Update search function according to your usage
     const searchFilterFunc = (item, queryText, itemText) => {

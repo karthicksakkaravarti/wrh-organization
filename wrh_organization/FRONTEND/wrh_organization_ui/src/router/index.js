@@ -1,11 +1,14 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import axios from "@/axios";
+import store from "@/store";
 
 Vue.use(VueRouter);
 
 export const routeNames = {
   ROOT: "root",
   ERROR_404: "error_404",
+  AUTH: "auth",
 
   PUBLIC_HOME: "public_home",
   PUBLIC_RACE_RESULTS: "public_race_results",
@@ -29,12 +32,33 @@ const routes = [
   {
     path: '/',
     name: routeNames.ROOT,
-    redirect: {name: routeNames.PUBLIC_HOME},
+    beforeEnter: (to, from, next) => {
+      if (store.getters.defaultRegionalOrg) {
+        next({name: routeNames.PUBLIC_ORG_PROFILE, params: {record_id: store.getters.defaultRegionalOrg}});
+      } else {
+        next({name: routeNames.PUBLIC_HOME});
+      }
+    },
+  },
+  {
+    path: '/auth',
+    name: routeNames.AUTH,
+    component: () => import('@/views/auth/Auth'),
+    meta: {
+      layout: 'BlankLayout',
+    },
+    beforeEnter: (to, from, next) => {
+      if (store.getters.isAuthenticated) {
+        next({name: routeNames.ROOT, replace: true});
+      } else {
+        next();
+      }
+    },
   },
   {
     path: '/home',
     name: routeNames.PUBLIC_HOME,
-    component: () => import('@/views/public/PublicHome.vue'),
+    component: () => import('@/views/public/PublicHome'),
     meta: {
       layout: 'SiteLayout',
     },
@@ -42,7 +66,7 @@ const routes = [
   {
     path: '/rider-profile/:record_id/',
     name: routeNames.PUBLIC_RIDER_PROFILE,
-    component: () => import('@/views/public/PublicRiderProfile.vue'),
+    component: () => import('@/views/public/PublicRiderProfile'),
     meta: {
       layout: 'PublicLayout',
     },
@@ -50,7 +74,7 @@ const routes = [
   {
     path: '/org-profile/:record_id/',
     name: routeNames.PUBLIC_ORG_PROFILE,
-    component: () => import('@/views/public/PublicOrgProfile.vue'),
+    component: () => import('@/views/public/PublicOrgProfile'),
     meta: {
       layout: 'SiteLayout',
     },
@@ -58,7 +82,7 @@ const routes = [
   {
     path: '/race-results',
     name: routeNames.PUBLIC_RACE_RESULTS,
-    component: () => import('@/views/public/PublicRaceResults.vue'),
+    component: () => import('@/views/public/PublicRaceResults'),
     meta: {
       layout: 'PublicLayout',
     },
@@ -66,7 +90,7 @@ const routes = [
   {
     path: '/events',
     name: routeNames.PUBLIC_EVENTS,
-    component: () => import('@/views/public/PublicEvents.vue'),
+    component: () => import('@/views/public/PublicEvents'),
     meta: {
       layout: 'PublicLayout',
     },
@@ -74,7 +98,7 @@ const routes = [
   {
     path: '/dashboard/home',
     name: routeNames.DASHBOARD_HOME,
-    component: () => import('@/views/dashboard/DashboardHome.vue'),
+    component: () => import('@/views/dashboard/DashboardHome'),
     meta: {
       layout: 'DashboardLayout',
     },
@@ -82,7 +106,7 @@ const routes = [
   {
     path: '/dashboard/account-settings',
     name: routeNames.DASHBOARD_ACCOUNT_SETTINGS,
-    component: () => import('@/views/dashboard/accountSettings/AccountSettings.vue'),
+    component: () => import('@/views/dashboard/accountSettings/AccountSettings'),
     meta: {
       layout: 'DashboardLayout',
     },
@@ -90,7 +114,7 @@ const routes = [
   {
     path: '/dashboard/member-profile',
     name: routeNames.DASHBOARD_MEMBER_PROFILE,
-    component: () => import('@/views/dashboard/memberProfile/MemberProfile.vue'),
+    component: () => import('@/views/dashboard/memberProfile/MemberProfile'),
     meta: {
       layout: 'DashboardLayout',
     },
@@ -98,7 +122,7 @@ const routes = [
   {
     path: '/dashboard/organization-profile/:record_id/',
     name: routeNames.DASHBOARD_ORGANIZATION_PROFILE,
-    component: () => import('@/views/dashboard/organizationProfile/OrganizationProfile.vue'),
+    component: () => import('@/views/dashboard/organizationProfile/OrganizationProfile'),
     meta: {
       layout: 'DashboardLayout',
     },
@@ -106,7 +130,7 @@ const routes = [
   {
     path: '/dashboard/events',
     name: routeNames.DASHBOARD_EVENTS,
-    component: () => import('@/views/dashboard/DashboardEvents.vue'),
+    component: () => import('@/views/dashboard/DashboardEvents'),
     meta: {
       layout: 'DashboardLayout',
     },
@@ -114,7 +138,7 @@ const routes = [
   {
     path: '/dashboard/club',
     name: routeNames.DASHBOARD_CLUB,
-    component: () => import('@/views/dashboard/DashboardClub.vue'),
+    component: () => import('@/views/dashboard/DashboardClub'),
     meta: {
       layout: 'DashboardLayout',
     },
@@ -122,7 +146,7 @@ const routes = [
   {
     path: '/dashboard/rider',
     name: routeNames.DASHBOARD_RIDER,
-    component: () => import('@/views/dashboard/DashboardRider.vue'),
+    component: () => import('@/views/dashboard/DashboardRider'),
     meta: {
       layout: 'DashboardLayout',
     },
@@ -130,7 +154,7 @@ const routes = [
   {
     path: '/error-404',
     name: routeNames.ERROR_404,
-    component: () => import('@/views/Error404.vue'),
+    component: () => import('@/views/Error404'),
     meta: {
       layout: 'BlankLayout',
     },
@@ -156,6 +180,22 @@ router.afterEach((toRoute) => {
     title = title + pageInfo.titleDesc;
   }
   window.document.title = title;
+});
+
+router.beforeEach((to, from, next) => {
+  if (store.state.checkedAuthentication) {
+    return next();
+  }
+  axios.get("account/session").then((response) => {
+    store.state.currentUser = response.data;
+  }, (error) => {
+    if (401 !== (error.response && error.response.status)) {
+      alert(error);
+    }
+  }).finally(() => {
+    store.state.checkedAuthentication = true;
+    next();
+  });
 });
 
 export default router

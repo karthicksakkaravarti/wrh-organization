@@ -1,7 +1,7 @@
 <template>
   <div class="vertical-nav-header d-flex align-center justify-space-between ps-6 pe-5 pt-5 pb-2">
     <router-link
-      to="/"
+      :to="{name: $rns.ROOT}"
       class="d-flex align-center text-decoration-none"
     >
       <v-img
