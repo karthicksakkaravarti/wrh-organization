@@ -26,7 +26,7 @@
       </v-list-item>
       <template v-else v-for="org in (organizations || [])">
         <v-list-item :key="org.id" :to="{name: $rns.PUBLIC_ORG_PROFILE, params:{record_id: org.id}}">
-          <v-list-item-avatar>
+          <v-list-item-avatar class="v-avatar-light-bg success--text success">
             <v-img v-if="org.logo" :src="org.logo"></v-img>
             <span v-else class="font-weight-medium">
               {{ avatarText(org.name) }}
