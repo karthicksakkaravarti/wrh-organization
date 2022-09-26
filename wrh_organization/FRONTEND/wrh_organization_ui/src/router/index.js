@@ -14,6 +14,7 @@ export const routeNames = {
   PUBLIC_RACE_RESULTS: "public_race_results",
   PUBLIC_RIDER_PROFILE: "public_rider_profile",
   PUBLIC_ORG_PROFILE: "public_org_profile",
+  PUBLIC_EVENT_PROFILE: "public_event_profile",
   PUBLIC_EVENTS: "public_events",
 
   DASHBOARD_HOME: "dashboard_home",
@@ -72,6 +73,14 @@ const routes = [
     },
   },
   {
+    path: '/event-profile/:record_id/',
+    name: routeNames.PUBLIC_EVENT_PROFILE,
+    component: () => import('@/views/public/PublicEventProfile'),
+    meta: {
+      layout: 'PublicLayout',
+    },
+  },
+  {
     path: '/org-profile/:record_id/',
     name: routeNames.PUBLIC_ORG_PROFILE,
     component: () => import('@/views/public/PublicOrgProfile'),
@@ -98,10 +107,11 @@ const routes = [
   {
     path: '/dashboard/home',
     name: routeNames.DASHBOARD_HOME,
-    component: () => import('@/views/dashboard/DashboardHome'),
-    meta: {
-      layout: 'DashboardLayout',
-    },
+    redirect: {name: routeNames.DASHBOARD_MEMBER_PROFILE}
+    // component: () => import('@/views/dashboard/DashboardHome'),
+    // meta: {
+    //   layout: 'DashboardLayout',
+    // },
   },
   {
     path: '/dashboard/account-settings',

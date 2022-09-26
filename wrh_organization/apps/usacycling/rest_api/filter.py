@@ -1,10 +1,7 @@
 import django_filters
 from apps.usacycling import models
-from django_filters import filters
 
-
-class CharArrayFilter(filters.BaseCSVFilter, filters.CharFilter):
-    pass
+from wrh_organization.helpers.utils import CharArrayFilter
 
 
 class USACyclingClubFilter(django_filters.FilterSet):

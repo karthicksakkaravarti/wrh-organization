@@ -112,3 +112,16 @@ export const CONNECTED_ACCOUNTS = [
     text: 'Strava events, races and results',
   },
 ];
+
+export const EVENT_TAGS_PREDEFINED = [
+  'bike tour', 'bmx freestyle', 'bmx race', 'bmx racing', 'camp', 'chariot race', 'clinic', 'club membership',
+  'criterium', 'cross country', 'cx race', 'cycling camp', 'cyclocross', 'cyclocross racing', 'derny race',
+  'downhill', 'dual slalom', 'elimination', 'enduro', 'fat bike', 'freestyle', 'fun rides', 'gran fondo', 'gravel',
+  'gravel grinder', 'handicap', 'hill climb', 'international omnium', 'italian pursuit', 'keirin', 'longest lap',
+  'madison', 'match sprint', 'miss n out', 'motorpaced scratch', 'mountain bike racing', 'mtb', 'mtb enduro',
+  'multisport', 'nebra', 'off road', 'omnium', 'other', 'point a lap', 'points race', 'pursuit', 'recreational',
+  'road', 'road race', 'road race or circuit race', 'road racing', 'scratch race', 'series', 'snowball',
+  'special event', 'stage race', 'team pursuit', 'team sprint', 'tempo', 'time trial', 'track', 'track racing',
+  'training rides', 'training series', 'trials', 'unknown distance', 'virtual', 'virtual challenge', 'virtual race',
+  'virtual road race', 'win n out'
+];

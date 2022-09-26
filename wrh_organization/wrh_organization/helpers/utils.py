@@ -39,6 +39,7 @@ from django.utils.timezone import is_aware, make_aware
 from django.utils.translation import gettext_lazy as _
 from django_filters import OrderingFilter
 from django_filters.filters import EMPTY_VALUES
+from django_filters import filters
 from phonenumber_field.phonenumber import PhoneNumber
 from rest_framework import status, parsers, serializers, permissions
 from rest_framework.exceptions import APIException
@@ -1089,3 +1090,7 @@ def get_member_verify_otp(member, salt=None):
     otp_key = f'{otp_key}-{member.pk}'
     b32_key = base64.b32encode(otp_key.encode('u8')).decode('u8')
     return pyotp.TOTP(b32_key, digits=length, interval=interval)
+
+
+class CharArrayFilter(filters.BaseCSVFilter, filters.CharFilter):
+    pass

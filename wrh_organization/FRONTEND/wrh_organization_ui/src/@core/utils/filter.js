@@ -16,9 +16,9 @@ export const title = (value, replacer = ' ') => {
   return capitalizedArray.join(' ')
 }
 
-export const avatarText = value => {
+export const avatarText = (value, count=3) => {
   if (!value) return ''
-  const nameArray = value.split(' ')
+  const nameArray = value.split(' ').slice(0, count)
 
   return nameArray.map(word => word.charAt(0).toUpperCase()).join('')
 }

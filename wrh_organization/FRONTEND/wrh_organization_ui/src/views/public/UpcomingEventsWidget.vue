@@ -3,7 +3,7 @@
     <v-card-title class="align-start pb-3 pt-5">
       <span>Upcoming Events</span>
       <v-spacer></v-spacer>
-      <v-btn text color="info" :to="{name: $rns.PUBLIC_EVENTS}" x-small>View All</v-btn>
+      <v-btn text color="info" :to="{name: $rns.PUBLIC_EVENTS, query: {start_date__gte: today, organization: (apiParams || {}).organization}}" x-small>View All</v-btn>
     </v-card-title>
     <v-divider></v-divider>
 
@@ -13,7 +13,11 @@
           <v-list-item
             :key="`li-${event.id}`"
             :class="`d-flex px-0 ${index > 0 ? '':''}`"
+            :to="{name: $rns.PUBLIC_EVENT_PROFILE, params: {record_id: event.id}}"
           >
+            <v-avatar size="38" class="me-3">
+              <v-img :src="event.logo || require('@/assets/images/misc/no-photo.png')"></v-img>
+            </v-avatar>
             <v-list-item-content>
               <v-list-item-title>
                 <a class="text-decoration-none" href="javascript:">{{ event.name }}</a>
@@ -65,11 +69,12 @@ export default {
   setup(props) {
     const loading = ref(false);
     const events = ref([]);
+    const today = moment().format("YYYY-MM-DD");
 
     const loadEvents = () => {
       loading.value = true;
       const params =  Object.assign({
-        start_date__gte: moment().format("YYYY-MM-DD"),
+        start_date__gte: today,
         page_size: 5,
         order_by: 'start_date,name'
       }, props.apiParams);
@@ -89,6 +94,7 @@ export default {
 
     return {
       events,
+      today,
       icons: {
         mdiDotsVertical,
         mdiCalendarBlankOutline,

@@ -877,13 +877,16 @@ class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelView
         return Response({'results': result})
 
 
-class EventView(AdminOrganizationActionsViewMixin, viewsets.ReadOnlyModelViewSet):
+class EventView(AdminOrganizationActionsViewMixin, viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     filterset_class = EventFilter
     ordering = '-id'
     ordering_fields = '__all__'
     search_fields = ['name', 'description', 'country', 'city', 'state']
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('organization')
 
 
 class PublicViewMixin:

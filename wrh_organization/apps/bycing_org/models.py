@@ -2,6 +2,7 @@ from pathlib import Path
 
 from cerberus import Validator
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -18,6 +19,11 @@ User = get_user_model()
 def organization_logo_file_path_func(instance, filename):
     from wrh_organization.helpers.utils import get_random_upload_path
     return get_random_upload_path(str(Path('uploads', 'bycing_org', 'organization', 'logo')), filename)
+
+
+def event_logo_file_path_func(instance, filename):
+    from wrh_organization.helpers.utils import get_random_upload_path
+    return get_random_upload_path(str(Path('uploads', 'bycing_org', 'event', 'logo')), filename)
 
 
 class FieldsTracking(BaseFieldsTracking):
@@ -395,8 +401,18 @@ class Event(models.Model):
     country = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=255, blank=True, null=True)
     state = models.CharField(max_length=255, blank=True, null=True)
+    website = models.URLField(null=True, blank=True)
+    registration_website = models.URLField(null=True, blank=True)
+    logo = models.ImageField(null=True, blank=True, upload_to=event_logo_file_path_func)
+    tags = ArrayField(
+        models.CharField(max_length=100, blank=True),
+        size=50,
+        null=True,
+        blank=True
+    )
     more_data = models.JSONField(null=True, encoder=JSONEncoder)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, related_name='events')
+    create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
     update_datetime = models.DateTimeField(auto_now=True)
 
@@ -411,7 +427,7 @@ class Event(models.Model):
 
 class Race(models.Model):
     name = models.CharField(max_length=256)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='races')
     start_datetime = models.DateTimeField(null=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, related_name='races')
     more_data = models.JSONField(null=True, encoder=JSONEncoder)

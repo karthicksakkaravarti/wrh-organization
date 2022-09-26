@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django_filters import rest_framework as filters
 
+from wrh_organization.helpers.utils import CharArrayFilter
 from ..models import Member, Organization, OrganizationMember, OrganizationMemberOrg, FieldsTracking, Race, RaceResult, \
     Category, RaceSeries, RaceSeriesResult, Event
 
@@ -130,9 +131,11 @@ class EventFilter(filters.FilterSet):
     start_date__lte = filters.DateFilter(field_name='start_date', lookup_expr='lte')
     end_date__gte = filters.DateFilter(field_name='end_date', lookup_expr='gte')
     end_date__lte = filters.DateFilter(field_name='end_date', lookup_expr='lte')
+    tags = CharArrayFilter(field_name='tags', lookup_expr='contains', label='Tags')
+    general = filters.BooleanFilter(field_name='organization', lookup_expr='isnull', label='Is General')
 
     class Meta:
         model = Event
-        exclude = ['more_data']
+        exclude = ['more_data', 'logo']
 
 

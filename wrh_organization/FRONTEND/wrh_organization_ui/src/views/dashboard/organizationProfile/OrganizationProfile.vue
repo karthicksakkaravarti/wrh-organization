@@ -52,6 +52,9 @@
                 <v-list-item @click="tab=4; moreTab={id: 'categories', name: 'Categories'}" v-if="organization.my_level.is_admin">
                   <v-icon size="20" class="me-3">{{ icons.mdiFamilyTree }}</v-icon> Categories
                 </v-list-item>
+                <v-list-item @click="tab=4; moreTab={id: 'events', name: 'Events'}" v-if="organization.my_level.is_admin">
+                  <v-icon size="20" class="me-3">{{ icons.mdiCalendar }}</v-icon> Events
+                </v-list-item>
                 <v-list-item @click="tab=4; moreTab={id: 'member-fields', name: 'Member Fields'}" v-if="organization.my_level.is_admin">
                   <v-icon size="20" class="me-3">{{ icons.mdiFormatListText }}</v-icon> Member Fields
                 </v-list-item>
@@ -83,6 +86,8 @@
                                             :organization="organization"></organization-race-series-standings-tab>
             <organization-categories-tab v-else-if="moreTab.id == 'categories' && organization.my_level.is_admin"
                                             :organization="organization"></organization-categories-tab>
+            <organization-events-tab v-else-if="moreTab.id == 'events' && organization.my_level.is_admin"
+                                            :organization="organization"></organization-events-tab>
           </v-tab-item>
           <v-tab-item>
           </v-tab-item>
@@ -111,6 +116,7 @@ import {
   mdiFlagCheckered,
   mdiMenu,
   mdiFamilyTree,
+  mdiCalendar,
 } from '@mdi/js'
 import OrganizationBioPanel from "./OrganizationBioPanel";
 import OrganizationRacesTab from "./OrganizationRacesTab";
@@ -127,9 +133,11 @@ import OrganizationRaceSeriesTab from "./OrganizationRaceSeriesTab";
 import OrganizationRaceSeriesResultsTab from "./OrganizationRaceSeriesResultsTab";
 import OrganizationRaceSeriesStandingsTab from "./OrganizationRaceSeriesStandingsTab";
 import OrganizationCategoriesTab from "@/views/dashboard/organizationProfile/OrganizationCategoriesTab";
+import OrganizationEventsTab from "@/views/dashboard/organizationProfile/OrganizationEventsTab";
 
 export default {
   components: {
+    OrganizationEventsTab,
     OrganizationCategoriesTab,
     OrganizationRaceSeriesResultsTab,
     OrganizationRaceSeriesStandingsTab,
@@ -177,6 +185,7 @@ export default {
         mdiFlagCheckered,
         mdiMenu,
         mdiFamilyTree,
+        mdiCalendar,
       }
     }
   },

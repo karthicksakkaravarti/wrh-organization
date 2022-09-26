@@ -124,6 +124,13 @@ class NestedOrganizationSerializer(DynamicFieldsSerializerMixin, serializers.Mod
         exclude = ('members', 'member_orgs', 'member_fields_schema')
 
 
+class NestedOrganizationShortSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = Organization
+        fields = ('id', 'name', 'type')
+
+
 class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     # members = NestedMemberSerializer(read_only=True, many=True)
     logo = Base64ImageField(required=False, allow_null=True)
@@ -382,8 +389,21 @@ class RaceSeriesResultSerializer(DynamicFieldsSerializerMixin, serializers.Model
 
 
 class EventSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-    extra_fields = ['more_data']
+    logo = Base64ImageField(required=False, allow_null=True)
+    summary = serializers.SerializerMethodField(read_only=True)
+    _organization = NestedOrganizationShortSerializer(read_only=True, source='organization')
+
+    extra_fields = ['summary', 'more_data']
+
+    def get_summary(self, obj):
+        races_count = obj.races.count()
+        race_series_count = obj.race_series.count()
+        return {'races_count': races_count, 'race_series_count': race_series_count}
 
     class Meta:
         model = Event
         fields = '__all__'
+        extra_kwargs = {
+            'organization': {'required': True},
+            'create_by': {'read_only': True},
+        }
