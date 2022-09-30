@@ -4,7 +4,7 @@
       <v-tab><v-icon>{{ icons.mdiTable }}</v-icon> Table</v-tab>
       <v-tab><v-icon>{{ icons.mdiCalendar }}</v-icon> Calendar</v-tab>
     </v-tabs>
-    <v-tabs-items v-model="tab">
+    <v-tabs-items v-model="tab" class="overflow-visible">
       <v-tab-item>
         <events-table-widget></events-table-widget>
       </v-tab-item>

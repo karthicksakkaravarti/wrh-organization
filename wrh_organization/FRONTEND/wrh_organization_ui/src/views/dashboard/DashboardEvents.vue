@@ -141,7 +141,7 @@
 
                           <a
                             class="ml-2"
-                            v-if="i.links.website_url"
+                            v-if="i.links.register_url"
                             :href="i.links.register_url"
                             >Register</a
                           >
@@ -248,9 +248,9 @@ export default {
         if (event && event.sortBy.length >= 1) {
           for (var [i, v] of event.sortBy.entries()) {
             if (event.sortDesc[i]) {
-              query_param += "&ordering=-" + v + "&";
+              query_param += "&order_by=-" + v + "&";
             } else {
-              query_param += "&ordering=" + v + "&";
+              query_param += "&order_by=" + v + "&";
             }
           }
         }

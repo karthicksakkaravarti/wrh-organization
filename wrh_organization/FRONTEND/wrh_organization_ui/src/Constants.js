@@ -125,3 +125,12 @@ export const EVENT_TAGS_PREDEFINED = [
   'training rides', 'training series', 'trials', 'unknown distance', 'virtual', 'virtual challenge', 'virtual race',
   'virtual road race', 'win n out'
 ];
+
+export const EVENT_SOURCE_OPTIONS = [
+  { value: "usac", title: "USAC", css: "success" },
+  { value: "colorado", title: "Colorado", css: "warning" },
+];
+export const EVENT_SOURCE_MAP = {};
+EVENT_SOURCE_OPTIONS.forEach(function(v) {
+  EVENT_SOURCE_MAP[v.value] = v;
+});

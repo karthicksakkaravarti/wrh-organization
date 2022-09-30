@@ -4,10 +4,12 @@ import requests
 from django.core.management import BaseCommand
 from django.utils import timezone
 
-from apps.usacycling import models
+from apps.bycing_org.models import Event
+from apps.bycing_org.rest_api.serializers import EventSerializer
 from apps.usacycling.models import USACEvent
-from apps.usacycling.rest_api import serializers
 import datetime
+
+from apps.usacycling.rest_api.serializers import USACEventSerializer
 
 
 class Command(BaseCommand):
@@ -30,8 +32,31 @@ class Command(BaseCommand):
             for r in data:
                 instance = USACEvent.objects.filter(event_id=r['event_id']).first()
                 try:
-                    sser = serializers.USACEventSerializer(instance=instance, data=r)
-                    sser.is_valid(raise_exception=True)
-                    sser.save()
+                    ser = USACEventSerializer(instance=instance, data=r)
+                    ser.is_valid(raise_exception=True)
+                    ser.save()
                 except Exception as e:
-                    print('Exception',e)
+                    print(f'Exception1: #{r["event"]}', e)
+
+                instance = Event.objects.filter(source='usac', more_data__event_id=r['event_id']).first()
+                try:
+                    links = (r.get('links') or {})
+                    website = links.get('website_url')
+                    if website and not website.startswith('http://') and not website.startswith('https://'):
+                        website = 'http://' + website
+                    registration_website = links.get('register_url')
+                    if registration_website and not registration_website.startswith('http://') and not \
+                            registration_website.startswith('https://'):
+                        registration_website = 'http://' + registration_website
+                    tags = (r.get('labels') or []) + (r.get('tags') or [])
+                    data = dict(
+                        name=r.get('name'), start_date=r.get('start_date'), end_date=r.get('end_date'),
+                        organizer_email=r.get('event_organizer_email'), website=website,
+                        registration_website=registration_website, tags=tags, country='US',
+                        organization=None, more_data=r
+                    )
+                    ser = EventSerializer(instance=instance, data=data)
+                    ser.is_valid(raise_exception=True)
+                    ser.save(source='usac')
+                except Exception as e:
+                    print(f'Exception2: #{r["event"]}', e)

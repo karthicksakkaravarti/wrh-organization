@@ -401,8 +401,8 @@ class Event(models.Model):
     country = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=255, blank=True, null=True)
     state = models.CharField(max_length=255, blank=True, null=True)
-    website = models.URLField(null=True, blank=True)
-    registration_website = models.URLField(null=True, blank=True)
+    website = models.URLField(max_length=500, null=True, blank=True)
+    registration_website = models.URLField(max_length=500, null=True, blank=True)
     logo = models.ImageField(null=True, blank=True, upload_to=event_logo_file_path_func)
     tags = ArrayField(
         models.CharField(max_length=100, blank=True),
@@ -412,6 +412,7 @@ class Event(models.Model):
     )
     more_data = models.JSONField(null=True, encoder=JSONEncoder)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, related_name='events')
+    source = models.CharField(max_length=16, null=True, editable=False)
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
     update_datetime = models.DateTimeField(auto_now=True)

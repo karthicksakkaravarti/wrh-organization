@@ -7,13 +7,22 @@
             <div v-bind="attrs" v-on="on" class="fc-event-main text-truncate">
               <div class="fc-event-main-frame">
                 <div class="fc-event-title-container">
-                  <div class="fc-event-title fc-sticky">{{ item.event.title }}</div>
+                  <div class="fc-event-title fc-sticky">
+                    <span v-if="item.event.extendedProps.record.source"
+                          class="pa-1 mr-1 rounded-circle d-inline-block rounded-circle"
+                          :class="($const.EVENT_SOURCE_MAP[item.event.extendedProps.record.source] || {}).css"></span>
+                    {{ item.event.title }}</div>
                 </div>
               </div>
             </div>
           </template>
           <div>
-            <div class="mb-1 font-weight-bold">{{ item.event.title}}</div>
+            <div class="mb-1 font-weight-bold">
+              <span class="mr-1">{{ item.event.title}}</span>
+              <v-chip x-small v-if="item.event.extendedProps.record.source" :color="($const.EVENT_SOURCE_MAP[item.event.extendedProps.record.source] || {}).css">
+                {{($const.EVENT_SOURCE_MAP[item.event.extendedProps.record.source] || {}).title || item.event.extendedProps.record.source}}
+              </v-chip>
+            </div>
             <div class="small mb-1 text-caption">
               <v-icon size="14" color="info">{{ icons.mdiMapMarker }}</v-icon>
               {{ item.event.extendedProps.record.country || '' }}{{ item.event.extendedProps.record.state? `, ${item.event.extendedProps.record.state}`:'' }}{{item.event.extendedProps.record.city? `, ${item.event.extendedProps.record.city}`:'' }}
@@ -125,7 +134,7 @@ export default {
       headerToolbar: {
         right: 'prevYear,prev,today,next,nextYear',
         center: 'title',
-        left: 'dayGridMonth,dayGridWeek,listMonth'
+        left: 'dayGridMonth,dayGridWeek,dayGridDay,listMonth'
       },
       // headerToolbar: false,
       initialView: "dayGridMonth",
@@ -186,5 +195,9 @@ export default {
     opacity: 0.5;
   }
 
+  .event-calendar-widget .fc .fc-more-popover .fc-popover-body {
+    max-height: 200px;
+    overflow: auto;
+  }
 
 </style>

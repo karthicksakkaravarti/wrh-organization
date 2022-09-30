@@ -34,7 +34,7 @@ class USACEventView(viewsets.ReadOnlyModelViewSet):
                 for j in self.date_range(datetime.datetime.strptime(self.request.GET.get('range_start', None), '%Y-%m-%d').date()
                         , datetime.datetime.strptime(self.request.GET.get('range_end', None), '%Y-%m-%d').date()):
                     if j in self.date_range(i.start_date, i.end_date):
-                        temp.append(i.id)
+                        temp.append(i.pk)
             return query.filter(id__in=temp)
         return query
 
