@@ -131,7 +131,7 @@
           </v-avatar>
 
           <div class="d-flex flex-column pl-1">
-            <a v-if="item.rider" is="router-link" :to="{name: $rns.PUBLIC_RIDER_PROFILE, params:{record_id: item.rider}}" class="font-weight-semibold text-truncate text-decoration-none">
+            <a v-if="item.rider" is="router-link" :to="getRiderRoute(item.rider)" class="font-weight-semibold text-truncate text-decoration-none">
               <v-icon v-if="item._rider" small>{{icons.mdiAccountCheck}}</v-icon> {{ displayRiderName(item) }}
             </a>
             <span v-else class="font-weight-semibold text-truncate text-decoration-none">
@@ -207,6 +207,7 @@ import {notifyDefaultServerError, refineVTableOptions} from "@/composables/utils
 import {avatarText} from "@core/utils/filter";
 import _ from "lodash";
 import {useRouter} from "@core/utils";
+import {routeNames} from "@/router";
 
 export default {
   components: {},
@@ -219,6 +220,10 @@ export default {
       type: Array,
       required: false
     },
+    riderRoute: {
+      type: String,
+      default: routeNames.PUBLIC_RIDER_PROFILE
+    }
   },
   setup(props, context) {
     const { route } = useRouter();
@@ -345,6 +350,13 @@ export default {
 
     };
 
+    const getRiderRoute = (rider) => {
+      if (!props.riderRoute) {
+        return {};
+      }
+      return {name: props.riderRoute, params:{record_id: rider}}
+    };
+
     watch(() => tableFiltering, (currentValue, oldValue) => {
         loadRecords(1);
       },
@@ -375,6 +387,7 @@ export default {
       loadingOrganizations,
       pagination,
       avatarText,
+      getRiderRoute,
       loadRecords,
       loadRaces,
       icons: {

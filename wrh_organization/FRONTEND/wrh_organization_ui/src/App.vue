@@ -35,7 +35,7 @@ import DashboardLayout from '@/layouts/DashboardLayout'
 
 // Dynamic vh
 import useDynamicVh from '@core/utils/useDynamicVh'
-import {notifyDefaultServerError} from "@/composables/utils";
+import {appendLinkToHeader, appendStyleToHeader, getQueryParams, notifyDefaultServerError} from "@/composables/utils";
 import AppVersionAlert from "@/components/AppVersionAlert";
 
 export default {
@@ -91,7 +91,14 @@ export default {
       EventBus.on("user:session-expired", onSessionExpired);
       EventBus.on("user:session-refresh", onSessionRefresh);
       EventBus.on("ui:mismatch-version", onMismatchVersion);
-
+      const externalCss = getQueryParams('_css', window.location);
+      const externalStyle = getQueryParams('_style', window.location);
+      if (externalCss) {
+        appendLinkToHeader(decodeURIComponent(externalCss));
+      }
+      if (externalStyle) {
+        appendStyleToHeader(decodeURIComponent(externalStyle));
+      }
     });
 
     onUnmounted(() => {

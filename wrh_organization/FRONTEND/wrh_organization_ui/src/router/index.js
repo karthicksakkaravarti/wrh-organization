@@ -17,6 +17,10 @@ export const routeNames = {
   PUBLIC_EVENT_PROFILE: "public_event_profile",
   PUBLIC_EVENTS: "public_events",
 
+  WIDGET_ORG_PROFILE: "widget_org_profile",
+  WIDGET_RIDER_PROFILE: "widget_rider_profile",
+  WIDGET_RACE_RESULTS: "widget_race_results",
+
   DASHBOARD_HOME: "dashboard_home",
   DASHBOARD_EVENTS: "dashboard_events",
   DASHBOARD_CLUB: "dashboard_club",
@@ -35,9 +39,9 @@ const routes = [
     name: routeNames.ROOT,
     beforeEnter: (to, from, next) => {
       if (store.getters.defaultRegionalOrg) {
-        next({name: routeNames.PUBLIC_ORG_PROFILE, params: {record_id: store.getters.defaultRegionalOrg}});
+        next({name: routeNames.PUBLIC_ORG_PROFILE, params: {record_id: store.getters.defaultRegionalOrg}, query: to.query});
       } else {
-        next({name: routeNames.PUBLIC_HOME});
+        next({name: routeNames.PUBLIC_HOME, query: to.query});
       }
     },
   },
@@ -50,7 +54,7 @@ const routes = [
     },
     beforeEnter: (to, from, next) => {
       if (store.getters.isAuthenticated) {
-        next({name: routeNames.ROOT, replace: true});
+        next({name: routeNames.ROOT, replace: true, query: to.query});
       } else {
         next();
       }
@@ -159,6 +163,30 @@ const routes = [
     component: () => import('@/views/dashboard/DashboardRider'),
     meta: {
       layout: 'DashboardLayout',
+    },
+  },
+  {
+    path: '/widgets/org-profile/:record_id/',
+    name: routeNames.WIDGET_ORG_PROFILE,
+    component: () => import('@/views/widgets/OrgProfile'),
+    meta: {
+      layout: 'BlankLayout',
+    },
+  },
+  {
+    path: '/widgets/rider-profile/:record_id/',
+    name: routeNames.WIDGET_RIDER_PROFILE,
+    component: () => import('@/views/widgets/RiderProfile'),
+    meta: {
+      layout: 'BlankLayout',
+    },
+  },
+  {
+    path: '/widgets/race-results',
+    name: routeNames.WIDGET_RACE_RESULTS,
+    component: () => import('@/views/widgets/RaceResults'),
+    meta: {
+      layout: 'BlankLayout',
     },
   },
   {

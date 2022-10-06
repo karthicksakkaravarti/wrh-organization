@@ -116,7 +116,7 @@ export default {
     })
 
     const onSessionExpired = () => {
-      router.replace({name: routeNames.AUTH, query: {next: route.value.fullPath}});
+      router.replace({name: routeNames.AUTH, query: {next: route.value.fullPath, ...route.query}});
     };
 
     onMounted(() => {

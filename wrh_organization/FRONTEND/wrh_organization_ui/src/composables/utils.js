@@ -331,3 +331,16 @@ export const formatPhone = (phone, options) => {
   }
   return newPhone;
 };
+
+export const appendLinkToHeader = (url, rel='stylesheet') => {
+  let link = document.createElement('link');
+  link.rel = rel;
+  link.href = url;
+  document.head.appendChild(link)
+};
+
+export const appendStyleToHeader = (cssText) => {
+  let style = document.createElement('style');
+  style.innerText = cssText;
+  document.head.appendChild(style)
+};
