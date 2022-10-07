@@ -51,7 +51,7 @@
             <span>Go to dashboard panel</span>
           </v-tooltip>
           <app-bar-theme-switcher></app-bar-theme-switcher>
-          <app-bar-user-menu></app-bar-user-menu>
+          <app-bar-user-menu v-if="$store.getters.isAuthenticated"></app-bar-user-menu>
         </div>
       </div>
     </template>
