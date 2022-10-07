@@ -1,5 +1,68 @@
 <template>
-  <layout-content-horizontal-nav :nav-menu-items="navMenuItems">
+  <layout-content-vertical-nav v-if="$vuetify.breakpoint.mdAndDown" :nav-menu-items="navMenuItems">
+    <slot></slot>
+
+    <!-- Slot: Navbar -->
+    <template #navbar="{ isVerticalNavMenuActive, toggleVerticalNavMenuActive }">
+      <div
+        class="navbar-content-container"
+      >
+        <!-- Left Content: Search -->
+        <div class="d-flex align-center">
+          <v-icon
+            class="me-3"
+            @click="toggleVerticalNavMenuActive"
+          >
+            {{ icons.mdiMenu }}
+          </v-icon>
+          <router-link
+            :to="{name: $rns.PUBLIC_HOME}"
+            class="d-flex align-center text-decoration-none"
+          >
+            <v-img
+              :src="appLogo"
+              max-height="30px"
+              max-width="30px"
+              alt="logo"
+              contain
+              class="me-3"
+            ></v-img>
+            <h2 class="app-title text--primary">
+              {{ appName }}
+            </h2>
+          </router-link>
+
+        </div>
+
+        <!-- Right Content: I18n, Light/Dark, Notification & User Dropdown -->
+        <div class="d-flex align-center right-row">
+          <app-bar-switch-org v-if="$store.getters.isAuthenticated"></app-bar-switch-org>
+          <v-btn v-if="!$store.getters.isAuthenticated" outlined class="mr-4" color="primary" :to="{name: $rns.AUTH, query: {next: $route.fullPath}}">
+            Sign In
+          </v-btn>
+          <v-tooltip bottom v-else>
+            <template #activator="{ on, attrs }">
+              <v-btn v-bind="attrs" v-on="on" icon class="mr-4" :to="{name: $rns.DASHBOARD_HOME}">
+                <v-icon class="mr-0">
+                  {{icons.mdiApps}}
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>Go to dashboard panel</span>
+          </v-tooltip>
+          <app-bar-theme-switcher></app-bar-theme-switcher>
+          <app-bar-user-menu></app-bar-user-menu>
+        </div>
+      </div>
+    </template>
+
+    <!-- Slot: Footer -->
+    <template #footer>
+      <app-footer></app-footer>
+    </template>
+  </layout-content-vertical-nav>
+
+  <layout-content-horizontal-nav v-else :nav-menu-items="navMenuItems">
     <!-- Default Slot -->
     <slot></slot>
 
@@ -7,13 +70,9 @@
     <template #navbar>
       <div
         class="navbar-content-container"
-        :class="{'expanded-search': shallShowFullSearch}"
       >
         <!-- Left Content: Search -->
         <div class="d-flex align-center">
-          <v-app-bar-nav-icon
-            v-if="$vuetify.breakpoint.mdAndDown"
-          ></v-app-bar-nav-icon>
           <router-link
             :to="{name: $rns.PUBLIC_HOME}"
             class="d-flex align-center text-decoration-none"
@@ -48,14 +107,6 @@
             </template>
             <span>Go to dashboard panel</span>
           </v-tooltip>
-          <!--
-          <app-bar-search
-            :shall-show-full-search.sync="shallShowFullSearch"
-            :data="appBarSearchData"
-            :filter="searchFilterFunc"
-            :search-query.sync="appBarSearchQuery"
-            class="me-4"
-          ></app-bar-search>-->
           <app-bar-theme-switcher></app-bar-theme-switcher>
           <app-bar-user-menu v-if="$store.getters.isAuthenticated" class="ms-2"></app-bar-user-menu>
         </div>
@@ -78,19 +129,17 @@
 
 <script>
 import LayoutContentHorizontalNav from '@core/layouts/variants/content/horizontal-nav/LayoutContentHorizontalNav.vue'
+import LayoutContentVerticalNav from '@core/layouts/variants/content/vertical-nav/LayoutContentVerticalNav'
 
 // App Bar Components
 import AppBarSearch from '@core/layouts/components/app-bar/AppBarSearch.vue'
 import AppBarThemeSwitcher from '@core/layouts/components/app-bar/AppBarThemeSwitcher.vue'
 import AppBarUserMenu from '@/components/AppBarUserMenu.vue'
 
-// Search Data
-import appBarSearchData from '@/assets/app-bar-search-data'
-
-import { ref, watch } from '@vue/composition-api'
+import { ref } from '@vue/composition-api'
 
 import themeConfig from '@themeConfig'
-import {mdiApps, mdiHeartOutline, mdiHomeOutline, mdiLogin, mdiFlagCheckered, mdiCalendarMonth} from '@mdi/js'
+import {mdiApps, mdiMenu, mdiHeartOutline, mdiLogin, mdiFlagCheckered, mdiCalendarMonth} from '@mdi/js'
 import AppFooter from "@/layouts/AppFooter";
 import {routeNames} from "@/router";
 import AppBarSwitchOrg from "@/components/AppBarSwitchOrg";
@@ -100,6 +149,7 @@ export default {
     AppBarSwitchOrg,
     AppFooter,
     LayoutContentHorizontalNav,
+    LayoutContentVerticalNav,
 
     // App Bar Components
     AppBarSearch,
@@ -119,53 +169,9 @@ export default {
         to: routeNames.PUBLIC_EVENTS,
       },
     ];
-    // Search
-    const appBarSearchQuery = ref('')
-    const shallShowFullSearch = ref(false)
-    const maxItemsInGroup = 5
-    const totalItemsInGroup = ref({
-      pages: 0,
-      files: 0,
-      contacts: 0,
-    })
-    watch(appBarSearchQuery, () => {
-      totalItemsInGroup.value = {
-        pages: 0,
-        files: 0,
-        contacts: 0,
-      }
-    })
-
-    const searchFilterFunc = (item, queryText, itemText) => {
-      if (item.header || item.divider) return true
-
-      const itemGroup = (() => {
-        if (item.to !== undefined) return 'pages'
-        if (item.size !== undefined) return 'files'
-        if (item.email !== undefined) return 'contacts'
-
-        return null
-      })()
-
-      const isMatched = itemText.toLocaleLowerCase().indexOf(queryText.toLocaleLowerCase()) > -1
-
-      if (isMatched) {
-        if (itemGroup === 'pages') totalItemsInGroup.value.pages += 1
-        else if (itemGroup === 'files') totalItemsInGroup.value.files += 1
-        else if (itemGroup === 'contacts') totalItemsInGroup.value.contacts += 1
-      }
-
-      return appBarSearchQuery.value && isMatched && totalItemsInGroup.value[itemGroup] <= maxItemsInGroup
-    }
 
     return {
       navMenuItems,
-
-      // Search
-      appBarSearchQuery,
-      shallShowFullSearch,
-      appBarSearchData,
-      searchFilterFunc,
 
       // App Config
       appName: themeConfig.app.name,
@@ -176,6 +182,7 @@ export default {
         mdiHeartOutline,
         mdiLogin,
         mdiApps,
+        mdiMenu,
       },
     }
   },

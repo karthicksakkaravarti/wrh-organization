@@ -1,6 +1,7 @@
 <template>
 
   <component
+    :key="`key-${$vuetify.breakpoint.mdAndDown}`"
     :is="resolveLayoutVariant"
     :class="`skin-variant--${appSkinVariant}`"
     v-if="resolveLayoutVariant"
