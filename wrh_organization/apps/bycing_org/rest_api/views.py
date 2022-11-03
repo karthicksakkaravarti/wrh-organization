@@ -525,7 +525,7 @@ class OrganizationMemberView(OrganizationMembershipMixin, viewsets.ModelViewSet)
             field_names[i] = '_'.join(f.split())
         missed_fields = {'uuid', 'first_name', 'last_name'} - set(field_names)
         if missed_fields:
-            return Response({'detail': f'missed this fields: {missed_fields}'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError({'detail': f'missed this fields: {missed_fields}'})
 
     @action(detail=False, methods=['POST'], serializer_class=CsvFileImportSerializer)
     def import_from_csv(self, request, *args, **kwargs):
@@ -703,7 +703,7 @@ class RaceResultView(AdminOrganizationActionsViewMixin, ExportViewMixin, viewset
             field_names[i] = '_'.join(f.split())
         missed_fields = {'uuid', 'first_name', 'last_name', 'place'} - set(field_names)
         if missed_fields:
-            return Response({'detail': f'missed this fields: {missed_fields}'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError({'detail': f'missed this fields: {missed_fields}'})
 
     @action(detail=False, methods=['POST'], serializer_class=CsvFileImportSerializer,
             url_path='organization/(?P<org_id>[0-9]+)/race/(?P<race_id>[0-9]+)/import_from_csv')
