@@ -20,6 +20,7 @@ export const routeNames = {
   WIDGET_ORG_PROFILE: "widget_org_profile",
   WIDGET_RIDER_PROFILE: "widget_rider_profile",
   WIDGET_RACE_RESULTS: "widget_race_results",
+  WIDGET_EVENTS_CALENDAR: "widget_events_calendar",
 
   DASHBOARD_HOME: "dashboard_home",
   DASHBOARD_EVENTS: "dashboard_events",
@@ -168,7 +169,7 @@ const routes = [
   {
     path: '/widgets/org-profile/:record_id/',
     name: routeNames.WIDGET_ORG_PROFILE,
-    component: () => import('@/views/widgets/OrgProfile'),
+    component: () => import('@/views/widgets/OrgProfileWidget'),
     meta: {
       layout: 'BlankLayout',
     },
@@ -176,7 +177,7 @@ const routes = [
   {
     path: '/widgets/rider-profile/:record_id/',
     name: routeNames.WIDGET_RIDER_PROFILE,
-    component: () => import('@/views/widgets/RiderProfile'),
+    component: () => import('@/views/widgets/RiderProfileWidget'),
     meta: {
       layout: 'BlankLayout',
     },
@@ -184,7 +185,15 @@ const routes = [
   {
     path: '/widgets/race-results',
     name: routeNames.WIDGET_RACE_RESULTS,
-    component: () => import('@/views/widgets/RaceResults'),
+    component: () => import('@/views/widgets/RaceResultsWidget'),
+    meta: {
+      layout: 'BlankLayout',
+    },
+  },
+  {
+    path: '/widgets/events-calendar',
+    name: routeNames.WIDGET_EVENTS_CALENDAR,
+    component: () => import('@/views/widgets/EventsCalendarWidget'),
     meta: {
       layout: 'BlankLayout',
     },

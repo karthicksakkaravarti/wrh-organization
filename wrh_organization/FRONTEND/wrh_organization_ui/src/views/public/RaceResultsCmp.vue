@@ -295,7 +295,10 @@ export default {
       if (page) {
         tableOptions.value.page = page;
       }
-      const params = Object.assign({}, tableFiltering.value, props.apiParams, refineVTableOptions(tableOptions.value));
+      const params = Object.assign(
+          {exfields: 'more_data'},
+          tableFiltering.value, props.apiParams, refineVTableOptions(tableOptions.value)
+      );
       if (!params.include_dns_dnf) {
         params.finish_status = 'ok';
       }

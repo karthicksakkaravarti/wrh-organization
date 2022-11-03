@@ -687,6 +687,8 @@ class RaceResultView(AdminOrganizationActionsViewMixin, ExportViewMixin, viewset
             r = RaceResult.objects.filter(
                 rider_id=None, race=race, organization=org, create_by=user, more_data__uuid=uuid).first()
             if not r:
+                assert row.get('first_name')
+                assert row.get('last_name')
                 r = RaceResult(race=race, organization=org, create_by=user)
             r.place = place
             r.more_data = row
