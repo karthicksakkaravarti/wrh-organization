@@ -190,7 +190,7 @@ export default {
     };
 
     const save = () => {
-      var data = Object.assign({}, record.value);
+      var data = Object.assign({country: "US", state: "Colorado"}, record.value);
       var url = "bycing_org/event",
           httpMethod = axios.post,
           successMsg = "Event added successfully.";
@@ -222,7 +222,7 @@ export default {
       isVisible.value = false;
     };
     const show = (r, event) => {
-      record.value = Object.assign({}, r);
+      record.value = Object.assign({country: "US", state: "Colorado"}, r);
       confirmDelete.value = false;
       deleting.value = false;
       saving.value = false;

@@ -242,7 +242,7 @@ export default {
     const formValid = ref(false);
     const showBirthDateMenu = ref(false);
     const birthDatePickerRef = ref(null);
-    const registerForm = ref({member: {}});
+    const registerForm = ref({member: {country: "US"}});
 
     const socialLink = [
       {
