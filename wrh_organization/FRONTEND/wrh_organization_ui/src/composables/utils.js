@@ -6,6 +6,7 @@ import {countries} from "@/composables/countries";
 import _ from "lodash";
 
 export const momentLib = moment;
+export const lodashLib = _;
 export const countryPhoneCodes = {};
 countries.forEach(v => {
   if (!v.phone_code) return;

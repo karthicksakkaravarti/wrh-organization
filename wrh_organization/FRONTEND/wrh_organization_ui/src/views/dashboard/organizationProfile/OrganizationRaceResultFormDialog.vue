@@ -8,7 +8,7 @@
       <v-card-title>
         <span class="headline">{{isEditMode? `Edit Race Result #${record.id}`: 'New Race Result'}}</span>
       </v-card-title>
-      <v-form @submit.prevent="save">
+      <v-form @submit.prevent="save" class="race-result-form">
         <v-card-text>
           <v-container>
             <v-row>
@@ -89,6 +89,25 @@
                   </v-radio-group>
                 </div>
               </v-col>
+              <v-col cols="12" v-if="isEditMode">
+                <app-card-actions action-collapse flat outlined collapsed color="#f3f3f3" class="more-data-card">
+                  <template #title>
+                    More Data ...
+                  </template>
+                  <v-card-text>
+                    <v-row>
+                      <v-col cols="12" md="6" v-for="(item, key) in moreDataFiltered" :key="key">
+                        <div class="font-weight-semibold">{{key}}:</div>
+                        <div>{{item == null || item == ""? '-': item}}</div>
+                      </v-col>
+                      <v-col cols="12" v-if="!Object.keys(moreDataFiltered).length">
+                        <div class="text-center text-caption">No Extra Fields!</div>
+                      </v-col>
+                    </v-row>
+                  </v-card-text>
+                </app-card-actions>
+
+              </v-col>
     
             </v-row>
           </v-container>
@@ -126,8 +145,10 @@ import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import {watch} from "@vue/composition-api/dist/vue-composition-api";
 import _ from "lodash";
+import AppCardActions from "@core/components/app-card-actions/AppCardActions";
 
 export default {
+  components: {AppCardActions},
   props: {
     organization: {
       type: Object,
@@ -150,6 +171,13 @@ export default {
     });
 
     const isEditMode = computed(() => !!record.value.id);
+    const moreDataFiltered = computed(() => {
+      const moreData = Object.assign({}, record.value.more_data);
+      ['first_name', 'last_name', 'place'].forEach(f => {
+        delete moreData[f];
+      });
+      return moreData;
+    });
 
     const findMembers = (search) => {
       if (findingMembers.value || (search || '').length < 3) {
@@ -232,6 +260,7 @@ export default {
       isVisible,
       confirmDelete,
       isEditMode,
+      moreDataFiltered,
       record,
       saving,
       deleting,
@@ -253,3 +282,14 @@ export default {
   },
 }
 </script>
+
+<style lang="scss">
+.race-result-form {
+  .more-data-card {
+    .v-card__title {
+      padding-top: 10px !important;
+      padding-bottom: 10px !important;
+    }
+  }
+}
+</style>

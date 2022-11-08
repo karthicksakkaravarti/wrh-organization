@@ -309,6 +309,7 @@ class RaceResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerial
         extra_kwargs = {
             'organization': {'required': True},
             'create_by': {'read_only': True},
+            'more_data': {'read_only': True},
         }
 
     def to_representation(self, instance):
@@ -367,7 +368,7 @@ class NestedRaceResultSerializer(DynamicFieldsSerializerMixin, serializers.Model
 
 
 class RaceSeriesResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-    extra_fields = ['more_data']
+    extra_fields = ['more_data', '_race_result.more_data', '_race_result._race.more_data']
 
     _race_result = NestedRaceResultSerializer(read_only=True, source='race_result')
     _race_series = NestedRaceSeriesSerializer(read_only=True, source='race_series')
@@ -379,6 +380,7 @@ class RaceSeriesResultSerializer(DynamicFieldsSerializerMixin, serializers.Model
         extra_kwargs = {
             'organization': {'required': True},
             'create_by': {'read_only': True},
+            'more_data': {'read_only': True},
         }
 
     def to_representation(self, instance):
