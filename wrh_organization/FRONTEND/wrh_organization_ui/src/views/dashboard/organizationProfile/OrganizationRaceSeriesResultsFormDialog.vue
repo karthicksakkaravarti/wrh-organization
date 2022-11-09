@@ -310,7 +310,7 @@ export default {
     };
 
     const resetPlaces = () => {
-      records.value = recordsOrig.value.map(r => Object.assign({}, r));
+      records.value = _.sortBy(recordsOrig.value.map(r => Object.assign({}, r)), ['place', 'id']);
       raceSeriesResultPlaces.value = {};
       raceSeriesResults.value = {};
       loadRaceSeriesResults();
@@ -323,7 +323,7 @@ export default {
     const show = (_race, _records) => {
       race.value = _race;
       recordsOrig.value = _records;
-      records.value = _records.map(r => Object.assign({}, r));
+      records.value = _.sortBy(_records.map(r => Object.assign({}, r)), ['place', 'id']);
       raceSeriesResultPlaces.value = {};
       raceSeriesResults.value = {};
       selectedRaceSeries.value = null;
