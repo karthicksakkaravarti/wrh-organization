@@ -9,89 +9,53 @@
 
       <v-col cols="12" md="8" lg="9">
         <v-tabs v-model="tab" show-arrows class="organization-profile-tabs">
-          <v-tab>
-            <v-icon size="20" class="me-3">{{ icons.mdiAccountMultipleOutline }}</v-icon>
-            <span>Members</span>
-          </v-tab>
-          <v-tab>
-            <v-icon size="20" class="me-3">{{ icons.mdiHomeGroup }}</v-icon>
-            <span>Member Orgs</span>
-          </v-tab>
-          <v-tab>
-            <v-icon size="20" class="me-3">{{ icons.mdiFlagCheckered }}</v-icon>
-            <span>Race Results</span>
-          </v-tab>
-          <v-tab>
-            <v-icon size="20" class="me-3">{{ icons.mdiFlagCheckered }}</v-icon>
-            <span>Race-Series Results</span>
-          </v-tab>
-          <v-tab class="pl-0 pr-0">
-            <v-menu bottom left>
-              <template v-slot:activator="{ on, attrs }">
+          <v-tab class="pl-0 pr-0" v-for="(t, tabIdx) in tabs" :key="t.title">
+            <v-menu bottom right :offset-y="true">
+              <template v-slot:activator="{ on, attrs, value }">
                 <v-btn
                   text
                   class="align-self-center p-0 more-btn"
                   v-bind="attrs"
                   v-on="on"
                 >
-                  <v-icon size="20" class="mr-1">{{icons.mdiMenu}}</v-icon>
-                  More
+                  <v-icon size="20" class="mr-1">{{t.icon}}</v-icon>
+                  <span>{{t.title}}</span>
+                  <v-icon size="20" class="mr-1">{{value? icons.mdiChevronUp: icons.mdiChevronDown}}</v-icon>
                 </v-btn>
               </template>
 
               <v-list class="grey lighten-3">
-                <v-list-item @click="tab=4; moreTab={id: 'races', name: 'Races'}">
-                  <v-icon size="20" class="me-3">{{ icons.mdiCheckerboard }}</v-icon> Races
-                </v-list-item>
-                <v-list-item @click="tab=4; moreTab={id: 'race-series', name: 'Race-Series'}">
-                  <v-icon size="20" class="me-3">{{ icons.mdiCheckerboard }}</v-icon> Race-Series
-                </v-list-item>
-                <v-list-item @click="tab=4; moreTab={id: 'race-series-standings', name: 'Race-Series Standings'}" v-if="organization.my_level.is_admin">
-                  <v-icon size="20" class="me-3">{{ icons.mdiGold }}</v-icon> Race-Series Standings
-                </v-list-item>
-                <v-list-item @click="tab=4; moreTab={id: 'categories', name: 'Categories'}" v-if="organization.my_level.is_admin">
-                  <v-icon size="20" class="me-3">{{ icons.mdiFamilyTree }}</v-icon> Categories
-                </v-list-item>
-                <v-list-item @click="tab=4; moreTab={id: 'events', name: 'Events'}" v-if="organization.my_level.is_admin">
-                  <v-icon size="20" class="me-3">{{ icons.mdiCalendar }}</v-icon> Events
-                </v-list-item>
-                <v-list-item @click="tab=4; moreTab={id: 'member-fields', name: 'Member Fields'}" v-if="organization.my_level.is_admin">
-                  <v-icon size="20" class="me-3">{{ icons.mdiFormatListText }}</v-icon> Member Fields
+                <v-list-item v-for="childTab in t.children" :key="childTab.id" @click="tab=tabIdx; selectedTab=childTab" :input-value="childTab.id == selectedTab.id">
+                  <v-icon size="20" class="me-3">{{ childTab.icon }}</v-icon> {{childTab.title}}
                 </v-list-item>
               </v-list>
             </v-menu>
-
           </v-tab>
         </v-tabs>
 
         <v-tabs-items id="organization-profile-tabs-content" v-model="tab" class="mt-5 pa-1">
           <v-tab-item>
-            <organization-members-tab :organization="organization"></organization-members-tab>
-          </v-tab-item>
-          <v-tab-item>
-            <organization-member-orgs-tab :organization="organization"></organization-member-orgs-tab>
-          </v-tab-item>
-          <v-tab-item>
-            <organization-race-results-tab :organization="organization"></organization-race-results-tab>
-          </v-tab-item>
-          <v-tab-item>
-            <organization-race-series-results-tab :organization="organization"></organization-race-series-results-tab>
-          </v-tab-item>
-          <v-tab-item>
-            <organization-races-tab v-if="!moreTab.id || moreTab.id == 'races'" :organization="organization"></organization-races-tab>
-            <organization-race-series-tab v-else-if="moreTab.id == 'race-series'" :organization="organization"></organization-race-series-tab>
-            <organization-member-fields-tab v-else-if="moreTab.id == 'member-fields' && organization.my_level.is_admin"
+            <organization-members-tab v-if="selectedTab.id == 'individual-members'"
+                                      :organization="organization"></organization-members-tab>
+            <organization-member-orgs-tab v-if="selectedTab.id == 'org-members'"
+                                          :organization="organization"></organization-member-orgs-tab>
+            <organization-member-fields-tab v-else-if="selectedTab.id == 'member-fields' && organization.my_level.is_admin"
                                             :organization="organization"></organization-member-fields-tab>
-            <organization-race-series-standings-tab v-else-if="moreTab.id == 'race-series-standings' && organization.my_level.is_admin"
-                                            :organization="organization"></organization-race-series-standings-tab>
-            <organization-categories-tab v-else-if="moreTab.id == 'categories' && organization.my_level.is_admin"
-                                            :organization="organization"></organization-categories-tab>
-            <organization-events-tab v-else-if="moreTab.id == 'events' && organization.my_level.is_admin"
-                                            :organization="organization"></organization-events-tab>
+
           </v-tab-item>
           <v-tab-item>
+            <organization-events-tab v-if="selectedTab.id == 'events' && organization.my_level.is_admin"
+                                            :organization="organization"></organization-events-tab>
+            <organization-races-tab v-else-if="selectedTab.id == 'races'" :organization="organization"></organization-races-tab>
+            <organization-race-results-tab v-else-if="selectedTab.id == 'race-results'" :organization="organization"></organization-race-results-tab>
           </v-tab-item>
-          <v-tab-item v-if="organization.my_level.is_admin">
+          <v-tab-item>
+            <organization-race-series-tab v-if="selectedTab.id == 'race-series'" :organization="organization"></organization-race-series-tab>
+            <organization-race-series-results-tab v-else-if="selectedTab.id == 'race-series-results'" :organization="organization"></organization-race-series-results-tab>
+            <organization-race-series-standings-tab v-else-if="selectedTab.id == 'race-series-standings' && organization.my_level.is_admin"
+                                            :organization="organization"></organization-race-series-standings-tab>
+            <organization-categories-tab v-else-if="selectedTab.id == 'categories' && organization.my_level.is_admin"
+                                            :organization="organization"></organization-categories-tab>
           </v-tab-item>
         </v-tabs-items>
       </v-col>
@@ -117,6 +81,8 @@ import {
   mdiMenu,
   mdiFamilyTree,
   mdiCalendar,
+  mdiChevronDown,
+  mdiChevronUp,
 } from '@mdi/js'
 import OrganizationBioPanel from "./OrganizationBioPanel";
 import OrganizationRacesTab from "./OrganizationRacesTab";
@@ -153,7 +119,37 @@ export default {
   setup() {
     const { route } = useRouter();
     const tab = ref(null);
-    const moreTab = ref({});
+    const tabs = [
+      {
+        title: 'Membership',
+        icon: mdiAccountMultipleOutline,
+        children: [
+          {id: 'individual-members', title:  'Individual Members', icon: mdiAccountMultipleOutline},
+          {id: 'org-members', title:  'Org Members', icon: mdiHomeGroup},
+          {id: 'member-fields', title:  'Member Fields', icon: mdiFormatListText},
+        ]
+      },
+      {
+        title: 'Events',
+        icon: mdiCalendar,
+        children: [
+          {id: 'events', title:  'Events', icon: mdiCalendar},
+          {id: 'races', title:  'Races', icon: mdiCheckerboard},
+          {id: 'race-results', title:  'Race-Results', icon: mdiFlagCheckered},
+        ]
+      },
+      {
+        title: 'Race-Series',
+        icon: mdiCheckerboard,
+        children: [
+          {id: 'race-series', title:  'Race-Series', icon: mdiCheckerboard},
+          {id: 'race-series-results', title:  'Race-Series Results', icon: mdiFlagCheckered},
+          {id: 'race-series-standings', title:  'Race-Series Standings', icon: mdiGold},
+          {id: 'categories', title:  'Categories', icon: mdiFamilyTree},
+        ]
+      },
+    ];
+    const selectedTab = ref({id: 'individual-members', title:  'Individual Members'});
 
     const organization = ref({my_level: {}});
     const loadOrganization = () => {
@@ -174,7 +170,8 @@ export default {
       organization,
       loadOrganization,
       tab,
-      moreTab,
+      tabs,
+      selectedTab,
       icons: {
         mdiAccountMultipleOutline,
         mdiCalendarMultiple,
@@ -186,6 +183,8 @@ export default {
         mdiMenu,
         mdiFamilyTree,
         mdiCalendar,
+        mdiChevronDown,
+        mdiChevronUp,
       }
     }
   },
