@@ -4,7 +4,7 @@
       <v-card-title class="headline">
         Join to <span class="ml-2 font-weight-bold"> {{ organization.name }}</span>
       </v-card-title>
-      <v-form @submit.prevent="join" v-model="formValid">
+      <v-form v-if="$store.getters.isAuthenticated" @submit.prevent="join" v-model="formValid">
         <v-card-text class="pr-2 pl-2">
           <v-container v-if="schema">
             <v-row>
@@ -120,6 +120,21 @@
           <v-btn type="submit" color="primary" :loading="joining" :disabled="!formValid">Join</v-btn>
         </v-card-actions>
       </v-form>
+      <v-card-text>
+        <v-alert prominent outlined type="warning" :icon="icons.mdiAlertOutline">
+          <v-row align="center">
+            <v-col class="grow">
+              You have to login first.
+            </v-col>
+            <v-col class="shrink">
+              <v-btn color="primary" :to="{name: $rns.AUTH, query: {next: $route.fullPath}}">
+                Login
+                <v-icon size="20">{{icons.mdiLogin}}</v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-alert>
+      </v-card-text>
     </v-card>
   </v-dialog>
 </template>
@@ -128,7 +143,7 @@
 import {ref, set} from '@vue/composition-api'
 import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
-import { mdiLinkVariant } from '@mdi/js';
+import { mdiLinkVariant, mdiAlertOutline, mdiLogin } from '@mdi/js';
 import moment from "moment/moment";
 import {required} from "@core/utils/validation";
 
@@ -201,7 +216,9 @@ export default {
         required
       },
       icons: {
-        mdiLinkVariant
+        mdiLinkVariant,
+        mdiAlertOutline,
+        mdiLogin
       }
     }
   },

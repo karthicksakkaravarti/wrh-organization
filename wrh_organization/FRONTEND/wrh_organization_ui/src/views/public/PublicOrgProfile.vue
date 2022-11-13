@@ -87,7 +87,7 @@
                 </div>
               </div>
 
-              <v-btn color="primary" v-if="organization.my_level.is_admin || organization.my_level.is_member"
+              <v-btn color="primary" v-if="$store.getters.isAuthenticated && (organization.my_level.is_admin || organization.my_level.is_member)"
                      :to="{name: $rns.DASHBOARD_ORGANIZATION_PROFILE, params: {record_id: organization.id}}">
                 Manage <v-icon right>{{icons.mdiOfficeBuildingCog}}</v-icon>
               </v-btn>
