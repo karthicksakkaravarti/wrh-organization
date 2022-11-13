@@ -15,6 +15,7 @@
               <th class="">#</th>
               <th class="">Title (*)</th>
               <th class="">Required?</th>
+              <th class="">Private?</th>
               <th class="">Type (*)</th>
               <th class="actions text-center">Actions</th>
             </tr>
@@ -30,6 +31,9 @@
               </td>
               <td class="">
                  <v-checkbox v-model="field.required" hide-details></v-checkbox>
+              </td>
+              <td class="">
+                 <v-checkbox v-model="field.private" hide-details></v-checkbox>
               </td>
               <td class="">
                 <v-select v-model="field.type" :items="$const.MEMBER_FIELDS_SCHEMA_TYPE_OPTIONS"

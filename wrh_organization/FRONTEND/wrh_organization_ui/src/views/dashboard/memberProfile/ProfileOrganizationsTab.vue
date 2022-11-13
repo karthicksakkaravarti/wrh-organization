@@ -161,6 +161,17 @@
               </template>
               <span>View</span>
             </v-tooltip>
+
+            <v-tooltip bottom>
+              <template #activator="{ on, attrs }">
+                <v-btn icon small v-bind="attrs" v-on="on" @click="$refs.myMemberFieldsDialogRef.show(item)">
+                  <v-icon size="18">
+                    {{ icons.mdiAccountEditOutline }}
+                  </v-icon>
+                </v-btn>
+              </template>
+              <span>Edit your membership fields</span>
+            </v-tooltip>
           </div>
         </template>
 
@@ -169,6 +180,7 @@
     <profile-organization-form-dialog ref="formDialogRef"
                                      @save-successed="loadRecords(1)" @delete-successed="loadRecords(1)">
     </profile-organization-form-dialog>
+    <edit-my-orgganization-member-fields-dialog ref="myMemberFieldsDialogRef"></edit-my-orgganization-member-fields-dialog>
   </div>
 </template>
 
@@ -184,6 +196,7 @@ import {
   mdiCheck,
   mdiInformationOutline,
   mdiRefresh,
+  mdiAccountEditOutline
 } from '@mdi/js'
 
 import { ref, reactive, watch, onMounted } from '@vue/composition-api'
@@ -193,9 +206,10 @@ import {notifyDefaultServerError, notifySuccess, refineVTableOptions} from "@/co
 import {avatarText} from "@core/utils/filter";
 import ProfileOrganizationFormDialog from "./ProfileOrganizationFormDialog";
 import EventBus from "@/EventBus";
+import EditMyOrgganizationMemberFieldsDialog from "@/views/dashboard/memberProfile/EditMyOrgganizationMemberFieldsDialog";
 
 export default {
-  components: {ProfileOrganizationFormDialog},
+  components: {EditMyOrgganizationMemberFieldsDialog, ProfileOrganizationFormDialog},
   setup() {
     const membershipRequests = ref([]);
     const records = ref([]);
@@ -292,7 +306,8 @@ export default {
         mdiClose,
         mdiCheck,
         mdiInformationOutline,
-        mdiRefresh
+        mdiRefresh,
+        mdiAccountEditOutline
       },
     }
   },

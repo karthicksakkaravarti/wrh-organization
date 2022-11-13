@@ -25,9 +25,13 @@
               </template>
 
               <v-list class="grey lighten-3">
-                <v-list-item v-for="childTab in t.children" :key="childTab.id" @click="tab=tabIdx; selectedTab=childTab" :input-value="childTab.id == selectedTab.id">
-                  <v-icon size="20" class="me-3">{{ childTab.icon }}</v-icon> {{childTab.title}}
-                </v-list-item>
+                <template v-for="childTab in t.children" >
+                  <v-list-item v-if="!childTab.admin_required || organization.my_level.is_admin"
+                               :key="childTab.id" @click="tab=tabIdx; selectedTab=childTab"
+                               :input-value="childTab.id == selectedTab.id">
+                    <v-icon size="20" class="me-3">{{ childTab.icon }}</v-icon> {{childTab.title}}
+                  </v-list-item>
+                </template>
               </v-list>
             </v-menu>
           </v-tab>
@@ -126,14 +130,14 @@ export default {
         children: [
           {id: 'individual-members', title:  'Individual Members', icon: mdiAccountMultipleOutline},
           {id: 'org-members', title:  'Org Members', icon: mdiHomeGroup},
-          {id: 'member-fields', title:  'Member Fields', icon: mdiFormatListText},
+          {id: 'member-fields', title:  'Member Fields', icon: mdiFormatListText, admin_required: true},
         ]
       },
       {
         title: 'Events',
         icon: mdiCalendar,
         children: [
-          {id: 'events', title:  'Events', icon: mdiCalendar},
+          {id: 'events', title:  'Events', icon: mdiCalendar, admin_required: true},
           {id: 'races', title:  'Races', icon: mdiCheckerboard},
           {id: 'race-results', title:  'Race-Results', icon: mdiFlagCheckered},
         ]
@@ -144,8 +148,8 @@ export default {
         children: [
           {id: 'race-series', title:  'Race-Series', icon: mdiCheckerboard},
           {id: 'race-series-results', title:  'Race-Series Results', icon: mdiFlagCheckered},
-          {id: 'race-series-standings', title:  'Race-Series Standings', icon: mdiGold},
-          {id: 'categories', title:  'Categories', icon: mdiFamilyTree},
+          {id: 'race-series-standings', title:  'Race-Series Standings', icon: mdiGold, admin_required: true},
+          {id: 'categories', title:  'Categories', icon: mdiFamilyTree, admin_required: true},
         ]
       },
     ];

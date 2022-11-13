@@ -139,7 +139,7 @@
         </v-card-text>
 
         <v-card-actions class="justify-center">
-          <v-btn v-if="!readOnly" color="warning" outlined class="me-3" @click="$emit('edit-click')">
+          <v-btn v-if="!readOnly && organization.my_level.is_admin" color="warning" outlined class="me-3" @click="$emit('edit-click')">
             <v-icon dark left>
               {{ icons.mdiHomeEditOutline }}
             </v-icon>Edit

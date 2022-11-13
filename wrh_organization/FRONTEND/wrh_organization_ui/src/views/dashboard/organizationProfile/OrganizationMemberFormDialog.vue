@@ -8,7 +8,7 @@
       <v-card-title>
         <span class="headline">{{isEditMode? `Edit Member of Organization: #${record.id}`: 'Add Member to Organization'}}</span>
       </v-card-title>
-      <v-form @submit.prevent="save" v-model="formValid">
+      <v-form @submit.prevent="save" v-model="formValid" :disabled="!organization.my_level.is_admin">
         <v-card-text>
           <v-container>
             <v-row>
@@ -197,115 +197,117 @@
               </v-col>
             </v-row>
           </v-container>
-          <app-card-actions action-collapse outlined v-if="schema && schema.length">
+          <app-card-actions action-collapse outlined color="#f3f3f3" v-if="schema && schema.length">
             <template #title>
               <span class="warning--text">Extra Organization Fields</span>
             </template>
             <v-card-text class="pr-2 pl-2">
               <v-container>
                 <v-row>
-                  <v-col cols="12" :md="f.type == 'text' || (f.choices && f.choices.length > 0)? 12: 6"
-                         v-for="f in schema" :key="f.name">
-                    <template v-if="f.choices && f.choices.length > 0">
-                      <p class="caption mb-0">{{f.title}}</p>
-                      <div v-if="f.multiple" class="d-flex flex-wrap demo-space-x mt-0">
-                        <v-checkbox v-for="(c, cIdx) in f.choices" v-model="record.member_fields[f.name]"
-                                    class="mt-0 mb-0 pt-0" :label="c.title" :value="c.value" :key="cIdx" hide-details></v-checkbox>
-                      </div>
-                      <v-radio-group v-else v-model="record.member_fields[f.name]" hide-details class="mt-0"
-                                     :rules="f.required? [rules.required]: []">
-                        <div class="d-flex flex-wrap demo-space-x mt-0">
-                          <v-radio v-for="(c, cIdx) in f.choices" :label="c.title" :value="c.value" :key="cIdx"
-                                   class="mt-0 mb-0 pt-0"></v-radio>
+                  <template v-for="f in schema">
+                    <v-col v-if="organization.my_level.is_admin || !f.private" cols="12" :md="f.type == 'text' || (f.choices && f.choices.length > 0)? 12: 6" :key="f.name">
+                      <template v-if="f.choices && f.choices.length > 0">
+                        <p class="caption mb-0">{{f.title}}</p>
+                        <div v-if="f.multiple" class="d-flex flex-wrap demo-space-x mt-0">
+                          <v-checkbox v-for="(c, cIdx) in f.choices" v-model="record.member_fields[f.name]"
+                                      class="mt-0 mb-0 pt-0" :label="c.title" :value="c.value" :key="cIdx" hide-details></v-checkbox>
                         </div>
-                      </v-radio-group>
-                    </template>
-                    <template v-else-if="f.type=='integer' || f.type=='float' || f.type=='number'">
-                      <v-text-field
-                          hide-details
-                          dense
-                          v-model.number="record.member_fields[f.name]"
-                          :label="f.title"
-                          type="number"
-                          :step="f.type=='integer'? 1: 'any'"
-                          :rules="f.required? [rules.required]: []"
-                      ></v-text-field>
-                    </template>
-                    <template v-else-if="f.type=='percent'">
-                      <v-text-field
-                          hide-details
-                          dense
-                          v-model.number="record.member_fields[f.name]"
-                          :label="f.title"
-                          :rules="f.required? [rules.required]: []"
-                          type="number"
-                          suffix="%"
-                          min="0"
-                          max="100"
-                      ></v-text-field>
-                    </template>
-                    <template v-else-if="f.type=='boolean'">
-                      <v-switch
-                          hide-details
-                          v-model="record.member_fields[f.name]"
-                          :label="f.title"
-                          dense
-                          class="pt-0 mt-1"
-                      ></v-switch>
-                    </template>
-                    <template v-else-if="f.type=='date' || f.type=='time'">
-                      <v-menu v-model="uiFieldsData[`menu__${f.name}`]" :close-on-content-click="false"
-                              :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-text-field
-                              hide-details
-                              v-model="record.member_fields[f.name]"
-                              :label="f.title"
-                              :rules="f.required? [rules.required]: []"
-                              class="pt-0 mt-0 mb-5"
-                              :append-icon="f.type=='time'? icons.mdiClockOutline: icons.mdiCalendar"
-                              v-bind="attrs"
-                              v-on="on"
-                              readonly>
-                          </v-text-field>
-                        </template>
-                        <v-time-picker v-if="f.type=='time'" v-model="record.member_fields[f.name]" color="primary"
-                                       @click:minute="uiFieldsData[`menu__${f.name}`] = false"></v-time-picker>
-                        <v-date-picker v-else v-model="record.member_fields[f.name]" color="primary"
-                                       @input="uiFieldsData[`menu__${f.name}`] = false"></v-date-picker>
-                      </v-menu>
-                    </template>
-                    <template v-else-if="f.type=='datetime'">
-                      <v-datetime-picker v-model="record.member_fields[f.name]" :label="f.title"
-                                         :text-field-props="{appendIcon: icons.mdiCalendar, class: 'pt-0 mt-0 mb-5', rules: f.required? [rules.required]: []}">
-                        <template #dateIcon>
-                          <v-icon>{{icons.mdiCalendar}}</v-icon>
-                        </template>
-                        <template #timeIcon>
-                          <v-icon>{{icons.mdiClock}}</v-icon>
-                        </template>
-                      </v-datetime-picker>
-                    </template>
-                    <template v-else-if="f.type=='text'">
-                      <v-textarea
-                          hide-details
-                          dense
-                          v-model="record.member_fields[f.name]"
-                          :label="f.title"
-                          :rules="f.required? [rules.required]: []"
-                          rows="2"
-                      ></v-textarea>
-                    </template>
-                    <template v-else>
-                      <v-text-field
-                          dense
-                          v-model.trim="record.member_fields[f.name]"
-                          :label="f.title"
-                          :rules="f.required? [rules.required]: []"
-                          type="text"
-                      ></v-text-field>
-                    </template>
-                  </v-col>
+                        <v-radio-group v-else v-model="record.member_fields[f.name]" hide-details class="mt-0"
+                                       :rules="f.required? [rules.required]: []">
+                          <div class="d-flex flex-wrap demo-space-x mt-0">
+                            <v-radio v-for="(c, cIdx) in f.choices" :label="c.title" :value="c.value" :key="cIdx"
+                                     class="mt-0 mb-0 pt-0"></v-radio>
+                          </div>
+                        </v-radio-group>
+                      </template>
+                      <template v-else-if="f.type=='integer' || f.type=='float' || f.type=='number'">
+                        <v-text-field
+                            hide-details
+                            dense
+                            v-model.number="record.member_fields[f.name]"
+                            :label="f.title"
+                            type="number"
+                            :step="f.type=='integer'? 1: 'any'"
+                            :rules="f.required? [rules.required]: []"
+                        ></v-text-field>
+                      </template>
+                      <template v-else-if="f.type=='percent'">
+                        <v-text-field
+                            hide-details
+                            dense
+                            v-model.number="record.member_fields[f.name]"
+                            :label="f.title"
+                            :rules="f.required? [rules.required]: []"
+                            type="number"
+                            suffix="%"
+                            min="0"
+                            max="100"
+                        ></v-text-field>
+                      </template>
+                      <template v-else-if="f.type=='boolean'">
+                        <v-switch
+                            hide-details
+                            v-model="record.member_fields[f.name]"
+                            :label="f.title"
+                            dense
+                            class="pt-0 mt-1"
+                        ></v-switch>
+                      </template>
+                      <template v-else-if="f.type=='date' || f.type=='time'">
+                        <v-menu v-model="uiFieldsData[`menu__${f.name}`]" :close-on-content-click="false"
+                                :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-text-field
+                                hide-details
+                                v-model="record.member_fields[f.name]"
+                                :label="f.title"
+                                :rules="f.required? [rules.required]: []"
+                                class="pt-0 mt-0 mb-5"
+                                :append-icon="f.type=='time'? icons.mdiClockOutline: icons.mdiCalendar"
+                                v-bind="attrs"
+                                v-on="on"
+                                readonly>
+                            </v-text-field>
+                          </template>
+                          <v-time-picker v-if="f.type=='time'" v-model="record.member_fields[f.name]" color="primary"
+                                         @click:minute="uiFieldsData[`menu__${f.name}`] = false"></v-time-picker>
+                          <v-date-picker v-else v-model="record.member_fields[f.name]" color="primary"
+                                         @input="uiFieldsData[`menu__${f.name}`] = false"></v-date-picker>
+                        </v-menu>
+                      </template>
+                      <template v-else-if="f.type=='datetime'">
+                        <v-datetime-picker v-model="record.member_fields[f.name]" :label="f.title"
+                                           :text-field-props="{appendIcon: icons.mdiCalendar, class: 'pt-0 mt-0 mb-5', rules: f.required? [rules.required]: []}">
+                          <template #dateIcon>
+                            <v-icon>{{icons.mdiCalendar}}</v-icon>
+                          </template>
+                          <template #timeIcon>
+                            <v-icon>{{icons.mdiClock}}</v-icon>
+                          </template>
+                        </v-datetime-picker>
+                      </template>
+                      <template v-else-if="f.type=='text'">
+                        <v-textarea
+                            hide-details
+                            dense
+                            v-model="record.member_fields[f.name]"
+                            :label="f.title"
+                            :rules="f.required? [rules.required]: []"
+                            rows="2"
+                        ></v-textarea>
+                      </template>
+                      <template v-else>
+                        <v-text-field
+                            dense
+                            v-model.trim="record.member_fields[f.name]"
+                            :label="f.title"
+                            :rules="f.required? [rules.required]: []"
+                            type="text"
+                        ></v-text-field>
+                      </template>
+                    </v-col>
+
+                  </template>
                 </v-row>
               </v-container>
             </v-card-text>
@@ -319,14 +321,14 @@
           </v-alert>
         </v-card-text>
         <v-card-actions>
-          <template v-if="isEditMode" >
+          <template v-if="isEditMode && organization.my_level.is_admin" >
             <v-btn color="error" outlined @click="confirmDelete=true" :disabled="confirmDelete">
               <v-icon>{{icons.mdiDelete}}</v-icon>Delete
             </v-btn>
           </template>
           <v-spacer></v-spacer>
           <v-btn color="secondary" outlined @click="hide()">Close</v-btn>
-          <v-btn color="primary" type="submit" :loading="saving" :disabled="!formValid">Save</v-btn>
+          <v-btn v-if="organization.my_level.is_admin" color="primary" type="submit" :loading="saving" :disabled="!formValid">Save</v-btn>
         </v-card-actions>
       </v-form>
     </v-card>

@@ -146,6 +146,7 @@ class Organization(models.Model):
                     ]
                 },
                 'required': {'type': 'boolean', 'required': False, 'default': False},
+                'private': {'type': 'boolean', 'required': False, 'default': False},
                 'choices': {
                     'type': 'list', 'required': False, 'nullable': True, 'empty': True,
                     'schema': {

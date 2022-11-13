@@ -83,6 +83,7 @@ export default {
     const loadReceResults = () => {
       loading.value = true;
       const params = Object.assign({
+        exfields: 'more_data',
         page_size: 6,
         place: 1,
         order_by: '-id'

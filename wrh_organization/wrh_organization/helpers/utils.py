@@ -779,6 +779,13 @@ class IsOwnerOrReadOnlyPermission(IsOwnerPermission):
         return super().has_object_permission(request, view, obj)
 
 
+class IsMemberPermission(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        member = getattr(request.user, 'member', None)
+        return bool(member)
+
+
 class IsMemberVerifiedPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):

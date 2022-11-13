@@ -160,6 +160,11 @@ class OrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.Mod
     _member = NestedMemberSerializer(read_only=True, source='member')
     org_member_uid = serializers.CharField(required=True, allow_null=False, allow_blank=False)
 
+    class Meta:
+        model = OrganizationMember
+        fields = "__all__"
+        read_only_fields = ('is_master_admin', 'organization', 'membership_price', 'status')
+
     def validate(self, attrs):
         start_date = attrs.get('start_date') or (self.instance and self.instance.start_date)
         exp_date = attrs.get('exp_date') or (self.instance and self.instance.exp_date)
@@ -167,10 +172,22 @@ class OrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.Mod
             raise serializers.ValidationError({"exp_date": "Exp date must be after start date"})
         return attrs
 
-    class Meta:
-        model = OrganizationMember
-        fields = "__all__"
-        read_only_fields = ('is_master_admin', 'organization', 'membership_price', 'status')
+    def to_representation(self, instance):
+        # avoid to show private member_fields for non-admin organization members
+        data = super().to_representation(instance)
+        member_fields = data.get('member_fields')
+        is_admin = self.context.get('member_is_admin')
+        member_fields_schema = self.context.get('member_fields_schema')
+        if not (member_fields and self.context.get('check_private_member_fields') and member_fields_schema) or is_admin:
+            return data
+        new_member_fields = {}
+        for f in member_fields_schema:
+            if f.get('private'):
+                continue
+            name = f.get('name')
+            new_member_fields[name] = member_fields[name]
+        data['member_fields'] = new_member_fields
+        return data
 
 
 class OrganizationMemberMyRequestsSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):

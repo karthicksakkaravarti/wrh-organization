@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.template.loader import render_to_string
-from django.utils import dateparse
+from django.utils import dateparse, timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import viewsets, permissions, status
@@ -32,7 +32,7 @@ from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationS
     NestedOrganizationSerializer, FieldsTrackingSerializer, RaceSerializer, RaceResultSerializer, CategorySerializer, \
     RaceSeriesSerializer, RaceSeriesResultSerializer, EventSerializer, PublicMemberSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
-    IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token, to_dict
+    IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token, to_dict, IsMemberPermission, random_id
 
 
 class ExportViewMixin(object):
@@ -340,6 +340,36 @@ class OrganizationView(viewsets.ModelViewSet):
         OrganizationMember.objects.create(organization=serializer.instance, is_master_admin=True,
                                           member=self.request.user.member)
 
+    @action(detail=True, methods=['GET', 'POST'], permission_classes=(IsMemberPermission,),
+            serializer_class=OrganizationMemberSerializer)
+    def join(self, request, *args, **kwargs):
+        # TODO: we should implement payment process here before join
+        org = self.get_object()
+        om = OrganizationMember.objects.filter(organization=org, member=request.user.member, is_active=True).first()
+        if request.method == 'GET':
+            return Response({'is_member': bool(om), 'is_admin': bool(om and om.is_admin)})
+        if om:
+            return Response({'detail': 'you have already joined to this organization'}, status=status.HTTP_409_CONFLICT)
+        data = request.data or {}
+        org_member_uid = random_id(no_lower=True, no_digit=True)
+        om = OrganizationMember(organization=org, member=request.user.member, org_member_uid=org_member_uid,
+                                start_date=timezone.now().date(), member_fields=data)
+        om.save()
+        return Response(self.get_serializer(instance=om).data)
+
+    @action(detail=True, methods=['GET', 'PUT'], permission_classes=(IsMemberPermission,))
+    def my_member_fields(self, request, *args, **kwargs):
+        org = self.get_object()
+        om = OrganizationMember.objects.filter(organization=org, member=request.user.member, is_active=True).first()
+        if not om:
+            return Response({'detail': 'You are not a member of this organization'}, status=status.HTTP_403_FORBIDDEN)
+        if request.method == 'GET':
+            return Response(om.member_fields or {})
+        data = request.data or {}
+        om.member_fields = {**(om.member_fields or {}), **data}
+        om.save()
+        return Response(om.member_fields or {})
+
     @action(detail=True, methods=['GET'])
     def summary(self, request, *args, **kwargs):
         org = self.get_object()
@@ -400,10 +430,13 @@ class OrganizationMembershipMixin:
     def get_organization_object_permission(self, obj):
         return obj.organization
 
-    def has_organization_permission(self):
+    def is_admin_organization(self):
         org = self.get_current_org()
-        if OrganizationMember.objects.filter(member=self.request.user.member, organization=org, is_active=True
-                                             ).filter(Q(is_admin=True) | Q(is_master_admin=True)).exists():
+        return OrganizationMember.objects.filter(member=self.request.user.member, organization=org, is_active=True
+                                                 ).filter(Q(is_admin=True) | Q(is_master_admin=True)).exists()
+
+    def has_organization_permission(self):
+        if self.is_admin_organization():
             return True
         return self.request.method in permissions.SAFE_METHODS
 
@@ -434,6 +467,14 @@ class OrganizationMemberView(OrganizationMembershipMixin, viewsets.ModelViewSet)
     def get_queryset(self):
         organization = self.get_current_org()
         return super().get_queryset().filter(organization=organization).select_related('member', 'member__user')
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        organization = self.get_current_org()
+        ctx['check_private_member_fields'] = True
+        ctx['member_fields_schema'] = organization.member_fields_schema
+        ctx['member_is_admin'] = self.is_admin_organization()
+        return ctx
 
     def perform_destroy(self, instance):
         if instance.is_master_admin:
