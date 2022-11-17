@@ -185,7 +185,7 @@ class OrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.Mod
             if f.get('private'):
                 continue
             name = f.get('name')
-            new_member_fields[name] = member_fields[name]
+            new_member_fields[name] = member_fields.get(name)
         data['member_fields'] = new_member_fields
         return data
 

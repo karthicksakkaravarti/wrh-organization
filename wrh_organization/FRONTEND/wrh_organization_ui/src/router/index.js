@@ -18,6 +18,7 @@ export const routeNames = {
   PUBLIC_EVENTS: "public_events",
 
   WIDGET_ORG_PROFILE: "widget_org_profile",
+  WIDGET_ORG_EVENTS_CALENDAR: "widget_org_events_calendar",
   WIDGET_RIDER_PROFILE: "widget_rider_profile",
   WIDGET_RACE_RESULTS: "widget_race_results",
   WIDGET_EVENTS_CALENDAR: "widget_events_calendar",
@@ -70,7 +71,7 @@ const routes = [
     },
   },
   {
-    path: '/rider-profile/:record_id/',
+    path: '/rider-profile/:record_id',
     name: routeNames.PUBLIC_RIDER_PROFILE,
     component: () => import('@/views/public/PublicRiderProfile'),
     meta: {
@@ -78,7 +79,7 @@ const routes = [
     },
   },
   {
-    path: '/event-profile/:record_id/',
+    path: '/event-profile/:record_id',
     name: routeNames.PUBLIC_EVENT_PROFILE,
     component: () => import('@/views/public/PublicEventProfile'),
     meta: {
@@ -86,7 +87,7 @@ const routes = [
     },
   },
   {
-    path: '/org-profile/:record_id/',
+    path: '/org-profile/:record_id',
     name: routeNames.PUBLIC_ORG_PROFILE,
     component: () => import('@/views/public/PublicOrgProfile'),
     meta: {
@@ -135,7 +136,7 @@ const routes = [
     },
   },
   {
-    path: '/dashboard/organization-profile/:record_id/',
+    path: '/dashboard/organization-profile/:record_id',
     name: routeNames.DASHBOARD_ORGANIZATION_PROFILE,
     component: () => import('@/views/dashboard/organizationProfile/OrganizationProfile'),
     meta: {
@@ -167,7 +168,7 @@ const routes = [
     },
   },
   {
-    path: '/widgets/org-profile/:record_id/',
+    path: '/widgets/org-profile/:record_id',
     name: routeNames.WIDGET_ORG_PROFILE,
     component: () => import('@/views/widgets/OrgProfileWidget'),
     meta: {
@@ -175,7 +176,7 @@ const routes = [
     },
   },
   {
-    path: '/widgets/rider-profile/:record_id/',
+    path: '/widgets/rider-profile/:record_id',
     name: routeNames.WIDGET_RIDER_PROFILE,
     component: () => import('@/views/widgets/RiderProfileWidget'),
     meta: {
@@ -193,6 +194,14 @@ const routes = [
   {
     path: '/widgets/events-calendar',
     name: routeNames.WIDGET_EVENTS_CALENDAR,
+    component: () => import('@/views/widgets/EventsCalendarWidget'),
+    meta: {
+      layout: 'BlankLayout',
+    },
+  },
+  {
+    path: '/widgets/events-calendar/:org_id',
+    name: routeNames.WIDGET_ORG_EVENTS_CALENDAR,
     component: () => import('@/views/widgets/EventsCalendarWidget'),
     meta: {
       layout: 'BlankLayout',

@@ -28,6 +28,7 @@
 
         <!-- Right Content: I18n, Light/Dark, Notification & User Dropdown -->
         <div class="d-flex align-center right-row">
+          <app-bar-switch-org></app-bar-switch-org>
           <app-bar-theme-switcher></app-bar-theme-switcher>
           <app-bar-user-menu></app-bar-user-menu>
         </div>
@@ -61,9 +62,11 @@ import AppFooter from "./AppFooter";
 import {routeNames} from "@/router";
 import store from '@/store';
 import EventBus from "@/EventBus";
+import AppBarSwitchOrg from "@/components/AppBarSwitchOrg";
 
 export default {
   components: {
+    AppBarSwitchOrg,
     AppFooter,
     AppBarThemeSwitcher,
     LayoutContentVerticalNav,
