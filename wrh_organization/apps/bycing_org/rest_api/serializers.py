@@ -27,20 +27,12 @@ class MemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer
         read_only_fields = ('user',)
 
 
-class PublicMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-    summary = serializers.SerializerMethodField(read_only=True)
-    age = serializers.IntegerField(read_only=True)
-    extra_fields = ['summary', 'more_data']
-
-    def get_summary(self, obj):
-        race_results_count = obj.race_results.count()
-        races_count = obj.race_results.distinct('race').count()
-        events_count = obj.race_results.distinct('race__event').count()
-        return {'races_count': races_count, 'events_count': events_count, 'race_results_count': race_results_count}
+class PublicMemberSerializer(MemberSerializer):
 
     class Meta:
         model = Member
-        exclude = ('phone', 'phone_verified', 'email', 'email_verified', 'address1', 'address2', 'zipcode', 'more_data', 'birth_date')
+        exclude = ('phone', 'phone_verified', 'email', 'email_verified', 'address1', 'address2', 'zipcode',
+                   'more_data', 'birth_date')
         read_only_fields = ('user',)
 
 
@@ -100,6 +92,14 @@ class NestedMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
         res = super().to_representation(instance)
         if not res['_user']:
             res['_user'] = {}
+
+        if self.context.get('member_is_admin'):
+            return res
+
+        private_fields = ['phone', 'phone_verified', 'email', 'email_verified', 'address1', 'address2', 'zipcode',
+                          'more_data', 'birth_date']
+        for f in private_fields:
+            res.pop(f, None)
         return res
 
 

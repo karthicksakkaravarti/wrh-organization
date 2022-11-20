@@ -3,7 +3,7 @@
 
 <template>
   <div>
-    <v-card flat class="banner d-flex align-center justify-center text-center mb-7">
+    <v-card flat class="banner d-flex align-center justify-center text-center mb-7" v-if="defaultOrg">
       <img :src="require(`@/assets/images/misc/public-banner-bg-light.jpeg`)">
       <v-card-text class="pb-0">
         <p class="kb-title text-2xl font-weight-semibold primary--text mb-2">
@@ -15,15 +15,22 @@
         <h3 class="mb-5">
           Create Your Account, Select Your Region, Find a Team or Club!
         </h3>
-        <v-btn v-if="!$store.getters.isAuthenticated" outlined color="error" :to="{name: $rns.AUTH, query:{page: 'Register'}}" x-large>
-          Sign Up
-        </v-btn>
-        <v-btn v-else outlined color="info" :to="{name: $rns.DASHBOARD_HOME}" x-large>
-          <v-icon>
-            {{icons.mdiApps}}
-          </v-icon>
-          Go to Panel
-        </v-btn>
+        <div>
+          <span class="subtitle-1 font-weight-bold">Step 1, Create a user account: </span>
+          <v-btn outlined color="error" :to="{name: $rns.AUTH, query:{page: 'Register'}}" large class="action-btn"
+                 :disabled="$store.getters.isAuthenticated">
+            Sign Up
+            <v-icon right>{{icons.mdiAccount}}</v-icon>
+          </v-btn>
+        </div>
+        <div class="mt-1">
+          <span class="subtitle-1 font-weight-bold">Step 2, Join {{defaultOrg.name}}: </span>
+          <v-btn outlined color="primary" large class="action-btn"
+                 :disabled="!$store.getters.isAuthenticated" @click="$refs.joinDialogRef.show()">
+            Join
+            <v-icon right>{{icons.mdiAccountPlus}}</v-icon>
+          </v-btn>
+        </div>
       </v-card-text>
     </v-card>
     <v-row>
@@ -40,6 +47,10 @@
         <twitter-feeds-widget class="home-widget"></twitter-feeds-widget>
       </v-col>
     </v-row>
+    <join-organization-dialog :organization="defaultOrg" ref="joinDialogRef" v-if="defaultOrg"
+                              @join-duplicated="navigateToDefaultOrg()"
+                              @join-successed="navigateToDefaultOrg()">
+    </join-organization-dialog>
   </div>
 </template>
 
@@ -49,13 +60,44 @@ import RecentRaceResultsWidget from "@/views/public/RecentRaceResultsWidget";
 import UpcomingEventsWidget from "@/views/public/UpcomingEventsWidget";
 import TwitterFeedsWidget from "@/views/public/TwitterFeedsWidget";
 import OrganizationsWidget from "@/views/public/OrganizationsWidget";
-import {mdiApps} from "@mdi/js";
+import {mdiApps, mdiAccount, mdiAccountPlus} from "@mdi/js";
+import JoinOrganizationDialog from "@/views/public/JoinOrganizationDialog";
+import {onMounted, ref, set} from "@vue/composition-api";
+import axios from "@/axios";
+import {notifyDefaultServerError} from "@/composables/utils";
+import {useRouter} from "@core/utils";
+import {routeNames} from "@/router";
 export default {
-  components: {OrganizationsWidget, TwitterFeedsWidget, UpcomingEventsWidget, RecentRaceResultsWidget},
+  components: {
+    JoinOrganizationDialog,
+    OrganizationsWidget, TwitterFeedsWidget, UpcomingEventsWidget, RecentRaceResultsWidget},
   setup() {
+    const { router } = useRouter();
+    const defaultOrg = ref(null);
+
+    const loadDefaultOrg = () => {
+      axios.get(`bycing_org/organization/default_org`).then((response) => {
+        defaultOrg.value = response.data;
+      }, (error) => {
+        notifyDefaultServerError(error, true);
+      });
+    };
+
+    const navigateToDefaultOrg = () => {
+      router.push({name: routeNames.DASHBOARD_ORGANIZATION_PROFILE, params: {record_id: defaultOrg.value.id}})
+    };
+
+    onMounted(() => {
+      loadDefaultOrg();
+    });
+
     return {
+      defaultOrg,
+      navigateToDefaultOrg,
       icons: {
-        mdiApps
+        mdiApps,
+        mdiAccount,
+        mdiAccountPlus
       }
     }
   },
@@ -63,6 +105,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
   .banner {
     padding: 3.5rem;
     border: 1px solid #e9e9e9;
@@ -78,5 +121,8 @@ export default {
   }
   .home-widget {
     min-height: 425px;
+  }
+  .banner .v-btn.action-btn {
+    width: 130px;
   }
 </style>

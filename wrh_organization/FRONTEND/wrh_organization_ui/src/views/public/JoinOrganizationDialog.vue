@@ -1,10 +1,43 @@
 <template>
   <v-dialog v-model="isVisible" persistent max-width="700px">
     <v-card>
-      <v-card-title class="headline">
-        Join to <span class="ml-2 font-weight-bold"> {{ organization.name }}</span>
-      </v-card-title>
-      <v-form v-if="$store.getters.isAuthenticated" @submit.prevent="join" v-model="formValid">
+       <v-card-title class="headline">
+         Join to <span class="ml-2 font-weight-bold"> {{ organization.name }}</span>
+         <v-spacer></v-spacer>
+         <v-btn icon @click="isVisible=false">
+           <v-icon>{{icons.mdiClose}}</v-icon>
+         </v-btn>
+       </v-card-title>
+      <v-card-text v-if="alreadyJoined">
+        <v-alert prominent outlined type="warning" :icon="icons.mdiAlertOutline">
+          <v-row align="center">
+            <v-col class="grow">
+              You are already joined to this organization.
+            </v-col>
+            <v-col class="shrink">
+              <v-btn color="primary" :to="{name: $rns.DASHBOARD_ORGANIZATION_PROFILE, params: {record_id: organization.id}}">
+                Go to Organization
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-alert>
+      </v-card-text>
+      <v-card-text v-else-if="!$store.getters.isAuthenticated" >
+        <v-alert prominent outlined type="warning" :icon="icons.mdiAlertOutline">
+          <v-row align="center">
+            <v-col class="grow">
+              You have to login first.
+            </v-col>
+            <v-col class="shrink">
+              <v-btn color="primary" :to="{name: $rns.AUTH, query: {next: $route.fullPath}}">
+                Login
+                <v-icon size="20">{{icons.mdiLogin}}</v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-alert>
+      </v-card-text>
+      <v-form v-else @submit.prevent="join" v-model="formValid">
         <v-card-text class="pr-2 pl-2">
           <v-container v-if="schema">
             <v-row>
@@ -120,21 +153,6 @@
           <v-btn type="submit" color="primary" :loading="joining" :disabled="!formValid">Join</v-btn>
         </v-card-actions>
       </v-form>
-      <v-card-text>
-        <v-alert prominent outlined type="warning" :icon="icons.mdiAlertOutline">
-          <v-row align="center">
-            <v-col class="grow">
-              You have to login first.
-            </v-col>
-            <v-col class="shrink">
-              <v-btn color="primary" :to="{name: $rns.AUTH, query: {next: $route.fullPath}}">
-                Login
-                <v-icon size="20">{{icons.mdiLogin}}</v-icon>
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-alert>
-      </v-card-text>
     </v-card>
   </v-dialog>
 </template>
@@ -142,9 +160,8 @@
 <script>
 import {ref, set} from '@vue/composition-api'
 import axios from "@/axios";
-import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
-import { mdiLinkVariant, mdiAlertOutline, mdiLogin } from '@mdi/js';
-import moment from "moment/moment";
+import {notifyDefaultServerError, notifySuccess, notifyWarn} from "@/composables/utils";
+import { mdiLinkVariant, mdiAlertOutline, mdiLogin, mdiClose } from '@mdi/js';
 import {required} from "@core/utils/validation";
 
 export default {
@@ -157,6 +174,7 @@ export default {
   setup(props, context) {
     const record = ref({});
     const isVisible = ref(false);
+    const alreadyJoined = ref(false);
     const joining = ref(false);
     const schema = ref(null);
     const formValid = ref(false);
@@ -167,6 +185,7 @@ export default {
     };
     const show = () => {
       loadSchema();
+      getJoinStatus();
       uiFieldsData.value = {};
       joining.value = false;
       isVisible.value = true;
@@ -197,6 +216,18 @@ export default {
         hide();
       }, (error) => {
         joining.value = false;
+        if (error.response.status === 409) {
+          notifyWarn("You are already joined!");
+          return context.emit('join-duplicated');
+        }
+        notifyDefaultServerError(error, true);
+      });
+    };
+
+    const getJoinStatus = () => {
+      axios.get(`bycing_org/organization/${props.organization.id}/join`).then((response) => {
+        alreadyJoined.value = response.data.is_member;
+      }, (error) => {
         notifyDefaultServerError(error, true);
       });
     };
@@ -204,6 +235,7 @@ export default {
     return {
       isVisible,
       joining,
+      alreadyJoined,
       schema,
       record,
       uiFieldsData,
@@ -218,7 +250,8 @@ export default {
       icons: {
         mdiLinkVariant,
         mdiAlertOutline,
-        mdiLogin
+        mdiLogin,
+        mdiClose,
       }
     }
   },

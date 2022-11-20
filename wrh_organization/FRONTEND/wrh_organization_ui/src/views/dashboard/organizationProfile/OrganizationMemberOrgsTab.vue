@@ -103,7 +103,8 @@
           <span v-else>{{item.status || '-'}}</span>
         </template>
         <template #item.member_org="{item}">
-          <div class="d-flex align-center cursor-pointer" @click="$refs.formDialogRef.show(item)">
+          <a is="router-link" :to="{name: $rns.PUBLIC_ORG_PROFILE, params:{record_id: item.member_org}}"
+             class="d-flex align-center title-link" @click="$refs.formDialogRef.show(item)">
             <v-avatar color="success" class="v-avatar-light-bg success--text" size="30">
               <v-img v-if="item._member_org.logo" :src="item._member_org.logo"></v-img>
               <span v-else class="font-weight-medium">
@@ -117,7 +118,7 @@
               </span>
               <span class="text-xs" :class="`${($const.ORGANIZATION_TYPE_MAP[item._member_org.type] || {}).css}--text`">{{($const.ORGANIZATION_TYPE_MAP[item._member_org.type] || {}).title || item._member_org.type}}</span>
             </div>
-          </div>
+          </a>
         </template>
 
         <!-- actions -->
@@ -264,6 +265,10 @@ export default {
 
 <style lang="scss">
 .member-org-profile-organization-tab {
+  a.title-link {
+    color: inherit;
+    text-decoration: none;
+  }
   .organization-search {
     max-width: 10.625rem;
   }

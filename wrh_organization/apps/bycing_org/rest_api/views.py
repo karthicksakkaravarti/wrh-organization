@@ -421,6 +421,14 @@ class OrganizationView(viewsets.ModelViewSet):
         r.save(update_fields=update_fields)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(detail=False, methods=['GET'])
+    def default_org(self, request, *args, **kwargs):
+        org_id = settings.DEFAULT_ORGANIZATION_ID
+        org = Organization.objects.filter(pk=org_id).first()
+        if not org:
+            return Response({f'detail': f'Not found default organization # {org_id}'})
+        return Response(self.get_serializer(instance=org).data)
+
 
 class OrganizationMembershipMixin:
     org_id_kwarg = 'org_id'
