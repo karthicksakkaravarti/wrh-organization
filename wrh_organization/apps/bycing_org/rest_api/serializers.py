@@ -156,6 +156,11 @@ class CsvFileImportSerializer(serializers.Serializer):
     file = serializers.FileField(required=True, validators=[FileExtensionValidator(allowed_extensions=['csv'])])
 
 
+class OrganizationJoinSerializer(DynamicFieldsSerializerMixin, serializers.Serializer):
+    token = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    member_fields = serializers.JSONField(required=False, allow_null=True)
+
+
 class OrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     _member = NestedMemberSerializer(read_only=True, source='member')
     org_member_uid = serializers.CharField(required=True, allow_null=False, allow_blank=False)

@@ -527,3 +527,20 @@ class RaceSeriesResult(models.Model):
 
     def __str__(self):
         return f'{self.category}-{self.place}'
+
+
+class FinancialTransaction(models.Model):
+    TYPE_WITHDRAW = 'withdraw'
+    TYPE_ORG_REGISTER = 'org_register'
+    TYPE_CHOICES = (
+        (TYPE_WITHDRAW, 'Withdraw'),
+        (TYPE_ORG_REGISTER, 'Org Register'),
+    )
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='financial_transactions')
+    amount = models.DecimalField(max_digits=8, decimal_places=2)
+    type = models.CharField(max_length=16, choices=TYPE_CHOICES)
+    payment_id = models.CharField('Payment Id', max_length=64)
+    create_datetime = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return str(self.amount)

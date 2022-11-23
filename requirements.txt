@@ -24,3 +24,4 @@ pyotp==2.6.0
 cerberus==1.3.4
 django-model-utils==4.2.0
 mysql-connector-python==8.0.29
+stripe==5.0.0

@@ -65,6 +65,11 @@ class EventAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class FinancialTransactionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'amount', 'user', 'type', 'create_datetime')
+    list_filter = ('type',)
+
+
 class FieldsTrackingAdmin(admin.ModelAdmin):
     list_display = ('id', 'object_id', 'content_type', 'object_repr', 'datetime', 'user')
     search_fields = ('object_repr',)
@@ -82,3 +87,4 @@ admin.site.register(models.FieldsTracking, FieldsTrackingAdmin)
 admin.site.register(models.Category, CategoryAdmin)
 admin.site.register(models.RaceSeries, RaceSeriesAdmin)
 admin.site.register(models.Event, EventAdmin)
+admin.site.register(models.FinancialTransaction, FinancialTransactionAdmin)

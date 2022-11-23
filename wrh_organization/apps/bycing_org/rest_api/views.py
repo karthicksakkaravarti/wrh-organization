@@ -1,7 +1,9 @@
 import csv
+import decimal
 import io
 import traceback
 
+import stripe
 from django.conf import settings
 from django.contrib.auth import login
 from django.core.mail import send_mail
@@ -19,9 +21,10 @@ from rest_framework.exceptions import ValidationError, PermissionDenied, MethodN
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
+from stripe.error import StripeError
 
 from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
-    FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult, Event
+    FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult, Event, FinancialTransaction
 from apps.bycing_org.rest_api.filters import MemberFilter, OrganizationFilter, OrganizationMemberFilter, \
     OrganizationMemberOrgFilter, FieldsTrackingFilter, RaceFilter, RaceResultFilter, CategoryFilter, RaceSeriesFilter, \
     RaceSeriesResultFilter, EventFilter
@@ -30,9 +33,11 @@ from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationS
     NestedMemberSerializer, UserSendRecoverPasswordSerializer, UserRecoverPasswordSerializer, \
     CsvFileImportSerializer, OrganizationMemberMyRequestsSerializer, OrganizationMemberOrgSerializer, \
     NestedOrganizationSerializer, FieldsTrackingSerializer, RaceSerializer, RaceResultSerializer, CategorySerializer, \
-    RaceSeriesSerializer, RaceSeriesResultSerializer, EventSerializer, PublicMemberSerializer
+    RaceSeriesSerializer, RaceSeriesResultSerializer, EventSerializer, PublicMemberSerializer, \
+    OrganizationJoinSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
-    IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token, to_dict, IsMemberPermission, random_id
+    IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token, to_dict, IsMemberPermission, random_id, \
+    APICodeException
 
 
 class ExportViewMixin(object):
@@ -52,6 +57,36 @@ class ExportViewMixin(object):
             raise NotImplementedError
         records = self.get_export_records(request, *args, **kwargs)
         return export_method(records)
+
+
+class GlobalConfView(viewsets.ViewSet):
+    PUBLIC_KEYS = [
+        'TIME_ZONE', 'DEFAULT_ORGANIZATION_ID'
+    ]
+    LOGIN_REQUIRED_KEYS = ['STRIPE_PUBLISHABLE_KEY']
+    permission_classes = (permissions.AllowAny,)
+
+    @property
+    def conf_keys(self):
+        keys = self.PUBLIC_KEYS
+        if self.request.user.is_authenticated:
+            keys += self.LOGIN_REQUIRED_KEYS
+        return keys
+
+    def get(self, request, *args, **kwargs):
+        configs = {c: getattr(settings, c, None) for c in self.conf_keys}
+        return Response(configs)
+
+    def retrieve(self, request, *args, **kwargs):
+        conf_key = kwargs.get('pk')
+        if conf_key not in self.conf_keys:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        return Response(getattr(settings, conf_key, None))
+
+    def create(self, request, *args, **kwargs):
+        # this method is a trick to show this view in api-root
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class UserRegistrationView(viewsets.ViewSet):
@@ -340,22 +375,60 @@ class OrganizationView(viewsets.ModelViewSet):
         OrganizationMember.objects.create(organization=serializer.instance, is_master_admin=True,
                                           member=self.request.user.member)
 
+    def process_payment(self, org, token, price):
+        if not token:
+            raise APICodeException(status_code=status.HTTP_400_BAD_REQUEST, detail='payment token not provided')
+
+        user = self.request.user
+        try:
+            charge = stripe.Charge.create(
+                amount=int(price * 100),
+                currency='usd',
+                source=token,
+                description='Org Membership #{}<{}> of user #{}<{}>'.format(org.id, org.name, user.id, user.username)
+            )
+        except StripeError as e:
+            traceback.print_exc()
+            raise APICodeException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail='Un-successful payment: {}'.format(e.user_message))
+
+        payment_id = charge['id']
+        FinancialTransaction.objects.create(user_id=user.id, amount=price, payment_id=payment_id,
+                                            type=FinancialTransaction.TYPE_ORG_REGISTER)
+
     @action(detail=True, methods=['GET', 'POST'], permission_classes=(IsMemberPermission,),
-            serializer_class=OrganizationMemberSerializer)
+            serializer_class=OrganizationJoinSerializer)
     def join(self, request, *args, **kwargs):
-        # TODO: we should implement payment process here before join
         org = self.get_object()
         om = OrganizationMember.objects.filter(organization=org, member=request.user.member, is_active=True).first()
         if request.method == 'GET':
             return Response({'is_member': bool(om), 'is_admin': bool(om and om.is_admin)})
         if om:
             return Response({'detail': 'you have already joined to this organization'}, status=status.HTTP_409_CONFLICT)
-        data = request.data or {}
-        org_member_uid = random_id(no_lower=True, no_digit=True)
-        om = OrganizationMember(organization=org, member=request.user.member, org_member_uid=org_member_uid,
-                                start_date=timezone.now().date(), member_fields=data)
-        om.save()
-        return Response(self.get_serializer(instance=om).data)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        membership_price = decimal.Decimal((org.signup_config or {}).get('membership_price') or 0) or None
+
+        with transaction.atomic():
+            org_member_uid = random_id(no_lower=True, no_digit=True)
+            om = OrganizationMember(organization=org, member=request.user.member, org_member_uid=org_member_uid,
+                                    start_date=timezone.now().date(), member_fields=data.get('member_fields'),
+                                    membership_price=membership_price)
+            om.save()
+            prefs = request.user.prefs or {}
+            if (not prefs.get('default_regional_org')) and (org.type == Organization.TYPE_REGIONAL):
+                prefs['default_regional_org'] = org.id
+                self.request.user.prefs = prefs
+                self.request.user.save(update_fields=['prefs'])
+
+            if membership_price:
+                token = data.get('token')
+                self.process_payment(org, token, membership_price)
+
+        return Response(OrganizationMemberSerializer(instance=om, context={'request': request}).data)
 
     @action(detail=True, methods=['GET', 'PUT'], permission_classes=(IsMemberPermission,))
     def my_member_fields(self, request, *args, **kwargs):

@@ -591,6 +591,14 @@ class ServiceUnavailable(APIException):
     default_detail = 'Service temporarily unavailable, try again later.'
 
 
+class APICodeException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, status_code=status.HTTP_400_BAD_REQUEST, detail=None, code=None):
+        self.status_code = status_code
+        super().__init__(detail=detail, code=code)
+
+
 def custom_rest_exception_handler(exc, context):
     """ Custom rest api exception handler """
     from rest_framework import exceptions

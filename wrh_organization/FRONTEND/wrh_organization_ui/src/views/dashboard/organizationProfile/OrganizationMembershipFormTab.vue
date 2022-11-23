@@ -1,13 +1,34 @@
 <template>
   <div class="organization-member-fields-tab">
-    <v-card>
-      <v-card-text class="d-flex align-center flex-wrap pb-0">
-        <div class="d-flex align-center pb-5">
-          <h2>Member Fields</h2>
-          <span class="caption ml-1">define extra fields of organization members</span>
-        </div>
-      </v-card-text>
-      <v-form @submit.prevent="save()" v-model="formValid">
+    <v-form @submit.prevent="save()" v-model="formValid">
+
+      <v-card class="mb-2">
+        <v-card-text class="d-flex align-center flex-wrap pb-0">
+          <div class="d-flex align-center pb-5">
+            <h2>Membership Pricing Plans</h2>
+            <span class="caption ml-1">define plans of membership</span>
+          </div>
+        </v-card-text>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field type="number" min="0" v-model.number="signupConfig.membership_price"
+                              label="Membership Fixed Price" dense prefix="$">
+                </v-text-field>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+      </v-card>
+
+      <v-card>
+        <v-card-text class="d-flex align-center flex-wrap pb-0">
+          <div class="d-flex align-center pb-5">
+            <h2>Member Fields</h2>
+            <span class="caption ml-1">define extra fields of organization members</span>
+          </div>
+        </v-card-text>
         <v-simple-table>
           <template #default>
             <thead>
@@ -92,11 +113,11 @@
         </v-simple-table>
         <v-divider></v-divider>
         <v-card-actions>
-          <v-btn color="secondary" outlined @click="loadSchema()">Reset</v-btn>
+          <v-btn color="secondary" outlined @click="loadRecord()">Reset</v-btn>
           <v-btn color="primary" type="submit" :loading="saving" :disabled="!formValid">Save</v-btn>
         </v-card-actions>
-      </v-form>
-    </v-card>
+      </v-card>
+    </v-form>
     <organization-member-fields-setting-dialog ref="fieldsSettingDialogRef"></organization-member-fields-setting-dialog>
     <v-overlay :value="saving || loading" :absolute="true" opacity="0.3">
       <v-progress-circular indeterminate></v-progress-circular>
@@ -130,16 +151,18 @@ export default {
   components: {OrganizationMemberFieldsSettingDialog},
   setup(props, context) {
     const schema = ref([]);
+    const signupConfig = ref({});
     const saving = ref(false);
     const formValid = ref(false);
     const loading = ref(false);
 
-    const loadSchema = () => {
+    const loadRecord = () => {
       loading.value = true;
-      let params = {exfields: "member_fields_schema", fields: "member_fields_schema"};
+      let params = {exfields: "member_fields_schema", fields: "member_fields_schema,signup_config"};
       axios.get(`bycing_org/organization/${props.organization.id}`, {params: params}).then((response) => {
         loading.value = false;
         schema.value = response.data.member_fields_schema || [];
+        signupConfig.value = response.data.signup_config || {};
       }, (error) => {
         loading.value = false;
         notifyDefaultServerError(error, true);
@@ -177,18 +200,23 @@ export default {
 
     const save = () => {
       saving.value = true;
-      var postData = [];
+      var memberFields = [];
       schema.value.forEach(f => {
         var r = Object.assign({}, f);
         if (!r.name) {
           r.name = fieldTitleToName(r.title);
         }
-        postData.push(r);
+        memberFields.push(r);
       });
-      axios.patch(`bycing_org/organization/${props.organization.id}?exfields=member_fields_schema&fields=member_fields_schema`,
-          {member_fields_schema: postData}).then((response) => {
+      var postData = {
+        member_fields_schema: memberFields,
+        signup_config: Object.assign({}, signupConfig.value)
+      };
+      axios.patch(`bycing_org/organization/${props.organization.id}?exfields=member_fields_schema&fields=member_fields_schema,signup_config`,
+          postData).then((response) => {
         saving.value = false;
         schema.value = response.data.member_fields_schema;
+        signupConfig.value = response.data.signup_config || {};
         notifySuccess("member fields saved successfully.");
         context.emit('save-successed');
       }, (error) => {
@@ -198,7 +226,7 @@ export default {
     };
 
     onMounted(() => {
-      loadSchema();
+      loadRecord();
     });
 
     return {
@@ -206,10 +234,11 @@ export default {
       saving,
       formValid,
       schema,
+      signupConfig,
       moveUp,
       insertAfter,
       fieldTitleToName,
-      loadSchema,
+      loadRecord,
       save,
       rules: {
         required

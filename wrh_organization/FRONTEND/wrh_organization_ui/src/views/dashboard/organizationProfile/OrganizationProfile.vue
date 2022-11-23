@@ -43,8 +43,8 @@
                                       :organization="organization"></organization-members-tab>
             <organization-member-orgs-tab v-if="selectedTab.id == 'org-members'"
                                           :organization="organization"></organization-member-orgs-tab>
-            <organization-member-fields-tab v-else-if="selectedTab.id == 'member-fields' && organization.my_level.is_admin"
-                                            :organization="organization"></organization-member-fields-tab>
+            <organization-membership-form-tab v-else-if="selectedTab.id == 'membership-form' && organization.my_level.is_admin"
+                                            :organization="organization"></organization-membership-form-tab>
 
           </v-tab-item>
           <v-tab-item>
@@ -98,7 +98,7 @@ import OrganizationRaceResultsTab from "./OrganizationRaceResultsTab";
 import {useRouter} from "@core/utils";
 import ProfileOrganizationFormDialog from "@/views/dashboard/memberProfile/ProfileOrganizationFormDialog";
 import OrganizationMemberOrgsTab from "./OrganizationMemberOrgsTab";
-import OrganizationMemberFieldsTab from "./OrganizationMemberFieldsTab";
+import OrganizationMembershipFormTab from "./OrganizationMembershipFormTab";
 import OrganizationRaceSeriesTab from "./OrganizationRaceSeriesTab";
 import OrganizationRaceSeriesResultsTab from "./OrganizationRaceSeriesResultsTab";
 import OrganizationRaceSeriesStandingsTab from "./OrganizationRaceSeriesStandingsTab";
@@ -112,7 +112,7 @@ export default {
     OrganizationRaceSeriesResultsTab,
     OrganizationRaceSeriesStandingsTab,
     OrganizationRaceSeriesTab,
-    OrganizationMemberFieldsTab,
+    OrganizationMembershipFormTab,
     OrganizationMemberOrgsTab,
     ProfileOrganizationFormDialog,
     OrganizationRaceResultsTab,
@@ -130,7 +130,7 @@ export default {
         children: [
           {id: 'individual-members', title:  'Individual Members', icon: mdiAccountMultipleOutline},
           {id: 'org-members', title:  'Org Members', icon: mdiHomeGroup},
-          {id: 'member-fields', title:  'Member Fields', icon: mdiFormatListText, admin_required: true},
+          {id: 'membership-form', title:  'Membership Form', icon: mdiFormatListText, admin_required: true},
         ]
       },
       {
