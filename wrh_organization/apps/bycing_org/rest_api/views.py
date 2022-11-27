@@ -2,6 +2,7 @@ import csv
 import decimal
 import io
 import traceback
+from datetime import timedelta
 
 import stripe
 from django.conf import settings
@@ -34,7 +35,7 @@ from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationS
     CsvFileImportSerializer, OrganizationMemberMyRequestsSerializer, OrganizationMemberOrgSerializer, \
     NestedOrganizationSerializer, FieldsTrackingSerializer, RaceSerializer, RaceResultSerializer, CategorySerializer, \
     RaceSeriesSerializer, RaceSeriesResultSerializer, EventSerializer, PublicMemberSerializer, \
-    OrganizationJoinSerializer
+    OrganizationJoinSerializer, MyOrganizationMemberSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
     IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token, to_dict, IsMemberPermission, random_id, \
     APICodeException
@@ -399,36 +400,60 @@ class OrganizationView(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['GET', 'POST'], permission_classes=(IsMemberPermission,),
             serializer_class=OrganizationJoinSerializer)
+    @transaction.atomic()
     def join(self, request, *args, **kwargs):
         org = self.get_object()
         om = OrganizationMember.objects.filter(organization=org, member=request.user.member, is_active=True).first()
         if request.method == 'GET':
-            return Response({'is_member': bool(om), 'is_admin': bool(om and om.is_admin)})
-        if om:
-            return Response({'detail': 'you have already joined to this organization'}, status=status.HTTP_409_CONFLICT)
+            if not om:
+                return Response({'detail': 'Not joined'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({
+                'is_admin': om.is_admin or om.is_master_admin, 'membership_plan': om.membership_plan,
+                'member_fields': om.member_fields, 'start_date': om.start_date, 'exp_date': om.exp_date,
+                'status': om.status, 'is_expired': om.is_expired(), 'is_expiring': om.is_expiring()
+            })
+
+        if om and (om.is_admin or om.is_master_admin):
+            return Response({'detail': 'admin members dont need to renew membership'}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        membership_price = decimal.Decimal((org.signup_config or {}).get('membership_price') or 0) or None
+        membership_plans = (org.membership_plans or [])
+        org_member_uid = random_id(no_lower=True, no_digit=True)
+        member_fields = data.get('member_fields')
+        start_date = timezone.now().date()
+        plan_id = data.get('plan_id')
+        plan = plan_id and next((p for p in membership_plans if p.get('id') == plan_id), None)  # find the plan
+        if not plan:
+            return Response({'detail': 'Invalid membership plan'}, status=status.HTTP_400_BAD_REQUEST)
+        if om:
+            if om.status not in (OrganizationMember.STATUS_REJECT, OrganizationMember.STATUS_WAITING):
+                start_date = max(start_date, om.exp_date)
+                org_member_uid = om.org_member_uid or org_member_uid
+            om.is_active = False
+            om.save(update_fields=['is_active'])
 
-        with transaction.atomic():
-            org_member_uid = random_id(no_lower=True, no_digit=True)
-            om = OrganizationMember(organization=org, member=request.user.member, org_member_uid=org_member_uid,
-                                    start_date=timezone.now().date(), member_fields=data.get('member_fields'),
-                                    membership_price=membership_price)
-            om.save()
-            prefs = request.user.prefs or {}
-            if (not prefs.get('default_regional_org')) and (org.type == Organization.TYPE_REGIONAL):
-                prefs['default_regional_org'] = org.id
-                self.request.user.prefs = prefs
-                self.request.user.save(update_fields=['prefs'])
+        exp_date = start_date + timedelta(days=Organization.PERIODS_DAYS[plan['period']])
+        plan['donation'] = decimal.Decimal(data.get('donation') or 0)
+        membership_price = decimal.Decimal(plan.get('price') or 0) + plan['donation']
 
-            if membership_price:
-                token = data.get('token')
-                self.process_payment(org, token, membership_price)
+        new_om = OrganizationMember.objects.create(
+            member=request.user.member, organization=org, start_date=start_date, exp_date=exp_date,
+            member_fields=member_fields, org_member_uid=org_member_uid, membership_plan=plan
+        )
 
-        return Response(OrganizationMemberSerializer(instance=om, context={'request': request}).data)
+        prefs = request.user.prefs or {}
+        if (not prefs.get('default_regional_org')) and (org.type == Organization.TYPE_REGIONAL):
+            prefs['default_regional_org'] = org.id
+            self.request.user.prefs = prefs
+            self.request.user.save(update_fields=['prefs'])
+
+        if membership_price:
+            token = data.get('token')
+            self.process_payment(org, token, membership_price)
+
+        return Response(OrganizationMemberSerializer(instance=new_om, context={'request': request}).data)
 
     @action(detail=True, methods=['GET', 'PUT'], permission_classes=(IsMemberPermission,))
     def my_member_fields(self, request, *args, **kwargs):
@@ -491,8 +516,32 @@ class OrganizationView(viewsets.ModelViewSet):
         if member_status == OrganizationMember.STATUS_REJECT:
             r.is_active = False
             update_fields.append('is_active')
+
         r.save(update_fields=update_fields)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['GET'], permission_classes = (IsMemberPermission,))
+    def my_orgs(self, request, *args, **kwargs):
+        member = request.user.member
+        oms = OrganizationMember.objects.filter(is_active=True, member=member).exclude(
+            status__in=(OrganizationMember.STATUS_REJECT, OrganizationMember.STATUS_WAITING)
+        )
+        ids = []
+        org_members = {}
+        for om in oms:
+            ids.append(om.organization_id)
+            org_members[om.organization_id] = om
+
+        qs = self.get_queryset().filter(id__in=list(ids))
+        qs = self.filter_queryset(qs)
+        qs = self.paginate_queryset(qs)
+        serializer = self.get_serializer(qs, many=True)
+        results = serializer.data
+        for r in results:
+            om = org_members[r['id']]
+            r['membership'] = MyOrganizationMemberSerializer(instance=om, context={'request': request}).data
+        return self.get_paginated_response(results)
+
 
     @action(detail=False, methods=['GET'])
     def default_org(self, request, *args, **kwargs):

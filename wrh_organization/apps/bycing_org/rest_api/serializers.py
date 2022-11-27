@@ -121,7 +121,7 @@ class NestedOrganizationSerializer(DynamicFieldsSerializerMixin, serializers.Mod
 
     class Meta:
         model = Organization
-        exclude = ('members', 'member_orgs', 'member_fields_schema')
+        exclude = ('members', 'member_orgs', 'member_fields_schema', 'membership_plans')
 
 
 class NestedOrganizationShortSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -135,7 +135,7 @@ class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
     # members = NestedMemberSerializer(read_only=True, many=True)
     logo = Base64ImageField(required=False, allow_null=True)
     my_level = serializers.SerializerMethodField()
-    extra_fields = ['member_fields_schema', 'my_level']
+    extra_fields = ['member_fields_schema', 'my_level', 'membership_plans']
 
     def get_my_level(self, obj):
         request = self.context.get('request', None)
@@ -159,6 +159,16 @@ class CsvFileImportSerializer(serializers.Serializer):
 class OrganizationJoinSerializer(DynamicFieldsSerializerMixin, serializers.Serializer):
     token = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     member_fields = serializers.JSONField(required=False, allow_null=True)
+    plan_id = serializers.CharField(required=True, allow_null=False, allow_blank=False)
+    donation = serializers.DecimalField(required=False, allow_null=True, max_digits=8, decimal_places=2)
+
+
+class MyOrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    is_expiring = serializers.BooleanField(read_only=True)
+    is_expired = serializers.BooleanField(read_only=True)
+    class Meta:
+        model = OrganizationMember
+        fields = "__all__"
 
 
 class OrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):

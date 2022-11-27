@@ -39,13 +39,14 @@ class OrganizationFilter(filters.FilterSet):
 
     class Meta:
         model = Organization
-        exclude = ['social_media', 'logo', 'signup_config', 'member_fields_schema', 'members', 'member_orgs']
+        exclude = ['social_media', 'logo', 'signup_config', 'membership_plans', 'member_fields_schema', 'members',
+                   'member_orgs']
 
 
 class OrganizationMemberFilter(filters.FilterSet):
     class Meta:
         model = OrganizationMember
-        exclude = ['member_fields']
+        exclude = ['member_fields', 'membership_plan']
 
 
 class OrganizationMemberOrgFilter(filters.FilterSet):

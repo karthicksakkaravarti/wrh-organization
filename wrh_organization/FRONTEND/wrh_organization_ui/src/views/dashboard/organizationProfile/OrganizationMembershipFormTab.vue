@@ -2,24 +2,90 @@
   <div class="organization-member-fields-tab">
     <v-form @submit.prevent="save()" v-model="formValid">
 
-      <v-card class="mb-2">
+      <v-card class="mb-1">
         <v-card-text class="d-flex align-center flex-wrap pb-0">
           <div class="d-flex align-center pb-5">
             <h2>Membership Pricing Plans</h2>
             <span class="caption ml-1">define plans of membership</span>
           </div>
         </v-card-text>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-text-field type="number" min="0" v-model.number="signupConfig.membership_price"
-                              label="Membership Fixed Price" dense prefix="$">
-                </v-text-field>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
+        <v-simple-table>
+          <template #default>
+            <thead>
+            <tr>
+              <th class="">#</th>
+              <th class="">Period (*)</th>
+              <th class="">Price (*)</th>
+              <th class="">Title</th>
+              <th class="plans-actions text-center">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="(field, idx) in membershipPlans" :key="idx">
+              <td class="">
+                <span class="font-weight-semibold">{{ idx + 1 }}</span>
+              </td>
+              <td class="">
+                <v-select v-model="field.period" :items="$const.ORGANIZATION_MEMBERSHIP_PLAN_OPTIONS"
+                          single-line hide-details dense item-text="title" item-value="value" :rules="[rules.required]">
+                  <template #selection="data">
+                    {{data.item.title}} <small class="caption ml-1">({{data.item.days}} days)</small>
+                  </template>
+                  <template #item="data">
+                    {{data.item.title}} <small class="caption ml-1">({{data.item.days}} days)</small>
+                  </template>
+                </v-select>
+              </td>
+              <td class="">
+                <v-text-field type="number" placeholder="Price" v-model="field.price" prefix="$" min="0"
+                              single-line hide-details dense validate-on-blur/>
+              </td>
+              <td class="">
+                <v-text-field placeholder="Title (optional)" v-model="field.title"
+                              single-line hide-details dense validate-on-blur/>
+              </td>
+              <td class="plans-actions text-center">
+                <v-tooltip bottom>
+                  <template #activator="{ on, attrs }">
+                    <v-btn v-on="on" v-bind="attrs" icon @click="insertAfter(membershipPlans, idx, {})" tabindex="-1" x-small color="success"
+                           outlined class="mr-1">
+                      <v-icon>{{icons.mdiPlus}}</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Insert a row after this</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                  <template #activator="{ on, attrs }">
+                    <v-btn v-on="on" v-bind="attrs" icon @click="membershipPlans.splice(idx, 1)" tabindex="-1" x-small
+                           color="error" outlined class="mr-1">
+                      <v-icon>{{icons.mdiDelete}}</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Remove</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                  <template #activator="{ on, attrs }">
+                    <v-btn v-on="on" v-bind="attrs" icon @click="moveUp(membershipPlans, idx)" tabindex="-1" x-small color="secondary"
+                           outlined :disabled="idx == 0">
+                      <v-icon>{{icons.mdiArrowUpThin}}</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Move up</span>
+                </v-tooltip>
+              </td>
+            </tr>
+            <tr v-if="membershipPlans.length == 0">
+              <td colspan="5" class="text-center">
+                No Plan Defined!
+                <v-btn @click="insertAfter(membershipPlans, undefined, {})" plain small color="primary">
+                  <v-icon small>{{icons.mdiPlusCircleOutline}}</v-icon> Add New
+                </v-btn>
+              </td>
+            </tr>
+            </tbody>
+          </template>
+        </v-simple-table>
+
       </v-card>
 
       <v-card>
@@ -38,7 +104,7 @@
               <th class="">Required?</th>
               <th class="">Private?</th>
               <th class="">Type (*)</th>
-              <th class="actions text-center">Actions</th>
+              <th class="fields-actions text-center">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -64,7 +130,7 @@
               <td class="actions text-center">
                 <v-tooltip bottom>
                   <template #activator="{ on, attrs }">
-                    <v-btn v-on="on" v-bind="attrs" icon @click="insertAfter(idx)" tabindex="-1" x-small color="success"
+                    <v-btn v-on="on" v-bind="attrs" icon @click="insertAfter(schema, idx, {type: 'string'})" tabindex="-1" x-small color="success"
                            outlined class="mr-1">
                       <v-icon>{{icons.mdiPlus}}</v-icon>
                     </v-btn>
@@ -91,7 +157,7 @@
                 </v-tooltip>
                 <v-tooltip bottom>
                   <template #activator="{ on, attrs }">
-                    <v-btn v-on="on" v-bind="attrs" icon @click="moveUp(idx)" tabindex="-1" x-small color="secondary"
+                    <v-btn v-on="on" v-bind="attrs" icon @click="moveUp(schema, idx)" tabindex="-1" x-small color="secondary"
                            outlined :disabled="idx == 0">
                       <v-icon>{{icons.mdiArrowUpThin}}</v-icon>
                     </v-btn>
@@ -103,7 +169,7 @@
             <tr v-if="schema.length == 0">
               <td colspan="5" class="text-center">
                 No Record!
-                <v-btn @click="insertAfter()" plain small color="primary">
+                <v-btn @click="insertAfter(schema, undefined, {type: 'string'})" plain small color="primary">
                   <v-icon small>{{icons.mdiPlusCircleOutline}}</v-icon> Add New
                 </v-btn>
               </td>
@@ -127,7 +193,7 @@
 
 <script>
 
-import {notifyDefaultServerError, notifySuccess, refineVTableOptions} from "@/composables/utils";
+import {notifyDefaultServerError, notifySuccess, randomId, refineVTableOptions} from "@/composables/utils";
 import axios from "@/axios";
 import {onMounted, ref, set} from "@vue/composition-api";
 import {required} from "@core/utils/validation";
@@ -151,18 +217,18 @@ export default {
   components: {OrganizationMemberFieldsSettingDialog},
   setup(props, context) {
     const schema = ref([]);
-    const signupConfig = ref({});
+    const membershipPlans = ref([]);
     const saving = ref(false);
     const formValid = ref(false);
     const loading = ref(false);
 
     const loadRecord = () => {
       loading.value = true;
-      let params = {exfields: "member_fields_schema", fields: "member_fields_schema,signup_config"};
+      let params = {exfields: "member_fields_schema,membership_plans", fields: "member_fields_schema,membership_plans"};
       axios.get(`bycing_org/organization/${props.organization.id}`, {params: params}).then((response) => {
         loading.value = false;
         schema.value = response.data.member_fields_schema || [];
-        signupConfig.value = response.data.signup_config || {};
+        membershipPlans.value = response.data.membership_plans || [];
       }, (error) => {
         loading.value = false;
         notifyDefaultServerError(error, true);
@@ -170,20 +236,20 @@ export default {
 
     };
 
-    const moveUp = (idx) => {
+    const moveUp = (list, idx) => {
       if (idx <= 0) {
         return;
       }
-      var origin = schema.value[idx];
-      schema.value[idx] = schema.value[idx - 1];
-      set(schema.value, idx - 1, origin);
+      var origin = list[idx];
+      list[idx] = list[idx - 1];
+      set(list, idx - 1, origin);
     };
 
-    const insertAfter = (idx) => {
+    const insertAfter = (list, idx, defaultValue) => {
       if (idx === undefined) {
-        schema.value.push({ type: "string" });
+        list.push(defaultValue);
       } else {
-        schema.value.splice(idx + 1, 0, { type: "string" });
+        list.splice(idx + 1, 0, defaultValue);
       }
     };
 
@@ -208,16 +274,24 @@ export default {
         }
         memberFields.push(r);
       });
+      var plans = [];
+      membershipPlans.value.forEach(f => {
+        var r = Object.assign({}, f);
+        if (!r.id) {
+          r.id = randomId().toString();
+        }
+        plans.push(r);
+      });
       var postData = {
         member_fields_schema: memberFields,
-        signup_config: Object.assign({}, signupConfig.value)
+        membership_plans: plans
       };
-      axios.patch(`bycing_org/organization/${props.organization.id}?exfields=member_fields_schema&fields=member_fields_schema,signup_config`,
+      axios.patch(`bycing_org/organization/${props.organization.id}?exfields=member_fields_schema,membership_plans&fields=member_fields_schema,membership_plans`,
           postData).then((response) => {
         saving.value = false;
         schema.value = response.data.member_fields_schema;
-        signupConfig.value = response.data.signup_config || {};
-        notifySuccess("member fields saved successfully.");
+        membershipPlans.value = response.data.membership_plans || [];
+        notifySuccess("membership fields updated successfully.");
         context.emit('save-successed');
       }, (error) => {
         saving.value = false;
@@ -234,7 +308,7 @@ export default {
       saving,
       formValid,
       schema,
-      signupConfig,
+      membershipPlans,
       moveUp,
       insertAfter,
       fieldTitleToName,
@@ -256,8 +330,13 @@ export default {
 </script>
 
 <style scoped>
-  th.actions {
+  th.fields-actions {
     min-width: 150px;
     width: 150px;
+  }
+
+  th.plans-actions {
+    min-width: 120px;
+    width: 120px;
   }
 </style>

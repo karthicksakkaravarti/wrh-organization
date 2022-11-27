@@ -94,6 +94,16 @@
           </v-chip>
         </template>
 
+        <template #item.expiry="{item}">
+          <span v-if="!item.membership.exp_date || item.membership.is_admin || item.membership.is_master_admin" class="success--text">
+            Never<small class="secondary--text" v-if="item.membership.is_admin || item.membership.is_master_admin">(Is Admin)</small>
+          </span>
+          <span v-else :class="item.membership.is_expiring? 'warning--text': 'success--text'">
+            {{-$utils.momentLib().diff(item.membership.exp_date, 'days') + ' days'}}
+          </span>
+
+        </template>
+
         <template #item.name="{item}">
           <div class="d-flex align-center">
             <v-avatar color="success" class="v-avatar-light-bg success--text" size="30">
@@ -147,7 +157,7 @@
                   </v-icon>
                 </v-btn>
               </template>
-              <span>Edit</span>
+              <span>Edit Organization Info</span>
             </v-tooltip>
 
             <v-tooltip bottom>
@@ -166,7 +176,7 @@
               <template #activator="{ on, attrs }">
                 <v-btn icon small v-bind="attrs" v-on="on" @click="$refs.myMemberFieldsDialogRef.show(item)">
                   <v-icon size="18">
-                    {{ icons.mdiAccountEditOutline }}
+                    {{ (item.membership.is_admin || item.membership.is_master_admin)? icons.mdiAccountEdit: icons.mdiAccountEditOutline }}
                   </v-icon>
                 </v-btn>
               </template>
@@ -196,7 +206,8 @@ import {
   mdiCheck,
   mdiInformationOutline,
   mdiRefresh,
-  mdiAccountEditOutline
+  mdiAccountEditOutline,
+  mdiAccountEdit,
 } from '@mdi/js'
 
 import { ref, reactive, watch, onMounted } from '@vue/composition-api'
@@ -222,6 +233,7 @@ export default {
       {text: '#ID', value: 'id', align: 'start',},
       {text: 'NAME', value: 'name'},
       {text: 'TYPE', value: 'type'},
+      {text: 'EXPIRY', value: 'expiry', sortable: false},
       {text: 'ACTIONS', value: 'actions', align: 'end', sortable: false, cellClass: 'actions-td'},
     ];
 
@@ -231,7 +243,7 @@ export default {
       }
       const params = Object.assign({my: true}, tableFiltering.value, refineVTableOptions(tableOptions.value));
       loading.value = true;
-      axios.get("bycing_org/organization/", {params: params}).then((response) => {
+      axios.get("bycing_org/organization/my_orgs", {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
         pagination.value = response.data.pagination;
@@ -307,7 +319,8 @@ export default {
         mdiCheck,
         mdiInformationOutline,
         mdiRefresh,
-        mdiAccountEditOutline
+        mdiAccountEditOutline,
+        mdiAccountEdit,
       },
     }
   },

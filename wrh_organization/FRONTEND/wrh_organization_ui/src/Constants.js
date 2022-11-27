@@ -29,6 +29,19 @@ ORGANIZATION_TYPE_OPTIONS.forEach(function(v) {
   ORGANIZATION_TYPE_MAP[v.value] = v;
 });
 
+export const ORGANIZATION_MEMBERSHIP_PLAN_OPTIONS = [
+  { value: "1week", title: "1 Week", days: 7 },
+  { value: "1month", title: "1 Month", days: 30 },
+  { value: "3month", title: "3 Months", days: 90 },
+  { value: "6month", title: "6 Months", days: 180 },
+  { value: "1year", title: "1 Year", days: 365 },
+  { value: "2year", title: "2 Years", days: 730 },
+];
+export const ORGANIZATION_MEMBERSHIP_PLAN_MAP = {};
+ORGANIZATION_MEMBERSHIP_PLAN_OPTIONS.forEach(function(v) {
+  ORGANIZATION_MEMBERSHIP_PLAN_MAP[v.value] = v;
+});
+
 export const MEMBER_FIELDS_SCHEMA_TYPE_OPTIONS = [
   { value: "string", title: "String" },
   { value: "text", title: "Text" },

@@ -1,3 +1,5 @@
+import decimal
+from datetime import timedelta
 from pathlib import Path
 
 from cerberus import Validator
@@ -44,7 +46,8 @@ class OrganizationMember(models.Model):
     member = models.ForeignKey('Member', on_delete=models.CASCADE)
     is_admin = models.BooleanField(default=False)
     is_master_admin = models.BooleanField(default=False)
-    membership_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    membership_price = models.DecimalField(max_digits=8, decimal_places=2, null=True) # TODO: Drop me!
+    membership_plan = models.JSONField(null=True, encoder=JSONEncoder, editable=False)
     is_active = models.BooleanField(default=True, null=True)
     org_member_uid = models.CharField(max_length=256, null=True, blank=True)
     start_date = models.DateField(null=True)
@@ -73,6 +76,16 @@ class OrganizationMember(models.Model):
             elif f['type'] == 'datetime':
                 self.member_fields[name] = value.isoformat()
 
+    def is_expired(self):
+        if not self.exp_date:
+            return False
+        return timezone.now().date() > self.exp_date
+
+    def is_expiring(self, days=5):
+        if not self.exp_date:
+            return False
+        return timezone.now().date() >= (self.exp_date - timedelta(days=days))
+
     def save(self, *args, **kwargs):
         if not self.is_active:
             self.is_active = None
@@ -80,7 +93,7 @@ class OrganizationMember(models.Model):
             self.org_member_uid = None
         if self.is_master_admin:
             self.is_admin = True
-        if self.member_fields:
+        if self.member_fields and not kwargs.pop('_ignore_member_fields', False):
             v = Validator(self.organization.normalized_member_fields_schema, allow_unknown=True)
             if not v.validate(self.member_fields or {}):
                 raise ValidationError({'member_fields': str(v.errors)})
@@ -133,6 +146,7 @@ class OrganizationMemberOrg(models.Model):
 
 @FieldsTracking.register()
 class Organization(models.Model):
+    PERIODS_DAYS = {'1week': 7, '1month': 30, '3month': 120, '6month': 180, '1year': 365, '2year': 730}
     MEMBER_FIELDS_SCHEMA_VALIDATOR = {
         'type': 'list', 'empty': True, 'required': False,
         'schema': {
@@ -155,6 +169,23 @@ class Organization(models.Model):
                     }
                 },
                 'multiple': {'type': 'boolean', 'required': False, 'default': False},
+            }
+        },
+    }
+
+    MEMBERSHIP_PLAN_SCHEMA_VALIDATOR = {
+        'type': 'list', 'empty': True, 'required': False,
+        'schema': {
+            'type': 'dict', 'schema': {
+                'id': {'type': 'string', 'required': True, 'nullable': False, 'empty': False},
+                'title': {'type': 'string', 'required': False, 'nullable': True, 'empty': True},
+                'period': {
+                    'type': 'string', 'required': True, 'nullable': False, 'empty': False,
+                    'allowed': ['1week', '1month', '3month', '6month', '1year', '2year']
+                },
+                'price': {
+                    'type': 'decimal', 'required': True, 'nullable': False, 'empty': False, 'coerce': decimal.Decimal
+                },
             }
         },
     }
@@ -195,6 +226,7 @@ class Organization(models.Model):
     about = models.TextField(null=True, blank=True)
     logo = models.ImageField(null=True, blank=True, upload_to=organization_logo_file_path_func)
     signup_config = models.JSONField(null=True)
+    membership_plans = models.JSONField(null=True, encoder=JSONEncoder)
     member_fields_schema = models.JSONField(null=True)
     verified = models.BooleanField(default=False)
     members = models.ManyToManyField('Member', related_name='organizations', through=OrganizationMember)
@@ -262,6 +294,14 @@ class Organization(models.Model):
             self.social_media = v.document
         else:
             self.social_media = {}
+
+        if self.membership_plans:
+            v = Validator({'membership_plans': self.MEMBERSHIP_PLAN_SCHEMA_VALIDATOR}, allow_unknown=True)
+            if not v.validate({'membership_plans': self.membership_plans}):
+                raise ValidationError({'membership_plans': str(v.errors)})
+            self.membership_plans = v.document['membership_plans']
+        else:
+            self.membership_plans = []
 
         return super().save(*args, **kwargs)
 

@@ -138,16 +138,24 @@
           </v-list>
         </v-card-text>
 
-        <v-card-actions class="justify-center">
-          <v-btn v-if="!readOnly && organization.my_level.is_admin" color="warning" outlined class="me-3" @click="$emit('edit-click')">
+        <v-card-text class="justify-center">
+          <v-btn color="success" outlined @click="$refs.joinDialogRef.show()" class="mb-1 w-full">
+            <v-icon dark left>
+              {{ icons.mdiAccountStarOutline }}
+            </v-icon>
+            Renewal Membership
+          </v-btn>
+          <v-btn v-if="!readOnly && organization.my_level.is_admin" color="warning" outlined class="w-full" @click="$emit('edit-click')">
             <v-icon dark left>
               {{ icons.mdiHomeEditOutline }}
-            </v-icon>Edit
+            </v-icon>Edit Organization
           </v-btn>
-        </v-card-actions>
+        </v-card-text>
       </v-card>
 
     </v-col>
+    <join-organization-dialog :organization="organization" ref="joinDialogRef" v-if="organization"></join-organization-dialog>
+
   </v-row>
 </template>
 
@@ -157,15 +165,18 @@ import {
   mdiCalendar,
   mdiCheckboxBlankCircle,
   mdiHomeEditOutline,
-  mdiKeyboardBackspace
+  mdiKeyboardBackspace,
+  mdiAccountStarOutline,
 } from '@mdi/js';
 import { avatarText, title } from '@core/utils/filter';
 import {onMounted, ref} from "@vue/composition-api/dist/vue-composition-api";
 import axios from "@/axios";
 import {notifyDefaultServerError} from "@/composables/utils";
+import JoinOrganizationDialog from "@/views/public/JoinOrganizationDialog";
 
 export default {
   components: {
+    JoinOrganizationDialog
   },
   props: {
     organization: {
@@ -203,6 +214,7 @@ export default {
         mdiCheckboxBlankCircle,
         mdiHomeEditOutline,
         mdiKeyboardBackspace,
+        mdiAccountStarOutline,
       },
     }
   },

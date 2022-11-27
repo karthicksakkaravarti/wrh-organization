@@ -57,6 +57,8 @@ print = functools.partial(print, flush=True)
 
 time_type = cerberus.TypeDefinition('time', (datetime.time,), ())
 cerberus.Validator.types_mapping['time'] = time_type
+decimal_type = cerberus.TypeDefinition('decimal', (decimal.Decimal,), ())
+cerberus.Validator.types_mapping['decimal'] = decimal_type
 
 User = get_user_model()
 
@@ -995,6 +997,12 @@ def date_from_request(request, date_param_name, abort=True):
 
 def date_coerce(s):
     return (s and datetime.datetime.strptime(s, '%Y-%m-%d').date()) or None
+
+
+def decimal_coerce(s):
+    if s in (None, ""):
+        return None
+    return decimal.Decimal(s)
 
 
 def time_coerce(s):

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 from datetime import timedelta
 from pathlib import Path
+from huey import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -38,12 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Third Party Apps
+    # third party apps
     'dbbackup',
     'django_filters',
     'storages',
     'rest_framework',
-    # Project Apps
+    'huey.contrib.djhuey',
+    # project apps
     'apps.account',
     'apps.bycing_org',
     'apps.usacycling'
@@ -311,6 +313,31 @@ ANYMAIL = {
     'MAILGUN_API_KEY': '<MAILGUN_API_KEY>',
 }
 DEFAULT_EMAIL_FROM = "info@weracehere.org"
+
+# huey
+HUEY = {
+    'name': 'wrh_organization',
+    'results': True,
+    'store_none': False,
+    'utc': True,
+    'blocking': True,
+    'immediate': False,
+    'connection': {
+        'host': 'localhost',
+        'port': 6379,
+        'db': 0,
+    },
+    'consumer': {
+        'workers': 5,
+        'worker_type': 'thread',
+        'flush_locks': True,
+        'periodic': True,
+    },
+}
+
+HUEY_TASKS_PERIODS = {
+    'bycing_org_disable_expired_memberships': crontab(minute='*/1'),
+}
 
 # twilio sms setting
 SENDSMS_BACKEND = 'wrh_organization.helpers.utils.SmsBackend'
