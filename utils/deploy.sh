@@ -31,6 +31,7 @@ else
     git clone --recursive ${GITURL} -b ${BRANCH} ${DJANGODIR}
 fi
 sudo supervisorctl stop ${NAME}
+sudo supervisorctl stop ${NAME}-huey
 sleep 1
 if [ ! -d "$ENVDIR" ]; then
     virtualenv -p python3 ${ENVDIR}
@@ -46,6 +47,7 @@ cd ${DJANGODIR}/wrh_organization
 python manage.py migrate --settings=${DJANGO_SETTINGS_MODULE} --noinput
 python manage.py collectstatic --settings=${DJANGO_SETTINGS_MODULE} --noinput
 sudo supervisorctl start ${NAME}
+sudo supervisorctl start ${NAME}-huey
 sudo service supervisor restart
 sudo service nginx restart
 
