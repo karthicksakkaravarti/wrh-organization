@@ -7,11 +7,10 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    currentUser: {
-    },
-    currentMember: {
-    },
+    currentUser: {},
+    currentMember: {},
     checkedAuthentication: false,
+    sitePrefs: {},
   },
   mutations: {
   },

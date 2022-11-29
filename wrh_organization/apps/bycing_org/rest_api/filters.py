@@ -40,7 +40,7 @@ class OrganizationFilter(filters.FilterSet):
     class Meta:
         model = Organization
         exclude = ['social_media', 'logo', 'signup_config', 'membership_plans', 'member_fields_schema', 'members',
-                   'member_orgs']
+                   'member_orgs', 'prefs']
 
 
 class OrganizationMemberFilter(filters.FilterSet):
@@ -137,6 +137,6 @@ class EventFilter(filters.FilterSet):
 
     class Meta:
         model = Event
-        exclude = ['more_data', 'logo']
+        exclude = ['more_data', 'logo', 'prefs']
 
 

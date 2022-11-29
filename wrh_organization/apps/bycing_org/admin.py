@@ -1,4 +1,10 @@
 from django.contrib import admin
+from django.template.defaultfilters import truncatewords
+from django.utils.html import strip_tags
+from django.utils.safestring import mark_safe
+from dynamic_preferences.admin import GlobalPreferenceAdmin, PerInstancePreferenceAdmin
+from dynamic_preferences.models import GlobalPreferenceModel
+
 from . import models
 
 
@@ -76,6 +82,18 @@ class FieldsTrackingAdmin(admin.ModelAdmin):
     list_filter = ('content_type',)
 
 
+class MyGlobalPreferenceAdmin(GlobalPreferenceAdmin):
+    list_display = ('verbose_name', 'name', 'section_name', 'ellipsis_raw_value')
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def ellipsis_raw_value(self, obj):
+        return truncatewords(mark_safe(strip_tags(obj.raw_value or '')), 20)
+
+    ellipsis_raw_value.short_description = "Raw Value"
+
+
 admin.site.register(models.Member, MemberAdmin)
 admin.site.register(models.Organization, OrganizationAdmin)
 admin.site.register(models.OrganizationMember, OrganizationMemberAdmin)
@@ -88,3 +106,6 @@ admin.site.register(models.Category, CategoryAdmin)
 admin.site.register(models.RaceSeries, RaceSeriesAdmin)
 admin.site.register(models.Event, EventAdmin)
 admin.site.register(models.FinancialTransaction, FinancialTransactionAdmin)
+
+admin.site.unregister(GlobalPreferenceModel)
+admin.site.register(GlobalPreferenceModel, MyGlobalPreferenceAdmin)

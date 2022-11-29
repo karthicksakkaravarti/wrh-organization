@@ -21,6 +21,7 @@ rest_router.register(r'race_series', views.RaceSeriesView)
 rest_router.register(r'race_series_result', views.RaceSeriesResultView)
 rest_router.register(r'fields_tracking', views.FieldsTrackingView)
 rest_router.register(r'global_conf', views.GlobalConfView, basename='global_conf')
+rest_router.register(r'global_pref', views.GlobalPreferencesView, basename='global_pref')
 
 public_rest_router = routers.DefaultRouter()
 public_rest_router.trailing_slash = "/?"  # added to support both / and slashless

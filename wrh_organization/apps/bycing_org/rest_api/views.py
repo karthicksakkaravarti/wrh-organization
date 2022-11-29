@@ -16,6 +16,7 @@ from django.template.loader import render_to_string
 from django.utils import dateparse, timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from dynamic_preferences.registries import global_preferences_registry
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, PermissionDenied, MethodNotAllowed
@@ -35,10 +36,12 @@ from apps.bycing_org.rest_api.serializers import MemberSerializer, OrganizationS
     CsvFileImportSerializer, OrganizationMemberMyRequestsSerializer, OrganizationMemberOrgSerializer, \
     NestedOrganizationSerializer, FieldsTrackingSerializer, RaceSerializer, RaceResultSerializer, CategorySerializer, \
     RaceSeriesSerializer, RaceSeriesResultSerializer, EventSerializer, PublicMemberSerializer, \
-    OrganizationJoinSerializer, MyOrganizationMemberSerializer
+    OrganizationJoinSerializer, MyOrganizationMemberSerializer, OrganizationPrefsSerializer, EventPrefsSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
     IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token, to_dict, IsMemberPermission, random_id, \
     APICodeException
+
+global_pref = global_preferences_registry.manager()
 
 
 class ExportViewMixin(object):
@@ -58,6 +61,39 @@ class ExportViewMixin(object):
             raise NotImplementedError
         records = self.get_export_records(request, *args, **kwargs)
         return export_method(records)
+
+
+class GlobalPreferencesView(viewsets.ViewSet):
+    PUBLIC_KEYS = ['site_ui__terms_of_service', 'site_ui__banner_image']
+    LOGIN_REQUIRED_KEYS = []
+    permission_classes = (permissions.AllowAny,)
+
+    def get_api_val(self, pref_key):
+        section, name = global_pref.parse_lookup(pref_key)
+        pr = global_pref.get_db_pref(section, name)
+        return pr.preference.api_repr(pr.value)
+
+    @property
+    def conf_keys(self):
+        keys = self.PUBLIC_KEYS
+        if self.request.user.is_authenticated:
+            keys += self.LOGIN_REQUIRED_KEYS
+        return keys
+
+    def get(self, request, *args, **kwargs):
+        configs = {c: self.get_api_val(c) for c in self.conf_keys}
+        return Response(configs)
+
+    def retrieve(self, request, *args, **kwargs):
+        conf_key = kwargs.get('pk')
+        if conf_key not in self.conf_keys:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        return Response(self.get_api_val(conf_key))
+
+    def create(self, request, *args, **kwargs):
+        # this method is a trick to show this view in api-root
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class GlobalConfView(viewsets.ViewSet):
@@ -443,10 +479,10 @@ class OrganizationView(viewsets.ModelViewSet):
             member_fields=member_fields, org_member_uid=org_member_uid, membership_plan=plan
         )
 
-        prefs = request.user.prefs or {}
-        if (not prefs.get('default_regional_org')) and (org.type == Organization.TYPE_REGIONAL):
-            prefs['default_regional_org'] = org.id
-            self.request.user.prefs = prefs
+        user_prefs = request.user.prefs or {}
+        if (not user_prefs.get('default_regional_org')) and (org.type == Organization.TYPE_REGIONAL):
+            user_prefs['default_regional_org'] = org.id
+            self.request.user.prefs = user_prefs
             self.request.user.save(update_fields=['prefs'])
 
         if membership_price:
@@ -467,6 +503,17 @@ class OrganizationView(viewsets.ModelViewSet):
         om.member_fields = {**(om.member_fields or {}), **data}
         om.save()
         return Response(om.member_fields or {})
+
+    @action(detail=True, methods=['GET', 'PUT', 'PATCH'], serializer_class=OrganizationPrefsSerializer)
+    def prefs(self, request, *args, **kwargs):
+        org = self.get_object()
+        if request.method == 'GET':
+            return Response(self.get_serializer(instance=org).to_representation(org))
+
+        serializer = self.get_serializer(instance=org, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        org = serializer.save()
+        return Response(serializer.to_representation(org))
 
     @action(detail=True, methods=['GET'])
     def summary(self, request, *args, **kwargs):
@@ -520,7 +567,7 @@ class OrganizationView(viewsets.ModelViewSet):
         r.save(update_fields=update_fields)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=['GET'], permission_classes = (IsMemberPermission,))
+    @action(detail=False, methods=['GET'], permission_classes=(IsMemberPermission,))
     def my_orgs(self, request, *args, **kwargs):
         member = request.user.member
         oms = OrganizationMember.objects.filter(is_active=True, member=member).exclude(
@@ -541,7 +588,6 @@ class OrganizationView(viewsets.ModelViewSet):
             om = org_members[r['id']]
             r['membership'] = MyOrganizationMemberSerializer(instance=om, context={'request': request}).data
         return self.get_paginated_response(results)
-
 
     @action(detail=False, methods=['GET'])
     def default_org(self, request, *args, **kwargs):
@@ -650,9 +696,9 @@ class OrganizationMemberView(OrganizationMembershipMixin, viewsets.ModelViewSet)
             if org_member and (org_member.is_admin or org_member.is_master_admin):
                 return
             if org_member:
-               member = org_member.member
-               org_member.is_active = False
-               org_member.save()
+                member = org_member.member
+                org_member.is_active = False
+                org_member.save()
             else:
                 member = Member()
             for f in member_fields:
@@ -739,7 +785,6 @@ class OrganizationMemberOrgView(OrganizationMembershipMixin, viewsets.ModelViewS
     def perform_update(self, serializer):
         serializer.save(member_org=serializer.instance.member_org)
 
-
     @action(detail=False, methods=['POST'], serializer_class=CsvFileImportSerializer)
     def import_from_csv(self, request, *args, **kwargs):
         return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
@@ -751,7 +796,7 @@ class FieldsTrackingView(viewsets.ReadOnlyModelViewSet):
     filterset_class = FieldsTrackingFilter
     ordering = '-id'
     ordering_fields = '__all__'
-    search_fields = ['object_repr',]
+    search_fields = ['object_repr', ]
 
     def get_queryset(self):
         return super().get_queryset().filter(content_type__app_label='bycing_org')
@@ -1013,7 +1058,8 @@ class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelView
 
         return Response({'successed': successed, 'failed': failed}, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['get'], url_path='standing_points/(?P<race_series_id>[0-9]+)/(?P<category_id>[0-9]+)')
+    @action(detail=False, methods=['get'],
+            url_path='standing_points/(?P<race_series_id>[0-9]+)/(?P<category_id>[0-9]+)')
     def standing_points(self, request, *args, **kwargs):
         race_series = get_object_or_404(RaceSeries.objects.filter(pk=kwargs.get('race_series_id')))
         category = get_object_or_404(Category.objects.filter(pk=kwargs.get('category_id')))
@@ -1060,6 +1106,17 @@ class EventView(AdminOrganizationActionsViewMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         return super().get_queryset().select_related('organization')
+
+    @action(detail=True, methods=['GET', 'PUT', 'PATCH'], serializer_class=EventPrefsSerializer)
+    def prefs(self, request, *args, **kwargs):
+        event = self.get_object()
+        if request.method == 'GET':
+            return Response(self.get_serializer(instance=event).to_representation(event))
+
+        serializer = self.get_serializer(instance=event, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        event = serializer.save()
+        return Response(serializer.to_representation(event))
 
 
 class PublicViewMixin:

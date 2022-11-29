@@ -4,7 +4,7 @@
 <template>
   <div>
     <v-card flat class="banner d-flex align-center justify-center text-center mb-7" v-if="defaultOrg">
-      <img :src="require(`@/assets/images/misc/public-banner-bg-light.jpeg`)">
+      <img :src="$store.state.sitePrefs.site_ui__banner_image || require(`@/assets/images/misc/public-banner-bg-light.jpeg`)">
       <v-card-text class="pb-0">
         <p class="kb-title text-2xl font-weight-semibold primary--text mb-2">
           WRH, We Race Here!

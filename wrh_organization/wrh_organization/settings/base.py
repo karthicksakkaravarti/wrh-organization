@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django_filters',
     'storages',
     'rest_framework',
+    'dynamic_preferences',
     'huey.contrib.djhuey',
     # project apps
     'apps.account',
@@ -75,6 +76,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'dynamic_preferences.processors.global_preferences',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
@@ -350,7 +352,7 @@ STRIPE_PUBLISHABLE_KEY = '<STRIPE_PUBLISHABLE_KEY>'
 STRIPE_SECRET_KEY = '<STRIPE_SECRET_KEY>'
 
 # project setting
-IMAGE_UPLOAD_MAX_SIZE = 2 * 1024 * 1024  # 2 MB
+IMAGE_UPLOAD_MAX_SIZE = 10 * 1024 * 1024  # 2 MB
 PAGINATION_DEFAULT_PAGINATION = 10
 PAGINATION_MAX_SIZE = 200
 SIGNUP_ACTIVATION_REDIRECT_URL = '/'

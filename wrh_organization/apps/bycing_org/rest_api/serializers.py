@@ -1,13 +1,16 @@
+from pathlib import Path
+
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.files.storage import default_storage
 from django.core.validators import FileExtensionValidator
 from django.db import transaction
 from rest_framework import serializers
 
 from apps.bycing_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
     FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult, Event
-from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField
+from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField, get_random_upload_path
 
 
 class MemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -131,6 +134,41 @@ class NestedOrganizationShortSerializer(DynamicFieldsSerializerMixin, serializer
         fields = ('id', 'name', 'type')
 
 
+class BasePrefsSerializer(serializers.Serializer):
+    file_path = ''
+    prefs_field_name = 'prefs'
+    def save(self, **kwargs):
+        data = self.validated_data
+
+        for f, value in data.items():
+            field = self.fields[f]
+            data[f] = value
+            if isinstance(field, serializers.FileField) and value:
+                file_path = get_random_upload_path(str(Path(self.file_path, f'prefs_{f}')), value.name)
+                default_storage.save(file_path, value)
+                data[f] = file_path
+        prefs = getattr(self.instance, self.prefs_field_name) or {}
+        prefs.update(data)
+        setattr(self.instance, self.prefs_field_name, prefs)
+        self.instance.save(update_fields=[self.prefs_field_name])
+        return self.instance
+
+    def to_representation(self, instance):
+        prefs = getattr(instance, self.prefs_field_name) or {}
+        data = {}
+        for f, field in self.fields.items():
+            value = prefs.get(f)
+            data[f] = value
+            if isinstance(field, serializers.FileField) and value:
+                data[f] = default_storage.url(value.lstrip('/'))
+        return data
+
+
+class OrganizationPrefsSerializer(BasePrefsSerializer):
+    file_path = str(Path('uploads', 'bycing_org', 'organization'))
+    banner_image = Base64ImageField(required=False, allow_null=True)
+
+
 class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     # members = NestedMemberSerializer(read_only=True, many=True)
     logo = Base64ImageField(required=False, allow_null=True)
@@ -150,6 +188,12 @@ class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
         model = Organization
         exclude = ('members', 'member_orgs')
         read_only_fields = ('verified', 'members', 'member_orgs',)
+
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        if 'prefs' in res:
+            res['prefs'] = OrganizationPrefsSerializer(instance).to_representation(instance)
+        return res
 
 
 class CsvFileImportSerializer(serializers.Serializer):
@@ -422,6 +466,11 @@ class RaceSeriesResultSerializer(DynamicFieldsSerializerMixin, serializers.Model
         return res
 
 
+class EventPrefsSerializer(BasePrefsSerializer):
+    file_path = str(Path('uploads', 'bycing_org', 'event'))
+    banner_image = Base64ImageField(required=False, allow_null=True)
+
+
 class EventSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     logo = Base64ImageField(required=False, allow_null=True)
     summary = serializers.SerializerMethodField(read_only=True)
@@ -441,3 +490,9 @@ class EventSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer)
             'organization': {'required': True},
             'create_by': {'read_only': True},
         }
+
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        if 'prefs' in res:
+            res['prefs'] = EventPrefsSerializer(instance).to_representation(instance)
+        return res

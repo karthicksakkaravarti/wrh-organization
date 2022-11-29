@@ -53,6 +53,15 @@ export default {
     const { route } = useRouter();
     const { appContentLayoutNav, appSkinVariant, appRouteTransition } = useAppConfig();
     const { handleBreakpointLayoutSwitch } = useLayout();
+    const loadSitePrefs = () => {
+      axios.get("bycing_org/global_pref").then(
+        (response) => {
+          store.state.sitePrefs = response.data;
+        }, (error) => {
+          notifyDefaultServerError(error, true);
+        }
+      );
+    };
     const onSessionRefresh = () => {
       axios.get("account/session").then(
         (response) => {
@@ -100,6 +109,7 @@ export default {
       if (externalStyle) {
         appendStyleToHeader(decodeURIComponent(externalStyle));
       }
+      loadSitePrefs();
     });
 
     onUnmounted(() => {

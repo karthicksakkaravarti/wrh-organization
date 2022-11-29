@@ -9,7 +9,7 @@
         <v-card class="banner">
           <img
             class="white--text align-end banner-img"
-            :src="require(`@/assets/images/misc/public-banner-bg-light.jpeg`)"
+            :src="organization.prefs.banner_image || require(`@/assets/images/misc/public-banner-bg-light.jpeg`)"
           />
           <v-card-text class="position-relative">
             <v-avatar
