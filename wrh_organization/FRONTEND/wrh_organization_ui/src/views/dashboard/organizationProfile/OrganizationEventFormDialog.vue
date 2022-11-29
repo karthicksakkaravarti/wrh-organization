@@ -221,13 +221,17 @@ export default {
     const clearChosenLogo = () => {
       logoChosenFile.value = null;
       logoChosenFileData.value = null;
-      logoImageRef.value = null;
+      if (logoImageRef.value) {
+        logoImageRef.value.value = null;
+      }
     };
 
     const clearChosenBanner = () => {
       bannerChosenFile.value = null;
       bannerChosenFileData.value = null;
-      bannerImageRef.value = null;
+      if (bannerImageRef.value) {
+        bannerImageRef.value.value = null;
+      }
     };
 
     const onChangeLogoFile = (event) => {

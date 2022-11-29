@@ -336,7 +336,9 @@ export default {
     const clearChosenAvatar = () => {
       avatarChosenFile.value = null;
       avatarChosenFileData.value = null;
-      avatarImageRef.value = null;
+      if (avatarImageRef.value) {
+        avatarImageRef.value.value = null;
+      }
     };
 
     const onChangeAvatarFile = (event) => {
