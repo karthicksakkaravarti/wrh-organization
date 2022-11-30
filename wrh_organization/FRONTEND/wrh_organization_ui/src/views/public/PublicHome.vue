@@ -111,7 +111,7 @@ export default {
     border: 1px solid #e9e9e9;
   }
   .banner .content-text {
-    z-index: 10;
+    z-index: 1;
   }
   .banner img {
     position: absolute;
