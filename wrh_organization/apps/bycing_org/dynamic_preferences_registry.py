@@ -2,7 +2,11 @@ from dynamic_preferences.preferences import Section
 from dynamic_preferences import types
 from dynamic_preferences.registries import global_preferences_registry
 
+from wrh_organization.helpers.utils import PatchedGlobalPrefFileSerializer
+
 site_ui = Section('site_ui')
+
+types.FilePreference.serializer_class = PatchedGlobalPrefFileSerializer
 
 
 @global_preferences_registry.register

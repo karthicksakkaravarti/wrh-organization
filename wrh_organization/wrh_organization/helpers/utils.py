@@ -25,7 +25,7 @@ from django.core.exceptions import PermissionDenied, ValidationError, RequestDat
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 from django.core.mail.backends.filebased import EmailBackend
-from django.db import IntegrityError, models
+from django.db import IntegrityError
 from django.db.models import ProtectedError, Q
 from django.http import Http404, QueryDict, HttpResponseForbidden
 from django.http import JsonResponse
@@ -40,6 +40,7 @@ from django.utils.translation import gettext_lazy as _
 from django_filters import OrderingFilter
 from django_filters.filters import EMPTY_VALUES
 from django_filters import filters
+import dynamic_preferences.serializers
 from phonenumber_field.phonenumber import PhoneNumber
 from rest_framework import status, parsers, serializers, permissions
 from rest_framework.exceptions import APIException
@@ -49,7 +50,7 @@ from rest_framework.permissions import DjangoModelPermissions, BasePermission
 from rest_framework.response import Response
 from sendsms import api
 from sendsms.backends.base import BaseSmsBackend
-from storages.backends.s3boto3 import S3Boto3Storage, SpooledTemporaryFile
+from storages.backends.s3boto3 import S3Boto3Storage
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client as TwilioRestClient
 
@@ -1117,3 +1118,12 @@ def get_member_verify_otp(member, salt=None):
 
 class CharArrayFilter(filters.BaseCSVFilter, filters.CharFilter):
     pass
+
+
+class PatchedGlobalPrefFileSerializer(dynamic_preferences.serializers.FileSerializer):
+    '''I have added this class to fix a bug in S3 file upload'''
+
+    def to_db(self, f, **kwargs):
+        if f and getattr(f, 'closed', False):
+            return os.path.join(self.preference.get_upload_path(), f.name)
+        return super().to_db(f, **kwargs)
