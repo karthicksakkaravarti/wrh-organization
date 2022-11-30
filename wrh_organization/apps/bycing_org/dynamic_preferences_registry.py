@@ -30,3 +30,14 @@ class SiteUiBannerImage(types.FilePreference):
     section = site_ui
     name = 'banner_image'
     verbose_name = 'Banner Image'
+
+
+@global_preferences_registry.register
+class SiteUiDefaultEventBannerImage(types.FilePreference):
+    field_kwargs = {
+        'required': False,
+        'help_text': 'default banner image of event page',
+    }
+    section = site_ui
+    name = 'default_event_banner_image'
+    verbose_name = 'Default Event Banner Image'

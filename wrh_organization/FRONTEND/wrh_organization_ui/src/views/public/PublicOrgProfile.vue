@@ -279,7 +279,6 @@ export default {
     position: absolute;
   }
   .banner-img {
-    opacity: 0.8;
     left: 0;
     top: 0;
     width: 100%;

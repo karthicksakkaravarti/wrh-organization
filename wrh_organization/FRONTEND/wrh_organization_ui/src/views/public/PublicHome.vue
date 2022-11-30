@@ -5,7 +5,7 @@
   <div>
     <v-card flat class="banner d-flex align-center justify-center text-center mb-7" v-if="defaultOrg">
       <img :src="$store.state.sitePrefs.site_ui__banner_image || require(`@/assets/images/misc/public-banner-bg-light.jpeg`)">
-      <v-card-text class="pb-0">
+      <v-card-text class="pb-0 content-text">
         <p class="kb-title text-2xl font-weight-semibold primary--text mb-2">
           WRH, We Race Here!
         </p>
@@ -110,9 +110,12 @@ export default {
     padding: 3.5rem;
     border: 1px solid #e9e9e9;
   }
+  .banner .content-text {
+    z-index: 10;
+  }
   .banner img {
     position: absolute;
-    opacity: 0.15;
+    opacity: 0.25;
     left: 0;
     top: 0;
     width: 100%;

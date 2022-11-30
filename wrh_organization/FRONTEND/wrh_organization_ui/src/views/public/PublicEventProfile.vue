@@ -9,7 +9,7 @@
         <v-card class="banner">
           <img
             class="white--text align-end banner-img"
-            :src="event.prefs.banner_image || require(`@/assets/images/misc/public-banner-bg-light.jpeg`)"
+            :src="event.prefs.banner_image || $store.state.sitePrefs.site_ui__default_event_banner_image || require(`@/assets/images/misc/public-banner-bg-light.jpeg`)"
           />
           <v-card-text class="position-relative">
             <v-avatar
@@ -231,7 +231,6 @@ export default {
     position: absolute;
   }
   .banner-img {
-    opacity: 0.8;
     left: 0;
     top: 0;
     width: 100%;

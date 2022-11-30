@@ -129,7 +129,7 @@
           <v-card-text>
             <h3 class="mb-2">Upload site banner image:</h3>
             <v-img
-              :src="bannerChosenFileData || prefs.banner_image || require(`@/assets/images/misc/public-banner-bg-light.jpeg`)"
+              :src="bannerChosenFileData || prefs.banner_image || $store.state.sitePrefs.site_ui__default_event_banner_image || require(`@/assets/images/misc/public-banner-bg-light.jpeg`)"
               height="200"
               class="grey darken-4 banner"
               :class="{'no-banner': !bannerChosenFileData && !prefs.banner_image}"

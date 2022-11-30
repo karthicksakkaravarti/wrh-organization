@@ -64,7 +64,7 @@ class ExportViewMixin(object):
 
 
 class GlobalPreferencesView(viewsets.ViewSet):
-    PUBLIC_KEYS = ['site_ui__terms_of_service', 'site_ui__banner_image']
+    PUBLIC_KEYS = ['site_ui__terms_of_service', 'site_ui__banner_image', 'site_ui__default_event_banner_image']
     LOGIN_REQUIRED_KEYS = []
     permission_classes = (permissions.AllowAny,)
 
