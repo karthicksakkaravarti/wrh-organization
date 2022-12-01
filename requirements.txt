@@ -28,3 +28,4 @@ django-model-utils==4.2.0
 mysql-connector-python==8.0.29
 stripe==5.0.0
 huey==2.4.4
+rollbar==0.16.3

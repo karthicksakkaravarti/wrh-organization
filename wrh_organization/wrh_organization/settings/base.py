@@ -25,7 +25,7 @@ EXTERNAL_CONFIG_PATH = '/opt/webapps/wrh_organization/etc/external_config.py'
 SECRET_KEY = 'SECRET_KEY'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -63,6 +63,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'wrh_organization.helpers.middleware.InjectUiVersionInHeadersMiddleware',
     'wrh_organization.helpers.middleware.ThreadLocalMiddleware',
+    'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
 ]
 
 ROOT_URLCONF = 'wrh_organization.urls'
@@ -362,3 +363,11 @@ OTP_MEMBER_VERIFY_KEY = '<OTP_MEMBER_VERIFY_KEY>'
 OTP_MEMBER_VERIFY_CODE_LENGTH = 6
 OTP_MEMBER_VERIFY_INTERVAL = 120
 OTP_MEMBER_VERIFY_VALID_WINDOW = 1
+
+# Rollbar
+ROLLBAR = {
+     'access_token': '<ACCESS_TOKEN>',
+     'environment': 'development' if DEBUG else 'production',
+     'root': str(BASE_DIR),
+}
+

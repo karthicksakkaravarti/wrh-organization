@@ -606,6 +606,13 @@ def custom_rest_exception_handler(exc, context):
     """ Custom rest api exception handler """
     from rest_framework import exceptions
     from rest_framework.views import exception_handler, set_rollback
+
+    try:
+        # using this to allow "rollbar" see parsed POST
+        context['request']._request.POST = context['request'].data
+    except Exception:
+        pass
+
     response = exception_handler(exc, context)
     err_msg = str(exc)
 
@@ -628,8 +635,7 @@ def custom_rest_exception_handler(exc, context):
         if isinstance(exc, ValidationError):
             return Response(exc.message_dict, status=status.HTTP_400_BAD_REQUEST)
         traceback.print_exc()
-        return Response({'reason': 'unexpected server error'},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR, exception=True)
+        return
 
     if isinstance(exc, exceptions.NotAuthenticated):
         response.status_code = status.HTTP_401_UNAUTHORIZED
