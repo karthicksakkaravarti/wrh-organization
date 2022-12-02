@@ -5,8 +5,37 @@ from dynamic_preferences.registries import global_preferences_registry
 from wrh_organization.helpers.utils import PatchedGlobalPrefFileSerializer
 
 site_ui = Section('site_ui')
+rollbar_client = Section('rollbar_client')
 
 types.FilePreference.serializer_class = PatchedGlobalPrefFileSerializer
+
+
+@global_preferences_registry.register
+class RollbarClientAccessToken(types.StringPreference):
+    field_kwargs = {
+        'required': False,
+        'help_text': 'rollbar post client token',
+    }
+    section = rollbar_client
+    name = 'access_token'
+    verbose_name = 'Client Access Token'
+    default = ''
+
+
+@global_preferences_registry.register
+class RollbarClientEnvironment(types.ChoicePreference):
+    choices = [
+        ('production', 'Production'),
+        ('development', 'Development'),
+    ]
+    field_kwargs = {
+        'required': False,
+        'help_text': 'rollbar client environment',
+    }
+    section = rollbar_client
+    name = 'environment'
+    verbose_name = 'Client Environment'
+    default = 'development'
 
 
 @global_preferences_registry.register

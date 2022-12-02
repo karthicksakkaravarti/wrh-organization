@@ -15,6 +15,8 @@ import * as utils from "@/composables/utils"
 import VueMask from 'v-mask'
 import "vue-toastification/dist/index.css";
 import DatetimePicker from 'vuetify-datetime-picker'
+import Rollbar from 'rollbar';
+import {notifyDefaultServerError} from "@/composables/utils";
 
 Vue.use(VueMask);
 Vue.use(Toast, {
@@ -23,6 +25,28 @@ Vue.use(Toast, {
   newestOnTop: true
 });
 Vue.use(DatetimePicker);
+
+Vue.prototype.$rollbar = new Rollbar({
+  // accessToken: '',
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+  codeVersion: AppVersion,
+  enabled: process.env.VUE_APP_ROLLBAR_ENABLED === 'true' || process.env.NODE_ENV === 'production',
+  environment: process.env.NODE_ENV,
+  payload: {
+    // Add custom data to your events by adding custom key/value pairs like the one below
+    framework: 'vuejs',
+    person: {
+      id: null,
+      username: null,
+    }
+  }
+});
+
+Vue.config.errorHandler = (err, vm, info) => {
+  vm.$rollbar.error(err);
+  throw err; // rethrow
+};
 
 Vue.config.productionTip = false;
 
@@ -40,33 +64,38 @@ let app = new Vue({
   vuetify,
   render: h => h(App),
   created: () => {
-    // axios.get("account/session").then(
-    //   (response) => {
-    //     store.state.currentUser = response.data;
-    //   },
-    //   (error) => {
-    //     if (401 !== (error.response && error.response.status)) {
-    //       alert(error);
-    //     }
-    //   }
-    // );
-    // axios.get("bycing_org/member/me").then(
-    //   (response) => {
-    //     store.state.currentMember = response.data;
-    //   },
-    //   (error) => {
-    //     if (401 !== (error.response && error.response.status)) {
-    //       alert(error);
-    //     }
-    //   }
-    // );
+      axios.get("bycing_org/global_pref").then(
+        (response) => {
+          store.state.sitePrefs = response.data;
+          app.$rollbar.configure({
+            accessToken: store.state.sitePrefs.rollbar_client__access_token,
+            environment: store.state.sitePrefs.rollbar_client__environment,
+          });
+        }, (error) => {
+          notifyDefaultServerError(error, true);
+        }
+      );
+      store.watch((state) => state.currentUser, (newUser) => {
+        app.$rollbar.configure({
+          payload: {
+            person: {
+              id: newUser.id || null,
+              username: newUser.username || null,
+            }
+          }
+        });
+      }
+    );
   }
 }).$mount('#app');
 
 
 /********************** public vars(mostly for testing shall be delete!) ************************/
 window.Vue = Vue;
-window.app = app;
-window.router = router;
-window.store = store;
-window.utils = utils;
+window._appObjs = {
+  app,
+  router,
+  store,
+  utils,
+  env: process.env,
+};
