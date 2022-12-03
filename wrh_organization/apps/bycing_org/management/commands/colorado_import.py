@@ -5,13 +5,13 @@ import traceback
 from datetime import datetime
 
 from django.core.management import BaseCommand
-from backports.zoneinfo import ZoneInfo
+import zoneinfo
 from django.db import transaction
 from django.utils.dateparse import parse_date
 
 from apps.bycing_org.models import Member, Organization, OrganizationMember, Event, RaceResult, Race
 
-tzinfo = ZoneInfo("America/Denver")
+tzinfo = zoneinfo.ZoneInfo("America/Denver")
 
 
 class Command(BaseCommand):
