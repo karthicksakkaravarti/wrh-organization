@@ -66,7 +66,8 @@ class ExportViewMixin(object):
 class GlobalPreferencesView(viewsets.ViewSet):
     PUBLIC_KEYS = [
         'site_ui__terms_of_service', 'site_ui__banner_image', 'site_ui__default_event_banner_image',
-        'rollbar_client__access_token', 'rollbar_client__environment',
+        'rollbar_client__access_token', 'rollbar_client__environment', 'user_account__disabled_signup',
+        'core_backend__default_org_id'
     ]
     LOGIN_REQUIRED_KEYS = []
     permission_classes = (permissions.AllowAny,)
@@ -101,7 +102,7 @@ class GlobalPreferencesView(viewsets.ViewSet):
 
 class GlobalConfView(viewsets.ViewSet):
     PUBLIC_KEYS = [
-        'TIME_ZONE', 'DEFAULT_ORGANIZATION_ID'
+        'TIME_ZONE'
     ]
     LOGIN_REQUIRED_KEYS = ['STRIPE_PUBLISHABLE_KEY']
     permission_classes = (permissions.AllowAny,)
@@ -205,6 +206,10 @@ class UserRegistrationView(viewsets.ViewSet):
     def post(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return Response({'error': 'You are already signed up'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        if global_pref.get('user_account__disabled_signup'):
+            raise PermissionDenied({'detail': 'Signup is disabled by admin'})
+
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.save(is_active=False)
@@ -594,7 +599,7 @@ class OrganizationView(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['GET'])
     def default_org(self, request, *args, **kwargs):
-        org_id = settings.DEFAULT_ORGANIZATION_ID
+        org_id = global_pref.get('core_backend__default_org_id')
         org = Organization.objects.filter(pk=org_id).first()
         if not org:
             return Response({f'detail': f'Not found default organization # {org_id}'})

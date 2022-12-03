@@ -6,8 +6,34 @@ from wrh_organization.helpers.utils import PatchedGlobalPrefFileSerializer
 
 site_ui = Section('site_ui')
 rollbar_client = Section('rollbar_client')
+user_account = Section('user_account')
+core_backend = Section('core_backend')
 
 types.FilePreference.serializer_class = PatchedGlobalPrefFileSerializer
+
+
+@global_preferences_registry.register
+class UserAccountDisabledSignup(types.BooleanPreference):
+    field_kwargs = {
+        'required': False,
+        'help_text': 'user account disabled signup',
+    }
+    section = user_account
+    name = 'disabled_signup'
+    verbose_name = 'Disabled Signup?'
+    default = False
+
+
+@global_preferences_registry.register
+class CoreBackendDefaultOrgId(types.IntegerPreference):
+    field_kwargs = {
+        'required': False,
+        'help_text': 'default organization id',
+    }
+    section = core_backend
+    name = 'default_org_id'
+    verbose_name = 'Default Org id'
+    default = 1
 
 
 @global_preferences_registry.register

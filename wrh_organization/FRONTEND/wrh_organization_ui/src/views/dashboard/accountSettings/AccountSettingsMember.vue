@@ -55,7 +55,7 @@
         </v-btn>
 
         <p class="text-sm mt-5">
-          Allowed JPG, GIF or PNG. Max size of 2MB
+          Allowed JPG, GIF or PNG. Max size of 10MB
         </p>
       </div>
     </v-card-text>
