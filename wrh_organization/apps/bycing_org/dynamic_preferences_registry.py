@@ -37,6 +37,18 @@ class CoreBackendDefaultOrgId(types.IntegerPreference):
 
 
 @global_preferences_registry.register
+class CoreBackendAnybodyCreateOrgDisabled(types.BooleanPreference):
+    field_kwargs = {
+        'required': False,
+        'help_text': 'Disabled to create organization by anybody',
+    }
+    section = core_backend
+    name = 'disabled_create_org'
+    verbose_name = 'Disabled create org'
+    default = False
+
+
+@global_preferences_registry.register
 class RollbarClientAccessToken(types.StringPreference):
     field_kwargs = {
         'required': False,

@@ -67,7 +67,7 @@ class GlobalPreferencesView(viewsets.ViewSet):
     PUBLIC_KEYS = [
         'site_ui__terms_of_service', 'site_ui__banner_image', 'site_ui__default_event_banner_image',
         'rollbar_client__access_token', 'rollbar_client__environment', 'user_account__disabled_signup',
-        'core_backend__default_org_id'
+        'core_backend__default_org_id', 'core_backend__disabled_create_org',
     ]
     LOGIN_REQUIRED_KEYS = []
     permission_classes = (permissions.AllowAny,)
@@ -416,6 +416,10 @@ class OrganizationView(viewsets.ModelViewSet):
         return super().get_queryset()
 
     def perform_create(self, serializer):
+        if global_pref.get('core_backend__disabled_create_org') and \
+                not self.request.user.has_perm('bycing_org.add_organization'):
+            raise PermissionDenied({'detail': 'Organization creation disabled by admin!'})
+
         super().perform_create(serializer)
         OrganizationMember.objects.create(organization=serializer.instance, is_master_admin=True,
                                           member=self.request.user.member)
