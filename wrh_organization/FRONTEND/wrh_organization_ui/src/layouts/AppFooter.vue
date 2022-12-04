@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex justify-space-between">
     <span>COPYRIGHT &copy; {{ new Date().getFullYear() }}
-      <a href="https://www.weracehere.com" class="text-decoration-none">
+      <a href="https://www.weracehere.org" class="text-decoration-none">
         WeRaceHere
       </a>
       <span class="d-none d-md-inline">, All rights Reserved</span>
