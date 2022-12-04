@@ -21,16 +21,8 @@
             >{{ avatarText(memberData.first_name) }}</span>
           </v-avatar>
 
-          <span class="mb-2">{{ memberData.first_name }} {{ memberData.last_name }}</span>
+          <span>{{ memberData.first_name }} {{ memberData.last_name }}</span>
 
-          <v-chip
-            label
-            small
-            color="error"
-            class="v-chip-light-bg text-sm font-weight-semibold error--text text-capitalize"
-          >
-            Player
-          </v-chip>
         </v-card-title>
 
         <v-card-text class="d-flex justify-center flex-wrap mt-2 pe-sm-0">
@@ -105,23 +97,23 @@
           <v-divider></v-divider>
 
           <v-list>
-            <v-list-item dense class="px-0 mb-n2">
+            <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.email">
               <span class="font-weight-medium text-no-wrap me-2">E-mail:</span>
               <span class="text--secondary">{{ memberData.email }}</span>
             </v-list-item>
 
-            <v-list-item dense class="px-0 mb-n2">
+            <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.phone">
               <span class="font-weight-medium me-2">Phone:</span>
               <span class="text--secondary">{{ memberData.phone? $utils.formatPhone(memberData.phone): '-' }}</span>
             </v-list-item>
 
-            <v-list-item dense class="px-0 mb-n2">
+            <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.gender">
               <span class="font-weight-medium me-2">Gender:</span>
               <span class="text--secondary">{{($const.GENDER_MAP[memberData.gender] || {}).title}}</span>
             </v-list-item>
 
-            <v-list-item dense class="px-0 mb-n2">
-              <span class="font-weight-medium me-2">Birth Date:</span>
+            <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.birth_date">
+              <span class="font-weight-medium me-2">Birth Date(Age):</span>
               <span class="text--secondary">
                 <template v-if="memberData.age">
                   {{ $utils.formatDate(memberData.birth_date, 'MMM D, YYYY') }} ({{memberData.age || '-'}} years)
@@ -130,36 +122,36 @@
               </span>
             </v-list-item>
 
-            <v-list-item dense class="px-0 mb-n2">
+            <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.height">
               <span class="font-weight-medium me-2">Height:</span>
               <span class="text--secondary">{{ $utils.removeTrailingZero(memberData.height) || '-' }} m</span>
             </v-list-item>
-            <v-list-item dense class="px-0 mb-n2">
+            <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.weight">
               <span class="font-weight-medium me-2">Weight:</span>
               <span class="text--secondary">{{ $utils.removeTrailingZero(memberData.weight) || '-' }} kg</span>
             </v-list-item>
 
-            <v-list-item dense class="px-0 mb-n2">
+            <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.country">
               <span class="font-weight-medium me-2">Country:</span>
               <span class="text--secondary">{{($const.COUNTRY_MAP[memberData.country] || {}).name || memberData.country || '-'}}</span>
             </v-list-item>
 
-            <v-list-item dense class="px-0 mb-n2">
+            <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.state">
               <span class="font-weight-medium me-2">State:</span>
               <span class="text--secondary">{{ memberData.state || '-' }}</span>
             </v-list-item>
 
-            <v-list-item dense class="px-0 mb-n2">
+            <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.city">
               <span class="font-weight-medium me-2">City:</span>
               <span class="text--secondary">{{ memberData.city || '-' }}</span>
             </v-list-item>
 
-            <v-list-item dense class="px-0 mb-n2">
+            <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.address1">
               <span class="font-weight-medium me-2">Address 1:</span>
               <span class="text--secondary">{{ memberData.address1 || '-' }}</span>
             </v-list-item>
 
-            <v-list-item dense class="px-0 mb-n2" v-if="memberData.address2">
+            <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.address1 && memberData.address2">
               <span class="font-weight-medium me-2">Address 2:</span>
               <span class="text--secondary">{{ memberData.address2 }}</span>
             </v-list-item>
@@ -193,6 +185,10 @@ export default {
     readOnly: {
       type: Boolean,
       default: false
+    },
+    hiddenFields: {
+      type: Object,
+      default: () => ({})
     }
   },
   components: {

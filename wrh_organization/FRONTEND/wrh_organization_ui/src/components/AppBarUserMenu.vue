@@ -53,8 +53,8 @@
           <span class="text--primary font-weight-semibold mb-n1">
             {{$store.getters.userDisplayName}}
           </span>
-          <small class="text--disabled text-capitalize">
-            {{$store.getters.isSuperUser? 'Admin': 'Player'}}
+          <small class="text--disabled pr-1">
+            {{$utils.lodash.truncate($store.state.currentUser.username)}}
           </small>
         </div>
       </div>

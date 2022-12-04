@@ -7,10 +7,10 @@
 
       <v-col cols="12" md="7" lg="8">
         <v-tabs v-model="tab" show-arrows class="member-profile-tabs">
-          <v-tab>
-            <v-icon size="20" class="me-3">{{ icons.mdiAccountOutline }}</v-icon>
-            <span>Overview</span>
-          </v-tab>
+<!--          <v-tab>-->
+<!--            <v-icon size="20" class="me-3">{{ icons.mdiAccountOutline }}</v-icon>-->
+<!--            <span>Overview</span>-->
+<!--          </v-tab>-->
           <v-tab>
             <v-icon size="20" class="me-3">{{ icons.mdiHomeAccount }}</v-icon>
             <span>My Organizations</span>
@@ -22,9 +22,9 @@
         </v-tabs>
 
         <v-tabs-items id="member-profile-tabs-content" v-model="tab" class="mt-5 pa-1">
-          <v-tab-item>
-            <profile-overview-tab></profile-overview-tab>
-          </v-tab-item>
+<!--          <v-tab-item>-->
+<!--            <profile-overview-tab></profile-overview-tab>-->
+<!--          </v-tab-item>-->
           <v-tab-item>
             <profile-organizations-tab></profile-organizations-tab>
           </v-tab-item>
@@ -75,7 +75,7 @@ export default {
     };
 
     onMounted(() => {
-      tab.value = route.value.params.tab !== undefined? route.value.params.tab: 1 ;
+      tab.value = route.value.params.tab !== undefined? route.value.params.tab: 0 ;
       loadMemberData();
     });
 

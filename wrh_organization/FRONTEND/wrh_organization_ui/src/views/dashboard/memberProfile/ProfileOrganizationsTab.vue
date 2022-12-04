@@ -99,7 +99,7 @@
             Never<small class="secondary--text" v-if="item.membership.is_admin || item.membership.is_master_admin">(Is Admin)</small>
           </span>
           <span v-else :class="item.membership.is_expiring? 'warning--text': 'success--text'">
-            {{-$utils.momentLib().diff(item.membership.exp_date, 'days') + ' days'}}
+            {{-$utils.moment().diff(item.membership.exp_date, 'days') + ' days'}}
           </span>
 
         </template>

@@ -3,6 +3,7 @@ import { mdiCheckboxBlankCircleOutline } from '@mdi/js'
 const themeConfig = {
   app: {
     name: 'WE-RACE',
+    shortName: 'WRH',
     logo: require('@/assets/images/svg/logo.svg'),
     isDark: false,
     isRtl: false,

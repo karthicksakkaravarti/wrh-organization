@@ -3,7 +3,7 @@
     <!-- user profile -->
     <v-col cols="12">
       <v-card class="pt-10">
-        <v-btn v-if="!readOnly" small color="info" class="position-absolute back-org-btn" :to="{name: $rns.DASHBOARD_MEMBER_PROFILE, params: {tab: 1}}">
+        <v-btn v-if="!readOnly" small color="info" class="position-absolute back-org-btn" :to="{name: $rns.DASHBOARD_MEMBER_PROFILE, params: {tab: 0}}">
           <v-icon>{{icons.mdiKeyboardBackspace}}</v-icon>Organization List
         </v-btn>
         <v-card-title class="justify-center flex-column">

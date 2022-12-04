@@ -9,10 +9,7 @@
       >
         <!-- Left Content: Search -->
         <div class="d-flex align-center">
-          <v-icon
-            class="me-3"
-            @click="toggleVerticalNavMenuActive"
-          >
+          <v-icon class="me-3" v-if="navMenuItems && navMenuItems.length" @click="toggleVerticalNavMenuActive">
             {{ icons.mdiMenu }}
           </v-icon>
           <router-link
@@ -28,7 +25,7 @@
               class="me-3"
             ></v-img>
             <h2 class="app-title text--primary">
-              {{ appName }}
+              {{ shortAppName }}
             </h2>
           </router-link>
 
@@ -40,16 +37,6 @@
           <v-btn v-if="!$store.getters.isAuthenticated" outlined class="mr-4" color="primary" :to="{name: $rns.AUTH, query: {next: $route.fullPath}}">
             Sign In
           </v-btn>
-          <v-tooltip bottom v-else>
-            <template #activator="{ on, attrs }">
-              <v-btn v-bind="attrs" v-on="on" icon class="mr-4" :to="{name: $rns.DASHBOARD_HOME}">
-                <v-icon class="mr-0">
-                  {{icons.mdiApps}}
-                </v-icon>
-              </v-btn>
-            </template>
-            <span>Go to dashboard panel</span>
-          </v-tooltip>
           <app-bar-theme-switcher></app-bar-theme-switcher>
           <app-bar-user-menu v-if="$store.getters.isAuthenticated"></app-bar-user-menu>
         </div>
@@ -176,6 +163,7 @@ export default {
       // App Config
       appName: themeConfig.app.name,
       appLogo: themeConfig.app.logo,
+      shortAppName: themeConfig.app.shortName,
 
       // Icons
       icons: {

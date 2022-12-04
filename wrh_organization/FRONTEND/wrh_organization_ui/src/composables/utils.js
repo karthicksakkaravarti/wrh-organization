@@ -1,12 +1,12 @@
-import moment from "moment";
+import * as momentLib from "moment";
 import { createToastInterface } from "vue-toastification";
 import {Config} from "@/Config";
 import {conformToMask} from 'text-mask-core';
 import {countries} from "@/composables/countries";
 import _ from "lodash";
 
-export const momentLib = moment;
-export const lodashLib = _;
+export const moment = momentLib;
+export const lodash = _;
 export const countryPhoneCodes = {};
 countries.forEach(v => {
   if (!v.phone_code) return;

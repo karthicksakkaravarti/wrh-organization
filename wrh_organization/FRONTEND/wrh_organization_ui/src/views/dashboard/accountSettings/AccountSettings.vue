@@ -21,9 +21,9 @@
       <v-tab-item>
         <account-settings-connections></account-settings-connections>
       </v-tab-item>
-      <v-tab-item>
-        <account-settings-notification></account-settings-notification>
-      </v-tab-item>
+<!--      <v-tab-item>-->
+<!--        <account-settings-notification></account-settings-notification>-->
+<!--      </v-tab-item>-->
     </v-tabs-items>
   </v-card>
 </template>
@@ -61,7 +61,7 @@ export default {
       { title: 'Member Account', icon: mdiAccountOutline },
       { title: 'Security', icon: mdiLockOpenOutline },
       { title: 'Connections', icon: mdiLinkVariant },
-      { title: 'Notifications', icon: mdiBellOutline },
+      // { title: 'Notifications', icon: mdiBellOutline },
     ];
 
     return {

@@ -2,15 +2,16 @@
   <div id="rider-profile-view">
     <v-row v-if="memberData.id">
       <v-col cols="12" md="5" lg="4">
-        <profile-bio-panel :member-data="memberData" read-only></profile-bio-panel>
+        <profile-bio-panel :member-data="memberData" read-only
+                           :hidden-fields="{email: true, phone: true, height: true, weight: true, city: true, address1: true, address2: true}"></profile-bio-panel>
       </v-col>
 
       <v-col cols="12" md="7" lg="8">
         <v-tabs v-model="tab" show-arrows class="rider-profile-tabs">
-          <v-tab>
-            <v-icon size="20" class="me-3">{{ icons.mdiAccountOutline }}</v-icon>
-            <span>Overview</span>
-          </v-tab>
+<!--          <v-tab>-->
+<!--            <v-icon size="20" class="me-3">{{ icons.mdiAccountOutline }}</v-icon>-->
+<!--            <span>Overview</span>-->
+<!--          </v-tab>-->
           <v-tab>
             <v-icon size="20" class="me-3">{{ icons.mdiFlagCheckered }}</v-icon>
             <span>Race Results</span>
@@ -18,9 +19,9 @@
         </v-tabs>
 
         <v-tabs-items id="rider-profile-tabs-content" v-model="tab" class="mt-5 pa-1">
-          <v-tab-item>
-            <profile-overview-tab></profile-overview-tab>
-          </v-tab-item>
+<!--          <v-tab-item>-->
+<!--            <profile-overview-tab></profile-overview-tab>-->
+<!--          </v-tab-item>-->
           <v-tab-item>
             <rider-race-results-tab :rider-id="$route.params.record_id"></rider-race-results-tab>
           </v-tab-item>
@@ -68,7 +69,7 @@ export default {
     };
 
     onMounted(() => {
-      tab.value = route.value.params.tab !== undefined? route.value.params.tab: 1 ;
+      tab.value = route.value.params.tab !== undefined? route.value.params.tab: 0 ;
       loadMemberData();
     });
 

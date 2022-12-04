@@ -11,7 +11,7 @@
         <v-icon color="primary">
           {{icons.mdiHomeSwitch}}
         </v-icon>
-        Switch Org
+        <span class="d-none d-sm-block">Switch Org</span>
         <v-icon color="primary">
           {{attrs['aria-expanded'] == 'false'? icons.mdiChevronDown: icons.mdiChevronUp}}
         </v-icon>
