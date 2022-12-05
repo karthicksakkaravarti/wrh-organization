@@ -8,15 +8,12 @@ fi
 echo "+++ installing required libs ..."
 sudo apt-get update
 # sudo apt-get install postgresql postgresql-contrib postgresql-server-dev-all -y
+sudo apt-get install postgresql-client -y
 sudo apt-get install nginx -y
 sudo apt-get install python3-dev -y
 sudo apt-get install python3-pip -y
 sudo apt-get install git -y
 sudo apt-get install supervisor -y
-sudo apt-get install libjpeg-dev zlib1g-dev -y
-sudo apt-get install libffi-dev -y
-sudo apt-get install libcairo2 -y
-sudo apt-get install pango1.0-tests -y
 sudo apt-get install redis-server -y
 sudo pip install virtualenv
 
