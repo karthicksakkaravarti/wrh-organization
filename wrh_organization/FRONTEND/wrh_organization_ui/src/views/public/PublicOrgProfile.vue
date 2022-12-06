@@ -42,6 +42,7 @@
                 </v-card-subtitle>
               </div>
               <div class="d-flex me-8 mb-4">
+                <!--
                 <v-avatar
                   size="40"
                   rounded
@@ -62,9 +63,11 @@
                   </h3>
                   <span>Members</span>
                 </div>
+                -->
               </div>
 
               <div class="d-flex mb-4 me-4">
+                <!--
                 <v-avatar
                   size="40"
                   rounded
@@ -85,6 +88,7 @@
                   </h3>
                   <span>Races</span>
                 </div>
+                -->
               </div>
 
               <v-btn color="primary" v-if="$store.getters.isAuthenticated && (organization.my_level.is_admin || organization.my_level.is_member)"
@@ -133,6 +137,7 @@
                 </a>
                 <span v-else class="text-sm me-4">-</span>
               </div>
+              <!--
               <div class="v-avatar-group" :class="rootThemeClasses">
                 <v-avatar size="40">
                   <v-btn v-if="organization.social_media.youtube" link :href="organization.social_media.youtube">
@@ -153,6 +158,7 @@
                   <v-img v-else class="disabled" src="@/assets/images/logos/facebook.png"></v-img>
                 </v-avatar>
               </div>
+              -->
 
             </div>
 
