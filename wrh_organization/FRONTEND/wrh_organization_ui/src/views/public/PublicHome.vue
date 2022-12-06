@@ -12,9 +12,9 @@
         <p>
           Manage bycing races, race series for organizations!
         </p>
-        <h3 class="mb-5">
+        <p class="mb-5">
           Create Your Account, Select Your Region, Find a Team or Club!
-        </h3>
+        </p>
         <div>
           <span class="subtitle-1 font-weight-bold">Step 1, Create a user account: </span>
           <v-btn outlined color="error" :to="{name: $rns.AUTH, query:{page: 'Register'}}" large class="action-btn"
@@ -25,7 +25,7 @@
         </div>
         <div class="mt-1">
           <span class="subtitle-1 font-weight-bold">Step 2, Join {{defaultOrg.name}}: </span>
-          <v-btn outlined color="primary" large class="action-btn"
+          <v-btn outlined color="error" large class="action-btn"
                  :disabled="!$store.getters.isAuthenticated" @click="$refs.joinDialogRef.show()">
             Join
             <v-icon right>{{icons.mdiAccountPlus}}</v-icon>
@@ -112,10 +112,13 @@ export default {
   }
   .banner .content-text {
     z-index: 1;
+    color: white;
+    //text-shadow: 1px 1px 2px black, 0 0 1em blue, 0 0 0.2em blue;
+    text-shadow: 1px 1px 2px black, 0 0 1em white, 0 0 0.2em blue;
   }
   .banner img {
     position: absolute;
-    opacity: 0.25;
+    //opacity: 0.25;
     left: 0;
     top: 0;
     width: 100%;
