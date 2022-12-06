@@ -1,3 +1,4 @@
+from django_ckeditor_5.widgets import CKEditor5Widget
 from dynamic_preferences.preferences import Section
 from dynamic_preferences import types
 from dynamic_preferences.registries import global_preferences_registry
@@ -81,6 +82,7 @@ class SiteUiTermsOfService(types.LongStringPreference):
     field_kwargs = {
         'required': False,
         'help_text': 'terms of service content',
+        'widget': CKEditor5Widget()
     }
     section = site_ui
     name = 'terms_of_service'

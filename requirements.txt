@@ -28,3 +28,4 @@ mysql-connector-python==8.0.31
 stripe==5.0.0
 huey==2.4.4
 rollbar==0.16.3
+django-ckeditor-5==0.2.1

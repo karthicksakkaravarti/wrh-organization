@@ -160,13 +160,16 @@
 
         <v-checkbox
           hide-details
-          class="mt-1"
+          class="mt-1 agree-terms"
           v-model="registerForm.agree_terms"
         >
           <template #label>
-            <div class="d-flex align-center flex-wrap">
-              <span class="me-2">I agree to</span><a href="javascript:void(0)">privacy policy &amp; terms</a>
-            </div>
+            <span class="">I agree to</span>
+          </template>
+          <template #append>
+            <v-btn text color="primary" link small @click.capture="$refs.termsOfServiceDialogRef.show()" class="pl-0 pr-1 pb-1">
+              privacy policy &amp; terms
+            </v-btn>
           </template>
         </v-checkbox>
 
@@ -213,6 +216,7 @@
         </v-icon>
       </v-btn>
     </v-card-actions>
+    <terms-of-service-dialog ref="termsOfServiceDialogRef"></terms-of-service-dialog>
   </v-card>
 </template>
 
@@ -234,8 +238,10 @@ import themeConfig from '@themeConfig'
 import { required, emailValidator, passwordValidator, confirmedValidator } from '@core/utils/validation'
 import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
+import TermsOfServiceDialog from "@/views/public/TermsOfServiceDialog.vue";
 
 export default {
+  components: {TermsOfServiceDialog},
   setup(props, context) {
     const isPasswordVisible = ref(false);
     const registering = ref(false);
@@ -314,3 +320,9 @@ export default {
   },
 }
 </script>
+<style>
+  .auth-card .agree-terms .v-input__control {
+    width: auto;
+    flex-grow: 0;
+  }
+</style>

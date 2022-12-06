@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # third party apps
+    'django_ckeditor_5',
     'dbbackup',
     'django_filters',
     'storages',
@@ -316,6 +317,25 @@ ANYMAIL = {
     'MAILGUN_API_KEY': '<MAILGUN_API_KEY>',
 }
 DEFAULT_EMAIL_FROM = "info@weracehere.org"
+
+# django-ckeditor-5
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': [
+            "heading", "|", "outdent", "indent", "|", "bold", "italic", "link", "underline", "strikethrough",
+            "subscript", "superscript", "highlight", "|", "bulletedList", "numberedList", "todoList", "|",
+            "fontColor", "fontBackgroundColor", "removeFormat", "insertTable",
+        ]
+    },
+    'awesome': {
+        'toolbar': [
+            "heading", "codeBlock", "|", "outdent", "indent", "|", "bold", "italic", "link", "underline",
+            "strikethrough", "code", "subscript", "superscript", "highlight", "|", "bulletedList", "numberedList",
+            "todoList", "|", "blockQuote", "insertImage", "|", "fontSize", "fontFamily", "fontColor",
+            "fontBackgroundColor", "mediaEmbed", "removeFormat", "insertTable", "sourceEditing",
+        ]
+    },
+}
 
 # huey
 HUEY = {
