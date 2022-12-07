@@ -31,7 +31,6 @@ import EventBus from '@/EventBus'
 
 import SiteLayout from '@/layouts/SiteLayout'
 import BlankLayout from '@/layouts/BlankLayout'
-import PublicLayout from '@/layouts/PublicLayout'
 import DashboardLayout from '@/layouts/DashboardLayout'
 
 // Dynamic vh
@@ -44,14 +43,13 @@ export default {
     AppVersionAlert,
     BlankLayout,
     SiteLayout,
-    PublicLayout,
     DashboardLayout,
   },
   setup() {
     const mismatchVersion = ref(false);
     const newAppVersion = ref(null);
     const { route } = useRouter();
-    const { appContentLayoutNav, appSkinVariant, appRouteTransition } = useAppConfig();
+    const { appSkinVariant, appRouteTransition } = useAppConfig();
     const { handleBreakpointLayoutSwitch } = useLayout();
     const onSessionRefresh = () => {
       axios.get("account/session").then(
@@ -61,15 +59,6 @@ export default {
           notifyDefaultServerError(error, true);
         }
       );
-      // axios.get("bycing_org/member/me").then(
-      //   (response) => {
-      //     store.state.currentMember = response.data;
-      //   },
-      //   (error) => {
-      //     notifyDefaultServerError(error, true);
-      //   }
-      // );
-
     };
     const onSessionExpired = () => {
       store.state.currentUser = {};
@@ -85,7 +74,7 @@ export default {
       if (!route.value || !route.value.name) {
         return
       }
-      return route.value.meta.layout || 'PublicLayout';
+      return route.value.meta.layout || 'SiteLayout';
     });
 
     onMounted(() => {

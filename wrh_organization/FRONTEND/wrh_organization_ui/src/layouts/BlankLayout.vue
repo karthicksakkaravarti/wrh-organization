@@ -1,17 +1,13 @@
 <template>
-  <layout-blank>
-    <slot></slot>
-  </layout-blank>
+  <v-app>
+    <v-main>
+      <slot></slot>
+    </v-main>
+  </v-app>
 </template>
 
 <script>
-import LayoutBlank from '@/@core/layouts/variants/blank/LayoutBlank.vue'
-
-export default {
-  components: {
-    LayoutBlank,
-  },
-}
+export default {}
 </script>
 
 <style>

@@ -36,11 +36,6 @@ export default {
     const isVisible = ref(false);
     const loading = ref(false);
 
-    watch(isVisible, (value) => {
-      if (!value) {
-        termsOfService.value = null;
-      }
-    });
     const hide = () => {
       isVisible.value = false;
     };

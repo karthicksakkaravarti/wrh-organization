@@ -69,7 +69,7 @@
           </v-icon>
         </v-list-item-icon>
         <v-list-item-content>
-          <v-list-item-title>Profile</v-list-item-title>
+          <v-list-item-title>My Profile</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
 

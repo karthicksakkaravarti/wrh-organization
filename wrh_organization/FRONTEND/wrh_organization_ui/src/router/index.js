@@ -23,10 +23,11 @@ export const routeNames = {
   WIDGET_RACE_RESULTS: "widget_race_results",
   WIDGET_EVENTS_CALENDAR: "widget_events_calendar",
 
+  USAC_EVENTS: "usac_events",
+  USAC_CLUB: "usac_club",
+  USAC_RIDER: "usac_rider",
+
   DASHBOARD_HOME: "dashboard_home",
-  DASHBOARD_EVENTS: "dashboard_events",
-  DASHBOARD_CLUB: "dashboard_club",
-  DASHBOARD_RIDER: "dashboard_rider",
   DASHBOARD_ACCOUNT_SETTINGS: "dashboard_account_settings",
   DASHBOARD_MEMBER_PROFILE: "dashboard_member_profile",
   DASHBOARD_ORGANIZATION_PROFILE: "dashboard_organization_profile",
@@ -67,7 +68,7 @@ const routes = [
     name: routeNames.PUBLIC_HOME,
     component: () => import('@/views/public/PublicHome'),
     meta: {
-      layout: 'SiteLayout',
+      layoutHideMenuItems: true
     },
   },
   {
@@ -75,7 +76,7 @@ const routes = [
     name: routeNames.PUBLIC_RIDER_PROFILE,
     component: () => import('@/views/public/PublicRiderProfile'),
     meta: {
-      layout: 'PublicLayout',
+      layoutHideMenuItems: true
     },
   },
   {
@@ -83,7 +84,7 @@ const routes = [
     name: routeNames.PUBLIC_EVENT_PROFILE,
     component: () => import('@/views/public/PublicEventProfile'),
     meta: {
-      layout: 'PublicLayout',
+      layoutHideMenuItems: true
     },
   },
   {
@@ -91,24 +92,20 @@ const routes = [
     name: routeNames.PUBLIC_ORG_PROFILE,
     component: () => import('@/views/public/PublicOrgProfile'),
     meta: {
-      layout: 'SiteLayout',
+      layoutHideMenuItems: true
     },
   },
   {
     path: '/race-results',
     name: routeNames.PUBLIC_RACE_RESULTS,
     component: () => import('@/views/public/PublicRaceResults'),
-    meta: {
-      layout: 'PublicLayout',
-    },
+    meta: {},
   },
   {
     path: '/events',
     name: routeNames.PUBLIC_EVENTS,
     component: () => import('@/views/public/PublicEvents'),
-    meta: {
-      layout: 'PublicLayout',
-    },
+    meta: {},
   },
   {
     path: '/dashboard/home',
@@ -144,28 +141,22 @@ const routes = [
     },
   },
   {
-    path: '/dashboard/events',
-    name: routeNames.DASHBOARD_EVENTS,
+    path: '/usac/events',
+    name: routeNames.USAC_EVENTS,
     component: () => import('@/views/dashboard/DashboardEvents'),
-    meta: {
-      layout: 'DashboardLayout',
-    },
+    meta: {},
   },
   {
-    path: '/dashboard/club',
-    name: routeNames.DASHBOARD_CLUB,
+    path: '/usac/club',
+    name: routeNames.USAC_CLUB,
     component: () => import('@/views/dashboard/DashboardClub'),
-    meta: {
-      layout: 'DashboardLayout',
-    },
+    meta: {},
   },
   {
-    path: '/dashboard/rider',
-    name: routeNames.DASHBOARD_RIDER,
+    path: '/usac/rider',
+    name: routeNames.USAC_RIDER,
     component: () => import('@/views/dashboard/DashboardRider'),
-    meta: {
-      layout: 'DashboardLayout',
-    },
+    meta: {},
   },
   {
     path: '/widgets/org-profile/:record_id',
