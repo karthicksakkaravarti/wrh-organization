@@ -7,8 +7,8 @@
       >
         <v-img
           :src="appLogo"
-          max-height="30px"
-          max-width="30px"
+          max-height="100px"
+          max-width="100px"
           alt="logo"
           contain
           class="me-3 "

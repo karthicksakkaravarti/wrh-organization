@@ -18,8 +18,8 @@
           >
             <v-img
               :src="appLogo"
-              max-height="30px"
-              max-width="30px"
+              max-height="60px"
+              max-width="60px"
               alt="logo"
               contain
               class="me-3"
@@ -66,8 +66,8 @@
           >
             <v-img
               :src="appLogo"
-              max-height="30px"
-              max-width="30px"
+              max-height="60px"
+              max-width="60px"
               alt="logo"
               contain
               class="me-3"
