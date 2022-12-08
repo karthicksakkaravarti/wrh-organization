@@ -114,7 +114,7 @@
             </v-avatar>
 
             <div class="d-flex flex-column ms-3">
-              <a is="router-link" :to="{name: $rns.DASHBOARD_ORGANIZATION_PROFILE, params:{record_id: item.id}}"
+              <a is="router-link" :to="{name: $rns.PUBLIC_ORG_PROFILE, params:{record_id: item.id}}"
                  class="d-block text--success  font-weight-semibold text-truncate text-decoration-none">{{ item.name }}
               </a>
             </div>
@@ -151,25 +151,15 @@
 
             <v-tooltip bottom>
               <template #activator="{ on, attrs }">
-                <v-btn icon small v-bind="attrs" v-on="on" @click="$refs.formDialogRef.show(item)">
-                  <v-icon size="18">
-                    {{ icons.mdiPencilOutline }}
-                  </v-icon>
-                </v-btn>
-              </template>
-              <span>Edit Organization Info</span>
-            </v-tooltip>
-
-            <v-tooltip bottom>
-              <template #activator="{ on, attrs }">
                 <v-btn icon small v-bind="attrs" v-on="on"
+                       :disabled="!item.membership.is_admin && !item.membership.is_master_admin"
                        :to="{name: $rns.DASHBOARD_ORGANIZATION_PROFILE, params:{record_id: item.id}}">
                   <v-icon size="18">
-                    {{ icons.mdiEyeOutline }}
+                    {{ icons.mdiOfficeBuildingCog }}
                   </v-icon>
                 </v-btn>
               </template>
-              <span>View</span>
+              <span>Manage</span>
             </v-tooltip>
 
             <v-tooltip bottom>
@@ -198,7 +188,7 @@
 import {
   mdiPlus,
   mdiPencilOutline,
-  mdiEyeOutline,
+  mdiOfficeBuildingCog,
   mdiBankCheck,
   mdiAccountGroupOutline,
   mdiAccountMultipleOutline,
@@ -311,7 +301,7 @@ export default {
       icons: {
         mdiPlus,
         mdiPencilOutline,
-        mdiEyeOutline,
+        mdiOfficeBuildingCog,
         mdiBankCheck,
         mdiAccountGroupOutline,
         mdiAccountMultipleOutline,

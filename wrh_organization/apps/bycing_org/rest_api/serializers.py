@@ -13,7 +13,14 @@ from apps.bycing_org.models import Member, Organization, User, OrganizationMembe
 from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField, get_random_upload_path
 
 
+class NestedPublicUserAvatarSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'avatar')
+
+
 class MemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    user = NestedPublicUserAvatarSerializer(read_only=True)
     summary = serializers.SerializerMethodField(read_only=True)
     age = serializers.IntegerField(read_only=True)
     extra_fields = ['summary', 'more_data']
@@ -31,6 +38,7 @@ class MemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer
 
 
 class PublicMemberSerializer(MemberSerializer):
+    user = NestedPublicUserAvatarSerializer(read_only=True)
 
     class Meta:
         model = Member

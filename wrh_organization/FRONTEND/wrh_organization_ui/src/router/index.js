@@ -76,7 +76,7 @@ const routes = [
     name: routeNames.PUBLIC_RIDER_PROFILE,
     component: () => import('@/views/public/PublicRiderProfile'),
     meta: {
-      layoutHideMenuItems: true
+      // layoutHideMenuItems: true
     },
   },
   {
@@ -84,7 +84,7 @@ const routes = [
     name: routeNames.PUBLIC_EVENT_PROFILE,
     component: () => import('@/views/public/PublicEventProfile'),
     meta: {
-      layoutHideMenuItems: true
+      // layoutHideMenuItems: true
     },
   },
   {
@@ -92,7 +92,7 @@ const routes = [
     name: routeNames.PUBLIC_ORG_PROFILE,
     component: () => import('@/views/public/PublicOrgProfile'),
     meta: {
-      layoutHideMenuItems: true
+      // layoutHideMenuItems: true
     },
   },
   {

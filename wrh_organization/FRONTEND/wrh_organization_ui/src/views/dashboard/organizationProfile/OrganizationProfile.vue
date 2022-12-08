@@ -1,6 +1,6 @@
 <template>
   <div id="organization-profile-view">
-    <v-row v-if="organization.id">
+    <v-row v-if="organization.id && organization.my_level.is_admin">
       <v-col cols="12" md="4" lg="3">
         <organization-bio-panel :organization="organization"
                                 @edit-click="$refs.editDialogRef.show(organization)">
@@ -104,6 +104,7 @@ import OrganizationRaceSeriesResultsTab from "./OrganizationRaceSeriesResultsTab
 import OrganizationRaceSeriesStandingsTab from "./OrganizationRaceSeriesStandingsTab";
 import OrganizationCategoriesTab from "@/views/dashboard/organizationProfile/OrganizationCategoriesTab";
 import OrganizationEventsTab from "@/views/dashboard/organizationProfile/OrganizationEventsTab";
+import {routeNames} from "@/router";
 
 export default {
   components: {
@@ -121,7 +122,7 @@ export default {
     OrganizationBioPanel,
   },
   setup() {
-    const { route } = useRouter();
+    const { route, router } = useRouter();
     const tab = ref(null);
     const tabs = [
       {
@@ -160,6 +161,9 @@ export default {
       var params = {exfields: 'my_level'};
       axios.get(`bycing_org/organization/${route.value.params.record_id}`, {params: params}).then((response) => {
         organization.value = response.data;
+        if (!organization.value.my_level.is_admin) {
+          router.replace({name: routeNames.PUBLIC_ORG_PROFILE, params: {record_id: organization.value.id}});
+        }
       }, (error) => {
         notifyDefaultServerError(error, true)
       });

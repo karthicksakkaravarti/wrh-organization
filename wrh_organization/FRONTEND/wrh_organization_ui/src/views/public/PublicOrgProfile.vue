@@ -91,10 +91,19 @@
                 -->
               </div>
 
-              <v-btn color="primary" v-if="$store.getters.isAuthenticated && (organization.my_level.is_admin || organization.my_level.is_member)"
+              <v-btn color="primary" v-if="$store.getters.isAuthenticated && organization.my_level.is_admin"
                      :to="{name: $rns.DASHBOARD_ORGANIZATION_PROFILE, params: {record_id: organization.id}}">
                 Manage <v-icon right>{{icons.mdiOfficeBuildingCog}}</v-icon>
               </v-btn>
+              <v-tooltip bottom v-else-if="organization.my_level.is_member">
+                <template #activator="{ on, attrs }">
+                  <v-chip v-on="on" v-bind="attrs" color="primary">
+                    You Joined
+                    <v-icon class="me-1" size="18" right>{{ icons.mdiAccountCheckOutline }}</v-icon>
+                  </v-chip>
+                </template>
+                <span>You are a member of this organization!</span>
+              </v-tooltip>
               <v-tooltip bottom v-else>
                 <template #activator="{ on, attrs }">
                   <v-btn color="success" v-on="on" v-bind="attrs" @click="$refs.joinDialogRef.show()">
@@ -165,12 +174,12 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" md="6">
-        <recent-race-results-widget :api-params="{organization: organization.id}" class="home-widget"></recent-race-results-widget>
-      </v-col>
-      <v-col cols="12" md="6">
-        <upcoming-events-widget :api-params="{organization: organization.id}" class="home-widget"></upcoming-events-widget>
-      </v-col>
+<!--      <v-col cols="12" md="6">-->
+<!--        <recent-race-results-widget :api-params="{organization: organization.id}" class="home-widget"></recent-race-results-widget>-->
+<!--      </v-col>-->
+<!--      <v-col cols="12" md="6">-->
+<!--        <upcoming-events-widget :api-params="{organization: organization.id}" class="home-widget"></upcoming-events-widget>-->
+<!--      </v-col>-->
     </v-row>
     <join-organization-dialog :organization="organization"
                               v-if="organization.my_level && !organization.my_level.is_member"
@@ -186,6 +195,7 @@ import { ref } from '@vue/composition-api'
 import {
   mdiFlagCheckered,
   mdiAccountPlus,
+  mdiAccountCheckOutline,
   mdiOfficeBuildingCog,
   mdiAccountMultipleOutline,
   mdiCalendar,
@@ -258,6 +268,7 @@ export default {
       icons: {
         mdiFlagCheckered,
         mdiAccountPlus,
+        mdiAccountCheckOutline,
         mdiOfficeBuildingCog,
         mdiAccountMultipleOutline,
         mdiCalendar,
