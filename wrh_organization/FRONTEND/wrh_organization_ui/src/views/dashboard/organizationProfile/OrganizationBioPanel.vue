@@ -3,9 +3,13 @@
     <!-- user profile -->
     <v-col cols="12">
       <v-card class="pt-10">
-        <v-btn v-if="!readOnly" small color="info" class="position-absolute back-org-btn" :to="{name: $rns.DASHBOARD_MEMBER_PROFILE, params: {tab: 0}}">
-          <v-icon>{{icons.mdiKeyboardBackspace}}</v-icon>Organization List
-        </v-btn>
+<!--        <v-btn v-if="!readOnly" small color="info" class="position-absolute back-org-btn" :to="{name: $rns.DASHBOARD_MEMBER_PROFILE, params: {tab: 0}}">-->
+<!--          <v-icon>{{icons.mdiKeyboardBackspace}}</v-icon>Organization List-->
+<!--        </v-btn>-->
+        <v-chip v-if="!readOnly" color="error" class="v-chip-light-bg error--text w-full position-absolute org-man-label" label>
+          <v-icon>{{icons.mdiOfficeBuildingCog}}</v-icon>
+          Organization Management
+        </v-chip>
         <v-card-title class="justify-center flex-column">
           <v-avatar
             :color="organization.logo ? '' : 'primary'"
@@ -167,6 +171,7 @@ import {
   mdiHomeEditOutline,
   mdiKeyboardBackspace,
   mdiAccountStarOutline,
+  mdiOfficeBuildingCog,
 } from '@mdi/js';
 import { avatarText, title } from '@core/utils/filter';
 import {onMounted, ref} from "@vue/composition-api/dist/vue-composition-api";
@@ -209,6 +214,7 @@ export default {
       orgSummary,
       loadOrgSummary,
       icons: {
+        mdiOfficeBuildingCog,
         mdiAccountMultipleOutline,
         mdiCalendar,
         mdiCheckboxBlankCircle,
@@ -222,9 +228,12 @@ export default {
 </script>
 <style lang="scss">
 .member-profile-bio-panel {
-  .back-org-btn {
-    top: 3px;
-    left: 3px;
+  .org-man-label {
+    top: 0;
+    left: 0;
+    border-bottom-right-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    box-shadow: 2px -9px 10px 0 rgb(94 86 105 / 10%);
   }
 }
 </style>

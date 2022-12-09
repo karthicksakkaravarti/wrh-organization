@@ -203,7 +203,6 @@ import {
   mdiPhone,
   mdiWeb,
 } from '@mdi/js'
-import OrganizationBioPanel from "../dashboard/organizationProfile/OrganizationBioPanel";
 import axios from "@/axios";
 import {notifyDefaultServerError} from "@/composables/utils";
 import useVuetify from '@core/utils/vuetify'
@@ -219,7 +218,6 @@ export default {
     UpcomingEventsWidget,
     RecentRaceResultsWidget,
     OrganizationRaceResultsTab,
-    OrganizationBioPanel,
     JoinOrganizationDialog,
   },
   setup() {

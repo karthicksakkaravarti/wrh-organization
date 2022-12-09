@@ -3,7 +3,7 @@ import {mdiHomeOutline, mdiCalendarMultiselect, mdiAccountGroup, mdiBike} from '
 
 import {getVuetify, useRouter} from '@core/utils'
 
-import {onMounted, onUnmounted} from '@vue/composition-api'
+import {computed, onMounted, onUnmounted, ref} from '@vue/composition-api'
 import {routeNames} from "@/router";
 import store from '@/store';
 import EventBus from "@/EventBus";
@@ -38,6 +38,7 @@ export default {
     //     to: routeNames.USAC_RIDER,
     //   },
     // ];
+    const menuItems = ref([]);
 
     const onSessionExpired = () => {
       router.replace({name: routeNames.AUTH, query: {next: route.value.fullPath, ...route.query}});
@@ -55,7 +56,7 @@ export default {
 
 
     return {
-      // navMenuItems,
+      menuItems
     }
   },
 }
