@@ -289,12 +289,15 @@ import {
 import EventBus from "@/EventBus";
 import VerifyDialog from "@/views/dashboard/accountSettings/VerifyDialog";
 import {watch} from "@vue/composition-api/dist/vue-composition-api";
+import {routeNames} from "@/router";
+import {useRouter} from "@core/utils";
 
 export default {
   components: {VerifyDialog},
   props: {
   },
   setup(props) {
+    const { router } = useRouter();
     const accountDataOrig = ref({user: {}});
     const accountData = ref({user: {}});
     const loading = ref(false);
@@ -369,7 +372,8 @@ export default {
         store.state.currentUser.avatar = accountData.value.user.avatar;
         clearChosenAvatar();
         EventBus.emit("user:session-refresh");
-        notifySuccess("data saved successfully.")
+        notifySuccess("data saved successfully");
+        router.push({name: routeNames.DASHBOARD_MEMBER_PROFILE});
       }, (error) => {
         saving.value = false;
         notifyDefaultServerError(error, true);
