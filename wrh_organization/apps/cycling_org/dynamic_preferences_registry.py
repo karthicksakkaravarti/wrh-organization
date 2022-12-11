@@ -78,6 +78,18 @@ class RollbarClientEnvironment(types.ChoicePreference):
 
 
 @global_preferences_registry.register
+class RollbarClientEnabled(types.BooleanPreference):
+    field_kwargs = {
+        'required': False,
+        'help_text': 'rollbar client enabled?',
+    }
+    section = rollbar_client
+    name = 'enabled'
+    verbose_name = 'Client Enabled?'
+    default = True
+
+
+@global_preferences_registry.register
 class SiteUiTermsOfService(types.LongStringPreference):
     field_kwargs = {
         'required': False,

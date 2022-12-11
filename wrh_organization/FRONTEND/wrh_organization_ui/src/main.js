@@ -70,6 +70,7 @@ let app = new Vue({
           app.$rollbar.configure({
             accessToken: store.state.sitePrefs.rollbar_client__access_token,
             environment: store.state.sitePrefs.rollbar_client__environment,
+            enabled: app.$rollbar.options.enabled? store.state.sitePrefs.rollbar_client__enabled: false,
           });
         }, (error) => {
           notifyDefaultServerError(error, true);
