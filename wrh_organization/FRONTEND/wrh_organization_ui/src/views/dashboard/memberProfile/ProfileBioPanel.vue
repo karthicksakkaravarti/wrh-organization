@@ -113,10 +113,10 @@
             </v-list-item>
 
             <v-list-item dense class="px-0 mb-n2" v-if="!hiddenFields.birth_date">
-              <span class="font-weight-medium me-2">Birth Date(Age):</span>
+              <span class="font-weight-medium me-2">Racing Age:</span>
               <span class="text--secondary">
                 <template v-if="memberData.age">
-                  {{ $utils.formatDate(memberData.birth_date, 'MMM D, YYYY') }} ({{memberData.age || '-'}} years)
+                  {{ memberData.age || '-'}} years
                 </template>
                 <template v-else>-</template>
               </span>
