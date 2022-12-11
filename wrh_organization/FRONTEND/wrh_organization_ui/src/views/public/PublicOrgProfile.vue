@@ -229,7 +229,7 @@ export default {
     const organization = ref({});
     const orgId = route.value.params.record_id;
     const loadOrganization = () => {
-      axios.get(`bycing_org/public/organization/${orgId}`, {params: {exfields: 'my_level'}}).then((response) => {
+      axios.get(`cycling_org/public/organization/${orgId}`, {params: {exfields: 'my_level'}}).then((response) => {
         const org = response.data;
         if (!org.social_media) {
           org.social_media = {};
@@ -244,7 +244,7 @@ export default {
     };
 
     const loadOrgSummary = () => {
-      axios.get(`bycing_org/organization/${orgId}/summary`).then((response) => {
+      axios.get(`cycling_org/organization/${orgId}/summary`).then((response) => {
         orgSummary.value = response.data;
       }, (error) => {
         notifyDefaultServerError(error, true)

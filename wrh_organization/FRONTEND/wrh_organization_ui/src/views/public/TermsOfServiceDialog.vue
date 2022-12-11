@@ -46,7 +46,7 @@ export default {
 
     const loadTermsOfService = () => {
       loading.value = true;
-      axios.get("bycing_org/global_pref/site_ui__terms_of_service").then(response => {
+      axios.get("cycling_org/global_pref/site_ui__terms_of_service").then(response => {
         loading.value = false;
         termsOfService.value = response.data;
       }, error => {

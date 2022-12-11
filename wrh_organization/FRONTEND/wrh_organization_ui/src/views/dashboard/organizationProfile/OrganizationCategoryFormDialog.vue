@@ -72,7 +72,7 @@ export default {
 
     const deleteRecord = () => {
       deleting.value = true;
-      axios.delete(`bycing_org/category/${record.value.id}`).then((response) => {
+      axios.delete(`cycling_org/category/${record.value.id}`).then((response) => {
         deleting.value = false;
         notifySuccess(`Category #${record.value.id} deleted.`);
         hide();
@@ -85,11 +85,11 @@ export default {
 
     const save = () => {
       var data = Object.assign({}, record.value);
-      var url = "bycing_org/category",
+      var url = "cycling_org/category",
           httpMethod = axios.post,
           successMsg = "Category added successfully.";
       if (isEditMode.value) {
-        url = `bycing_org/category/${record.value.id}`;
+        url = `cycling_org/category/${record.value.id}`;
         httpMethod = axios.patch;
         successMsg = "Category updated successfully."
       } else {

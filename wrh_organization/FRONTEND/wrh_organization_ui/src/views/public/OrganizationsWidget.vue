@@ -64,7 +64,7 @@ export default {
         page_size: 6,
         order_by: '-id'
       };
-      axios.get(`bycing_org/organization`, {params: params}).then((response) => {
+      axios.get(`cycling_org/organization`, {params: params}).then((response) => {
         loading.value = false;
         organizations.value = response.data.results;
       }, (error) => {

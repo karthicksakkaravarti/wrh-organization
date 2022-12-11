@@ -249,7 +249,7 @@ export default {
 
     const deleteRecord = () => {
       deleting.value = true;
-      axios.delete(`bycing_org/organization/${record.value.id}`).then((response) => {
+      axios.delete(`cycling_org/organization/${record.value.id}`).then((response) => {
         deleting.value = false;
         notifySuccess(`Organization #${record.value.id} deleted.`);
         hide();
@@ -268,7 +268,7 @@ export default {
       } else if (data.banner_image !== null) {
         delete data.banner_image;
       }
-      axios.patch(`bycing_org/organization/${record.value.id}/prefs`, data).then((response) => {
+      axios.patch(`cycling_org/organization/${record.value.id}/prefs`, data).then((response) => {
         savingPrefs.value = false;
         record.value.prefs = prefs.value = response.data;
         notifySuccess('Preferences Saved successfully.');
@@ -288,11 +288,11 @@ export default {
       } else if (data.logo !== null) {
         delete data.logo;
       }
-      var url = "bycing_org/organization",
+      var url = "cycling_org/organization",
           httpMethod = axios.post,
           successMsg = "Organization created successfully.";
       if (isEditMode.value) {
-        url = `bycing_org/organization/${record.value.id}`;
+        url = `cycling_org/organization/${record.value.id}`;
         httpMethod = axios.patch;
         successMsg = "Organization updated successfully."
       }
@@ -309,7 +309,7 @@ export default {
     };
 
     const loadRecord = () => {
-      axios.get(`bycing_org/organization/${record.value.id}`).then((response) => {
+      axios.get(`cycling_org/organization/${record.value.id}`).then((response) => {
         record.value = response.data || {};
         prefs.value = record.value.prefs || {};
       }, (error) => {

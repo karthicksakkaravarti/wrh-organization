@@ -188,7 +188,7 @@ export default {
         return;
       }
       findingMembers.value = true;
-      axios.get("bycing_org/member/find", {params: {search: search}}).then((response) => {
+      axios.get("cycling_org/member/find", {params: {search: search}}).then((response) => {
         findingMembers.value = false;
         members.value = response.data.results;
         if (record.value._rider) {
@@ -205,7 +205,7 @@ export default {
 
     const deleteRecord = () => {
       deleting.value = true;
-      axios.delete(`bycing_org/race_result/${record.value.id}`).then((response) => {
+      axios.delete(`cycling_org/race_result/${record.value.id}`).then((response) => {
         deleting.value = false;
         notifySuccess(`Record #${record.value.id} deleted.`);
         hide();
@@ -220,11 +220,11 @@ export default {
       var data = Object.assign({}, record.value);
       data.rider = data._rider? data._rider.id: null;
       delete data._rider;
-      var url = "bycing_org/race_result",
+      var url = "cycling_org/race_result",
           httpMethod = axios.post,
           successMsg = "Race Result added successfully.";
       if (isEditMode.value) {
-        url = `bycing_org/race_result/${record.value.id}`;
+        url = `cycling_org/race_result/${record.value.id}`;
         httpMethod = axios.patch;
         successMsg = "Race Result updated successfully."
       } else {

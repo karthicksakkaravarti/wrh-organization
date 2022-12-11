@@ -88,7 +88,7 @@ export default {
         place: 1,
         order_by: '-id'
       }, props.apiParams);
-      axios.get(`bycing_org/race_result`, {params: params}).then((response) => {
+      axios.get(`cycling_org/race_result`, {params: params}).then((response) => {
         loading.value = false;
         raceResults.value = response.data.results;
       }, (error) => {

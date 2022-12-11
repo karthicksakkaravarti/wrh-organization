@@ -233,7 +233,7 @@ export default {
       }
       const params = Object.assign({my: true}, tableFiltering.value, refineVTableOptions(tableOptions.value));
       loading.value = true;
-      axios.get("bycing_org/organization/my_orgs", {params: params}).then((response) => {
+      axios.get("cycling_org/organization/my_orgs", {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
         pagination.value = response.data.pagination;
@@ -254,7 +254,7 @@ export default {
     };
 
     const loadMebershipRequests = () => {
-      axios.get("bycing_org/organization/my_membership_requests/", {params: {page_size: 5}}).then((response) => {
+      axios.get("cycling_org/organization/my_membership_requests/", {params: {page_size: 5}}).then((response) => {
         membershipRequests.value = response.data.results;
       }, (error) => {
         notifyDefaultServerError(error, true)
@@ -263,7 +263,7 @@ export default {
 
     const reviewMembershipRequest = (record, action) => {
       reviewingMembership.value = true;
-      axios.post(`bycing_org/organization/my_membership_requests/${record.id}/${action}`).then((response) => {
+      axios.post(`cycling_org/organization/my_membership_requests/${record.id}/${action}`).then((response) => {
         reviewingMembership.value = false;
         notifySuccess(`Membershipt ${action}ed for "${record._organization.name}"`);
         loadMebershipRequests();

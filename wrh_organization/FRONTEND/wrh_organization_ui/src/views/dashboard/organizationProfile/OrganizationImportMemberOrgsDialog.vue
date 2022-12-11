@@ -103,7 +103,7 @@ export default {
       var formData = new FormData(),
           orgId = props.organization.id;
       formData.append('file', csvFile.value);
-      axios.post( `bycing_org/organization/${orgId}/member_orgs/import_from_csv`,
+      axios.post( `cycling_org/organization/${orgId}/member_orgs/import_from_csv`,
           formData, {headers: {'Content-Type': 'multipart/form-data'}}
       ).then((response) => {
         importing.value = false;

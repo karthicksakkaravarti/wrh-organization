@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'huey.contrib.djhuey',
     # project apps
     'apps.account',
-    'apps.bycing_org',
+    'apps.cycling_org',
     'apps.usacycling'
 ]
 
@@ -359,7 +359,7 @@ HUEY = {
 }
 
 HUEY_TASKS_PERIODS = {
-    'bycing_org_disable_expired_memberships': crontab(minute='*/1'),
+    'cycling_org_disable_expired_memberships': crontab(minute='*/1'),
 }
 
 # twilio sms setting

@@ -301,7 +301,7 @@ export default {
       } else if (selectedEvent.value) {
         params.event = selectedEvent.value.id
       }
-      return combineURLs(axios.defaults.baseURL, `bycing_org/race_result/export/csv`, params);
+      return combineURLs(axios.defaults.baseURL, `cycling_org/race_result/export/csv`, params);
     });
 
     watch(eventSearchInput, () => {
@@ -326,7 +326,7 @@ export default {
         return;
       }
       findingEvents.value = true;
-      axios.get("bycing_org/event/", {params: {search: search}}).then((response) => {
+      axios.get("cycling_org/event/", {params: {search: search}}).then((response) => {
         findingEvents.value = false;
         events.value = response.data.results;
       }, (error) => {
@@ -366,7 +366,7 @@ export default {
         params.event = selectedEvent.value.id
       }
       loading.value = true;
-      axios.get("bycing_org/race_result/", {params: params}).then((response) => {
+      axios.get("cycling_org/race_result/", {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
         pagination.value = response.data.pagination;
@@ -382,7 +382,7 @@ export default {
         return
       }
       loadingRaces.value = true;
-      axios.get("bycing_org/race/", {params: {event: selectedEvent.value.id, page_size: 0}}).then((response) => {
+      axios.get("cycling_org/race/", {params: {event: selectedEvent.value.id, page_size: 0}}).then((response) => {
         loadingRaces.value = false;
         races.value = response.data.results;
       }, (error) => {

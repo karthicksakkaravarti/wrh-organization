@@ -279,7 +279,7 @@ export default {
     });
     const register = () => {
       registering.value = true;
-      axios.post("bycing_org/users/registration", registerForm.value).then((response) => {
+      axios.post("cycling_org/users/registration", registerForm.value).then((response) => {
         registering.value = false;
         notifySuccess("Activation link sent to your email! please check your email.");
         context.emit("change-page", "Login");

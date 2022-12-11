@@ -48,7 +48,7 @@ export default {
 
     const save = () => {
       saving.value = true;
-      axios.patch("bycing_org/member/me", {social_media: socialRecords.value}).then((response) => {
+      axios.patch("cycling_org/member/me", {social_media: socialRecords.value}).then((response) => {
         saving.value = false;
         notifySuccess("record saved successfully.");
         context.emit('save-successed');

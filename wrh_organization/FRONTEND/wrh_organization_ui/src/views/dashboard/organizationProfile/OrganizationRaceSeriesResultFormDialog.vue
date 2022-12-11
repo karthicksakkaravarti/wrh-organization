@@ -142,7 +142,7 @@ export default {
         organization: props.organization.id,
         page_size: 0
       };
-      axios.get("bycing_org/category/", {params: params}).then((response) => {
+      axios.get("cycling_org/category/", {params: params}).then((response) => {
         categories.value = response.data.results;
       }, (error) => {
         notifyDefaultServerError(error, true)
@@ -151,7 +151,7 @@ export default {
 
     const deleteRecord = () => {
       deleting.value = true;
-      axios.delete(`bycing_org/race_series_result/${record.value.id}`).then((response) => {
+      axios.delete(`cycling_org/race_series_result/${record.value.id}`).then((response) => {
         deleting.value = false;
         notifySuccess(`Record #${record.value.id} deleted.`);
         hide();
@@ -176,11 +176,11 @@ export default {
       var data = Object.assign({}, record.value);
       data.rider = data._rider? data._rider.id: null;
       delete data._rider;
-      var url = "bycing_org/race_series_result",
+      var url = "cycling_org/race_series_result",
           httpMethod = axios.post,
           successMsg = "Race Series Result added successfully.";
       if (isEditMode.value) {
-        url = `bycing_org/race_series_result/${record.value.id}`;
+        url = `cycling_org/race_series_result/${record.value.id}`;
         httpMethod = axios.patch;
         successMsg = "Race Series Result updated successfully."
       } else {

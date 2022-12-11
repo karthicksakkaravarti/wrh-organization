@@ -125,7 +125,7 @@ export default {
 
     const loadSocialMedia = () => {
       loading.value = true;
-      axios.get("bycing_org/member/me", {params: {fields: 'id,social_media'}}).then((response) => {
+      axios.get("cycling_org/member/me", {params: {fields: 'id,social_media'}}).then((response) => {
         socialMediaData.value = response.data.social_media || {};
         accountData.value = response.data;
         loading.value = false;

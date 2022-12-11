@@ -186,7 +186,7 @@ export default {
       }
       loadingCategories.value = true;
       var params = {organization: props.organization.id, page_size: 0, fields: 'id,title'};
-      axios.get("bycing_org/category/", {params: params}).then((response) => {
+      axios.get("cycling_org/category/", {params: params}).then((response) => {
         loadingCategories.value = false;
         categories.value = response.data.results;
       }, (error) => {
@@ -202,7 +202,7 @@ export default {
         return;
       }
       findingRaceSeries.value = true;
-      axios.get("bycing_org/race_series/", {params: {search: search}}).then((response) => {
+      axios.get("cycling_org/race_series/", {params: {search: search}}).then((response) => {
         findingRaceSeries.value = false;
         raceSeries.value = response.data.results;
       }, (error) => {
@@ -220,7 +220,7 @@ export default {
       }
       loading.value = true;
       var params = {organization: props.organization.id};
-      axios.get(`bycing_org/race_series_result/standing_points/${selectedRaceSeries.value.id}/${selectedCategory.value.id}`,
+      axios.get(`cycling_org/race_series_result/standing_points/${selectedRaceSeries.value.id}/${selectedCategory.value.id}`,
           {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;

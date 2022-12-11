@@ -243,7 +243,7 @@ export default {
 
     const deleteRecord = () => {
       deleting.value = true;
-      axios.delete(`bycing_org/organization/${props.organization.id}/member_orgs/${record.value.id}`).then((response) => {
+      axios.delete(`cycling_org/organization/${props.organization.id}/member_orgs/${record.value.id}`).then((response) => {
         deleting.value = false;
         notifySuccess(`Member-Org deleted.`);
         hide();
@@ -262,7 +262,7 @@ export default {
       data.member_org = data._member_org.id;
       delete data._member_org;
       saving.value = true;
-      var url = `bycing_org/organization/${props.organization.id}/member_orgs`,
+      var url = `cycling_org/organization/${props.organization.id}/member_orgs`,
           httpMethod = axios.post,
           successMsg = "Member-Org added successfully.";
       if (isEditMode.value) {
@@ -287,7 +287,7 @@ export default {
         return;
       }
       findingMemberOrgs.value = true;
-      axios.get("bycing_org/organization/find", {params: {search: search}}).then((response) => {
+      axios.get("cycling_org/organization/find", {params: {search: search}}).then((response) => {
         findingMemberOrgs.value = false;
         memberOrgs.value = response.data.results;
       }, (error) => {

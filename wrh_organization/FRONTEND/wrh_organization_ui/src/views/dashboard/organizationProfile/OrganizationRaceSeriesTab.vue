@@ -208,7 +208,7 @@ export default {
         return;
       }
       findingEvents.value = true;
-      axios.get("bycing_org/event/", {params: {search: search}}).then((response) => {
+      axios.get("cycling_org/event/", {params: {search: search}}).then((response) => {
         findingEvents.value = false;
         events.value = response.data.results;
       }, (error) => {
@@ -230,7 +230,7 @@ export default {
         delete params.events;
       }
       loading.value = true;
-      axios.get("bycing_org/race_series/", {params: params}).then((response) => {
+      axios.get("cycling_org/race_series/", {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
         pagination.value = response.data.pagination;

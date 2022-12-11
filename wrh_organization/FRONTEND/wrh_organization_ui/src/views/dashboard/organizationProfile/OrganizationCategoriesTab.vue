@@ -130,7 +130,7 @@ export default {
       }
       const params = Object.assign({organization: props.organization.id}, tableFiltering.value, refineVTableOptions(tableOptions.value));
       loading.value = true;
-      axios.get("bycing_org/category/", {params: params}).then((response) => {
+      axios.get("cycling_org/category/", {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
         pagination.value = response.data.pagination;

@@ -259,7 +259,7 @@ export default {
         params.start_date__lte = eventFiltering.value.to_date
       }
       findingEvents.value = true;
-      axios.get("bycing_org/event/", {params: params}).then((response) => {
+      axios.get("cycling_org/event/", {params: params}).then((response) => {
         findingEvents.value = false;
         events.value = _.unionBy(response.data.results, record.value._events || [], r => r.id);
       }, (error) => {
@@ -279,7 +279,7 @@ export default {
         event: record.value._events.map(r => r.id),
         page_size: 0
       };
-      axios.get("bycing_org/race/", {params: params}).then((response) => {
+      axios.get("cycling_org/race/", {params: params}).then((response) => {
         races.value = _.unionBy(response.data.results, record.value._races || [], r => r.id);
       }, (error) => {
         notifyDefaultServerError(error, true)
@@ -299,7 +299,7 @@ export default {
         organization: props.organization.id,
         page_size: 0
       };
-      axios.get("bycing_org/category/", {params: params}).then((response) => {
+      axios.get("cycling_org/category/", {params: params}).then((response) => {
         categories.value = response.data.results;
       }, (error) => {
         notifyDefaultServerError(error, true)
@@ -308,7 +308,7 @@ export default {
 
     const deleteRecord = () => {
       deleting.value = true;
-      axios.delete(`bycing_org/race_series/${record.value.id}`).then((response) => {
+      axios.delete(`cycling_org/race_series/${record.value.id}`).then((response) => {
         deleting.value = false;
         notifySuccess(`Race Series #${record.value.id} deleted.`);
         hide();
@@ -321,11 +321,11 @@ export default {
 
     const save = () => {
       var data = Object.assign({}, record.value);
-      var url = "bycing_org/race_series",
+      var url = "cycling_org/race_series",
           httpMethod = axios.post,
           successMsg = "Race Series added successfully.";
       if (isEditMode.value) {
-        url = `bycing_org/race_series/${record.value.id}`;
+        url = `cycling_org/race_series/${record.value.id}`;
         httpMethod = axios.patch;
         successMsg = "Race Series updated successfully."
       } else {

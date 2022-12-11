@@ -86,7 +86,7 @@ export default {
 
     const sendVerifyCode = () => {
       sending.value = true;
-      axios.post(`bycing_org/member/me/send_${verifyType.value}_verify_code`).then((response) => {
+      axios.post(`cycling_org/member/me/send_${verifyType.value}_verify_code`).then((response) => {
           sending.value = false;
           stage.value = 'verify';
           clearTimeout(counterTimerId);
@@ -104,7 +104,7 @@ export default {
 
     const onFinishEnterCode = (code) => {
       verifying.value = true;
-      axios.post(`bycing_org/member/me/${verifyType.value}_verify`, {code: code}).then(() => {
+      axios.post(`cycling_org/member/me/${verifyType.value}_verify`, {code: code}).then(() => {
           verifying.value = false;
           hide();
           context.emit('verify-successed', verifyType.value, to.value);

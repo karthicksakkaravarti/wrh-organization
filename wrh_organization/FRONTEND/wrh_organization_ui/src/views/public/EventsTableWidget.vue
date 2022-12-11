@@ -195,7 +195,7 @@ export default {
         params.order_by = ['country', 'city', 'state'].map(f => `${desc}${f}`).join(',');
       }
       loading.value = true;
-      axios.get("bycing_org/event/", {params: params}).then((response) => {
+      axios.get("cycling_org/event/", {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
         pagination.value = response.data.pagination;
@@ -208,7 +208,7 @@ export default {
 
     const loadOrganizations = () => {
       loadingOrganizations.value = true;
-      axios.get("bycing_org/organization/", {params: {page_size: 0}}).then((response) => {
+      axios.get("cycling_org/organization/", {params: {page_size: 0}}).then((response) => {
         loadingOrganizations.value = false;
         organizations.value = response.data.results;
         if (route.value.query.organization) {

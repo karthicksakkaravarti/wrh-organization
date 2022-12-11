@@ -4,8 +4,8 @@ import requests
 from django.core.management import BaseCommand
 from django.utils import timezone
 
-from apps.bycing_org.models import Event
-from apps.bycing_org.rest_api.serializers import EventSerializer
+from apps.cycling_org.models import Event
+from apps.cycling_org.rest_api.serializers import EventSerializer
 from apps.usacycling.models import USACEvent
 import datetime
 

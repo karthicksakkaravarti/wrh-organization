@@ -61,7 +61,7 @@ export default {
     const memberData = ref({user: {}});
 
     const loadMemberData = () => {
-      axios.get(`bycing_org/public/member/${route.value.params.record_id}`, {params: {exfields: 'summary'}}).then((response) => {
+      axios.get(`cycling_org/public/member/${route.value.params.record_id}`, {params: {exfields: 'summary'}}).then((response) => {
         memberData.value = response.data;
       }, (error) => {
         notifyDefaultServerError(error, true)

@@ -167,7 +167,7 @@ export default {
 
     const loadSchema = () => {
       let params = {exfields: "member_fields_schema", fields: "member_fields_schema"};
-      axios.get(`bycing_org/organization/${organization.value.id}`, {params: params}).then((response) => {
+      axios.get(`cycling_org/organization/${organization.value.id}`, {params: params}).then((response) => {
         schema.value = response.data.member_fields_schema || [];
         schema.value.forEach(r => {
           if (r.multiple) {
@@ -182,7 +182,7 @@ export default {
 
     const loadRecord = () => {
       loading.value = true;
-      axios.get(`bycing_org/organization/${organization.value.id}/my_member_fields`).then((response) => {
+      axios.get(`cycling_org/organization/${organization.value.id}/my_member_fields`).then((response) => {
         loading.value = false;
         record.value = response.data || {};
       }, (error) => {
@@ -193,7 +193,7 @@ export default {
 
     const save = () => {
       saving.value = true;
-      axios.put(`bycing_org/organization/${organization.value.id}/my_member_fields`, record.value).then((response) => {
+      axios.put(`cycling_org/organization/${organization.value.id}/my_member_fields`, record.value).then((response) => {
         saving.value = false;
         notifySuccess("Your membership info saved successfully.");
         context.emit('save-successed');

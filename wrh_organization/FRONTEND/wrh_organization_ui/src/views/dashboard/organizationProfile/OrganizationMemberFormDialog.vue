@@ -392,7 +392,7 @@ export default {
 
     const loadSchema = () => {
       let params = {exfields: "member_fields_schema", fields: "member_fields_schema"};
-      axios.get(`bycing_org/organization/${props.organization.id}`, {params: params}).then((response) => {
+      axios.get(`cycling_org/organization/${props.organization.id}`, {params: params}).then((response) => {
         schema.value = response.data.member_fields_schema || [];
         schema.value.forEach(r => {
           if (r.multiple && !Array.isArray(record.value.member_fields[r.name])) {
@@ -411,7 +411,7 @@ export default {
 
     const deleteRecord = () => {
       deleting.value = true;
-      axios.delete(`bycing_org/organization/${props.organization.id}/members/${record.value.id}`).then((response) => {
+      axios.delete(`cycling_org/organization/${props.organization.id}/members/${record.value.id}`).then((response) => {
         deleting.value = false;
         notifySuccess(`Member deleted.`);
         hide();
@@ -431,7 +431,7 @@ export default {
       data.member = data._member.id;
       delete data._member;
       saving.value = true;
-      var url = `bycing_org/organization/${props.organization.id}/members`,
+      var url = `cycling_org/organization/${props.organization.id}/members`,
           httpMethod = axios.post,
           successMsg = "Member added successfully.";
       if (isEditMode.value) {
@@ -456,7 +456,7 @@ export default {
         return;
       }
       findingMembers.value = true;
-      axios.get("bycing_org/member/find", {params: {search: search}}).then((response) => {
+      axios.get("cycling_org/member/find", {params: {search: search}}).then((response) => {
         findingMembers.value = false;
         members.value = response.data.results;
       }, (error) => {

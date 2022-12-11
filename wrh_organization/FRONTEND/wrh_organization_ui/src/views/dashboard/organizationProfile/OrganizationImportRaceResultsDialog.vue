@@ -103,7 +103,7 @@ export default {
           orgId = props.organization.id,
           raceId = race.value.id;
       formData.append('file', csvFile.value);
-      axios.post( `bycing_org/race_result/organization/${orgId}/race/${raceId}/import_from_csv`,
+      axios.post( `cycling_org/race_result/organization/${orgId}/race/${raceId}/import_from_csv`,
           formData, {headers: {'Content-Type': 'multipart/form-data'}}
       ).then((response) => {
         importing.value = false;

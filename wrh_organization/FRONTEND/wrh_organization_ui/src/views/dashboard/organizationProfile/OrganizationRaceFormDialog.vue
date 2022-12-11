@@ -91,7 +91,7 @@ export default {
 
     const deleteRecord = () => {
       deleting.value = true;
-      axios.delete(`bycing_org/race/${record.value.id}`).then((response) => {
+      axios.delete(`cycling_org/race/${record.value.id}`).then((response) => {
         deleting.value = false;
         notifySuccess(`Race #${record.value.id} deleted.`);
         hide();
@@ -104,11 +104,11 @@ export default {
 
     const save = () => {
       var data = Object.assign({}, record.value);
-      var url = "bycing_org/race",
+      var url = "cycling_org/race",
           httpMethod = axios.post,
           successMsg = "Race added successfully.";
       if (isEditMode.value) {
-        url = `bycing_org/race/${record.value.id}`;
+        url = `cycling_org/race/${record.value.id}`;
         httpMethod = axios.patch;
         successMsg = "Race updated successfully."
       } else {

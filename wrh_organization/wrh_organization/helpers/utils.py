@@ -835,7 +835,7 @@ class IsAdminOrganizationPermission(permissions.BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
-        from apps.bycing_org.models import OrganizationMember
+        from apps.cycling_org.models import OrganizationMember
         obj = self.get_object(view, obj)
         return OrganizationMember.objects.filter(member=request.user.member, organization=obj, is_active=True
                                                  ).filter(Q(is_admin=True) | Q(is_master_admin=True)).exists()

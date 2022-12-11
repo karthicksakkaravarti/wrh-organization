@@ -1,0 +1,11 @@
+{% load util_tags %}
+
+<p>Hi {{ user }},</p>
+
+<p>Welcome to wrh-organization!</p>
+
+<p>Please click on the following link to confirm your registration:</p>
+
+<a href="{% ex_url 'cycling_org_rest_api:user_registration-activate' uid=uid token=token scheme='auto' drf=True %}?format=json">
+  Click here to activate!
+</a>

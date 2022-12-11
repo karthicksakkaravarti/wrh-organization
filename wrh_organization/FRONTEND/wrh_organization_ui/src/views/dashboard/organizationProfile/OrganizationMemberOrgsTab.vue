@@ -215,7 +215,7 @@ export default {
         delete params.is_active;
       }
       loading.value = true;
-      axios.get(`bycing_org/organization/${props.organization.id}/member_orgs`, {params: params}).then((response) => {
+      axios.get(`cycling_org/organization/${props.organization.id}/member_orgs`, {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
         pagination.value = response.data.pagination;

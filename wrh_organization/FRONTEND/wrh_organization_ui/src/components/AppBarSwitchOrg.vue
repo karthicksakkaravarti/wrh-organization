@@ -86,7 +86,7 @@ export default {
         my: true,
         order_by: 'type,-id'
       };
-      axios.get(`bycing_org/organization`, {params: params}).then((response) => {
+      axios.get(`cycling_org/organization`, {params: params}).then((response) => {
         loading.value = false;
         var defaultOrg = store.getters.defaultRegionalOrg;
         var results = response.data.results;

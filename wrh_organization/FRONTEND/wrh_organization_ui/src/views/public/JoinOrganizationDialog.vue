@@ -288,7 +288,7 @@ export default {
     };
 
     const loadStripPubKey = () => {
-      axios.get("bycing_org/global_conf/STRIPE_PUBLISHABLE_KEY").then(
+      axios.get("cycling_org/global_conf/STRIPE_PUBLISHABLE_KEY").then(
         response => {
           stripePubKey.value = response.data;
         },
@@ -300,7 +300,7 @@ export default {
 
     const loadOrgRecord = () => {
       let params = {exfields: "member_fields_schema,membership_plans", fields: "member_fields_schema,membership_plans"};
-      axios.get(`bycing_org/organization/${props.organization.id}`, {params: params}).then((response) => {
+      axios.get(`cycling_org/organization/${props.organization.id}`, {params: params}).then((response) => {
         membershipPlans.value = response.data.membership_plans || [];
         schema.value = response.data.member_fields_schema || [];
         schema.value.forEach(r => {
@@ -335,7 +335,7 @@ export default {
       var data = {
         member_fields: memberFields.value, token: token, plan_id: selectedPlan.value.id, donation: donateValue.value
       };
-      axios.post(`bycing_org/organization/${props.organization.id}/join`, data).then((response) => {
+      axios.post(`cycling_org/organization/${props.organization.id}/join`, data).then((response) => {
         joining.value = false;
         notifySuccess(`You ${alreadyJoined.value? 'Renewed membership': 'Joined'} successfully.`);
         context.emit('join-successed');
@@ -351,7 +351,7 @@ export default {
     };
 
     const getCurrentPlan = () => {
-      axios.get(`bycing_org/organization/${props.organization.id}/join`).then((response) => {
+      axios.get(`cycling_org/organization/${props.organization.id}/join`).then((response) => {
         currentMembership.value = response.data;
         memberFields.value = Object.assign({}, memberFields.value, currentMembership.value.member_fields)
       }, (error) => {

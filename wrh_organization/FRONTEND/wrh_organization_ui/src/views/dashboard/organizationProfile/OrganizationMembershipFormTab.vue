@@ -225,7 +225,7 @@ export default {
     const loadRecord = () => {
       loading.value = true;
       let params = {exfields: "member_fields_schema,membership_plans", fields: "member_fields_schema,membership_plans"};
-      axios.get(`bycing_org/organization/${props.organization.id}`, {params: params}).then((response) => {
+      axios.get(`cycling_org/organization/${props.organization.id}`, {params: params}).then((response) => {
         loading.value = false;
         schema.value = response.data.member_fields_schema || [];
         membershipPlans.value = response.data.membership_plans || [];
@@ -286,7 +286,7 @@ export default {
         member_fields_schema: memberFields,
         membership_plans: plans
       };
-      axios.patch(`bycing_org/organization/${props.organization.id}?exfields=member_fields_schema,membership_plans&fields=member_fields_schema,membership_plans`,
+      axios.patch(`cycling_org/organization/${props.organization.id}?exfields=member_fields_schema,membership_plans&fields=member_fields_schema,membership_plans`,
           postData).then((response) => {
         saving.value = false;
         schema.value = response.data.member_fields_schema;

@@ -177,7 +177,7 @@ export default {
     const event = ref({});
     const orgId = route.value.params.record_id;
     const loadEvent = () => {
-      axios.get(`bycing_org/event/${orgId}`, {params: {exfields: 'summary'}}).then((response) => {
+      axios.get(`cycling_org/event/${orgId}`, {params: {exfields: 'summary'}}).then((response) => {
         const e = response.data;
         if (!e.summary) {
           e.summary = {};

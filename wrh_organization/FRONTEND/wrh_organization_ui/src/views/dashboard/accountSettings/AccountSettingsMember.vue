@@ -323,7 +323,7 @@ export default {
     const loadAccountData = () => {
       loading.value = true;
       phoneMask.value = null;
-      axios.get("bycing_org/member/me", {params: {xfields: "social_media"}}).then((response) => {
+      axios.get("cycling_org/member/me", {params: {xfields: "social_media"}}).then((response) => {
         accountDataOrig.value = response.data;
         accountData.value = cloneData();
         nextTick(() => {
@@ -365,7 +365,7 @@ export default {
       } else if (data.user.avatar !== null) {
         delete data.user.avatar;
       }
-      axios.patch("bycing_org/member/me", data).then((response) => {
+      axios.patch("cycling_org/member/me", data).then((response) => {
         saving.value = false;
         accountDataOrig.value = response.data;
         accountData.value = cloneData();

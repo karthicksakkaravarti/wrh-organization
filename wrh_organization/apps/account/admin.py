@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.db import transaction
 
 from .models import User
-from ..bycing_org.models import Member
+from ..cycling_org.models import Member
 
 
 @admin.action(description='Activate rider member account')

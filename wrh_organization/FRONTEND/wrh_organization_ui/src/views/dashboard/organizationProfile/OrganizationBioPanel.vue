@@ -197,7 +197,7 @@ export default {
     const orgSummary = ref({});
 
     const loadOrgSummary = () => {
-      axios.get(`bycing_org/organization/${props.organization.id}/summary`).then((response) => {
+      axios.get(`cycling_org/organization/${props.organization.id}/summary`).then((response) => {
         orgSummary.value = response.data;
       }, (error) => {
         notifyDefaultServerError(error, true)

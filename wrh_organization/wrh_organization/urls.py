@@ -28,7 +28,7 @@ API_ENDPOINT = 'api/(?P<{}>v\d+)'.format(VERSION_PARAM)
 urlpatterns = [
     re_path(r'^$', RedirectView.as_view(url=settings.VUE_STATIC_INDEX), name='index'),
     re_path(r'^{}/account/'.format(API_ENDPOINT), include('apps.account.urls', namespace='account_rest_api')),
-    re_path(r'^{}/bycing_org/'.format(API_ENDPOINT), include('apps.bycing_org.urls', namespace='bycing_org_rest_api')),
+    re_path(r'^{}/cycling_org/'.format(API_ENDPOINT), include('apps.cycling_org.urls', namespace='cycling_org_rest_api')),
     re_path(r'^{}/usacycling/'.format(API_ENDPOINT), include('apps.usacycling.urls', namespace='usacycling_rest_api')),
     re_path(r'^admin/', admin.site.urls),
     re_path(r'^ckeditor5/', include('django_ckeditor_5.urls')),

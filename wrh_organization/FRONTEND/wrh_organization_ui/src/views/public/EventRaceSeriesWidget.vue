@@ -63,7 +63,7 @@ export default {
       }
       const params = Object.assign({event: props.event.id, fields: 'id,name,start_datetime'}, tableFiltering.value, refineVTableOptions(tableOptions.value));
       loading.value = true;
-      axios.get("bycing_org/race_series/", {params: params}).then((response) => {
+      axios.get("cycling_org/race_series/", {params: params}).then((response) => {
         loading.value = false;
         raceSeries.value = response.data.results;
         pagination.value = response.data.pagination;

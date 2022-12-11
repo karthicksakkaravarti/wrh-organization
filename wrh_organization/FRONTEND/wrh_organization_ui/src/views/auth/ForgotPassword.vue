@@ -89,7 +89,7 @@ export default {
 
     const sendRecoverPassword = () => {
       requesting.value = true;
-      axios.post("bycing_org/users/registration/send_recover_password", forgotForm.value).then((response) => {
+      axios.post("cycling_org/users/registration/send_recover_password", forgotForm.value).then((response) => {
         requesting.value = false;
         notifySuccess("Reset password link sent to your email! please check your email.");
         context.emit("change-page", "Login");

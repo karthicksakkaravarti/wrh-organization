@@ -64,7 +64,7 @@ let app = new Vue({
   vuetify,
   render: h => h(App),
   created: () => {
-      axios.get("bycing_org/global_pref").then(
+      axios.get("cycling_org/global_pref").then(
         (response) => {
           store.state.sitePrefs = response.data;
           app.$rollbar.configure({

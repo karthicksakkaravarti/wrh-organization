@@ -78,7 +78,7 @@ export default {
         page_size: 5,
         order_by: 'start_date,name'
       }, props.apiParams);
-      axios.get(`bycing_org/event`, {params: params}).then((response) => {
+      axios.get(`cycling_org/event`, {params: params}).then((response) => {
         loading.value = false;
         events.value = response.data.results;
       }, (error) => {

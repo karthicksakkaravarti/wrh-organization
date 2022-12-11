@@ -214,7 +214,7 @@ export default {
         return;
       }
       findingRaceSeries.value = true;
-      axios.get("bycing_org/race_series/", {params: {search: search}}).then((response) => {
+      axios.get("cycling_org/race_series/", {params: {search: search}}).then((response) => {
         findingRaceSeries.value = false;
         raceSeries.value = response.data.results;
       }, (error) => {
@@ -230,7 +230,7 @@ export default {
         organization: props.organization.id,
         page_size: 0
       };
-      axios.get("bycing_org/category/", {params: params}).then((response) => {
+      axios.get("cycling_org/category/", {params: params}).then((response) => {
         categories.value = response.data.results;
       }, (error) => {
         notifyDefaultServerError(error, true)
@@ -249,7 +249,7 @@ export default {
         fields: 'id,race_result,place',
         page_size: 0
       };
-      axios.get("bycing_org/race_series_result/", {params: params}).then((response) => {
+      axios.get("cycling_org/race_series_result/", {params: params}).then((response) => {
         var results = {},
             places = {};
         response.data.results.forEach(r => {
@@ -284,11 +284,11 @@ export default {
     const save = (r, ignoreSuccessNotify) => {
       var rid = raceSeriesResults.value[r.id]? raceSeriesResults.value[r.id].id: null;
       var data = {};
-      var url = "bycing_org/race_series_result",
+      var url = "cycling_org/race_series_result",
           httpMethod = axios.post,
           successMsg = "Race Series Result updated successfully.";
       if (rid) {
-        url = `bycing_org/race_series_result/${rid}`;
+        url = `cycling_org/race_series_result/${rid}`;
         httpMethod = axios.patch;
       } else {
         data.organization = props.organization.id;

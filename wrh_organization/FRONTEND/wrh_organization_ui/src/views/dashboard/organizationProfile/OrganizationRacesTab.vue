@@ -237,7 +237,7 @@ export default {
         params.start_date__lte = eventFiltering.value.to_date
       }
       findingEvents.value = true;
-      axios.get("bycing_org/event/", {params: params}).then((response) => {
+      axios.get("cycling_org/event/", {params: params}).then((response) => {
         findingEvents.value = false;
         events.value = response.data.results;
       }, (error) => {
@@ -257,7 +257,7 @@ export default {
         params.event = selectedEvent.value.id
       }
       loading.value = true;
-      axios.get("bycing_org/race/", {params: params}).then((response) => {
+      axios.get("cycling_org/race/", {params: params}).then((response) => {
         loading.value = false;
         records.value = response.data.results;
         pagination.value = response.data.pagination;

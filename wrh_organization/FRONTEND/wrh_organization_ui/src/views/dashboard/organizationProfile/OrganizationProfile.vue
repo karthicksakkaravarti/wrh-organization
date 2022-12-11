@@ -159,7 +159,7 @@ export default {
     const organization = ref({my_level: {}});
     const loadOrganization = () => {
       var params = {exfields: 'my_level'};
-      axios.get(`bycing_org/organization/${route.value.params.record_id}`, {params: params}).then((response) => {
+      axios.get(`cycling_org/organization/${route.value.params.record_id}`, {params: params}).then((response) => {
         organization.value = response.data;
         if (!organization.value.my_level.is_admin) {
           router.replace({name: routeNames.PUBLIC_ORG_PROFILE, params: {record_id: organization.value.id}});

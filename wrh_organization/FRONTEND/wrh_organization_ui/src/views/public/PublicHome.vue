@@ -76,7 +76,7 @@ export default {
     const defaultOrg = ref(null);
 
     const loadDefaultOrg = () => {
-      axios.get(`bycing_org/organization/default_org`).then((response) => {
+      axios.get(`cycling_org/organization/default_org`).then((response) => {
         defaultOrg.value = response.data;
       }, (error) => {
         notifyDefaultServerError(error, true);
