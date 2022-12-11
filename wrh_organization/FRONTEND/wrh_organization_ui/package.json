@@ -1,7 +1,7 @@
 {
   "name": "wrh_organization_ui",
   "description": "WRH-Organization Frontend",
-  "version": "0.0.70",
+  "version": "0.0.71",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
