@@ -66,6 +66,7 @@ class ExportViewMixin(object):
 class GlobalPreferencesView(viewsets.ViewSet):
     PUBLIC_KEYS = [
         'site_ui__terms_of_service', 'site_ui__banner_image', 'site_ui__default_event_banner_image',
+        'site_ui__signup_page_title', 'site_ui__signup_page_caption',
         'rollbar_client__access_token', 'rollbar_client__environment', 'user_account__disabled_signup',
         'core_backend__default_org_id', 'core_backend__disabled_create_org',
     ]

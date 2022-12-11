@@ -24,10 +24,10 @@
     <!-- title -->
     <v-card-text>
       <p class="text-2xl font-weight-semibold text--primary mb-2">
-        Adventure starts here 🚀
+        {{ $store.state.sitePrefs.site_ui__signup_page_title || 'Adventure starts here' }}
       </p>
       <p class="mb-2">
-        Make your bicycling races easy and fun!
+        {{ $store.state.sitePrefs.site_ui__signup_page_caption || 'Make your bicycling races easy and fun!' }}
       </p>
     </v-card-text>
 

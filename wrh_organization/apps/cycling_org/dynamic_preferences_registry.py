@@ -110,3 +110,27 @@ class SiteUiDefaultEventBannerImage(types.FilePreference):
     section = site_ui
     name = 'default_event_banner_image'
     verbose_name = 'Default Event Banner Image'
+
+
+@global_preferences_registry.register
+class SiteUiSignupPageTitle(types.StringPreference):
+    field_kwargs = {
+        'required': False,
+        'help_text': 'signup page title',
+    }
+    section = site_ui
+    name = 'signup_page_title'
+    verbose_name = 'Signup Page title'
+    default = 'Sign up on WRH'
+
+
+@global_preferences_registry.register
+class SiteUiSignupPageCaption(types.StringPreference):
+    field_kwargs = {
+        'required': False,
+        'help_text': 'signup page caption',
+    }
+    section = site_ui
+    name = 'signup_page_caption'
+    verbose_name = 'Signup Page caption'
+    default = 'Create your account and enjoy!'
