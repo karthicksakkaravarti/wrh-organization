@@ -10,7 +10,7 @@
           WRH, We Race Here!
         </p>
         <p>
-          Manage bycing races, race series for organizations!
+          Manage bicycling races, race series for organizations!
         </p>
         <p class="mb-5">
           Create Your Account, Select Your Region, Find a Team or Club!

@@ -27,7 +27,7 @@
         Adventure starts here 🚀
       </p>
       <p class="mb-2">
-        Make your bycing races easy and fun!
+        Make your bicycling races easy and fun!
       </p>
     </v-card-text>
 
