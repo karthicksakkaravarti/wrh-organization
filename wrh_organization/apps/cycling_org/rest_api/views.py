@@ -81,7 +81,7 @@ class GlobalPreferencesView(viewsets.ViewSet):
 
     @property
     def conf_keys(self):
-        keys = self.PUBLIC_KEYS
+        keys = self.PUBLIC_KEYS.copy()
         if self.request.user.is_authenticated:
             keys += self.LOGIN_REQUIRED_KEYS
         return keys
@@ -111,7 +111,7 @@ class GlobalConfView(viewsets.ViewSet):
 
     @property
     def conf_keys(self):
-        keys = self.PUBLIC_KEYS
+        keys = self.PUBLIC_KEYS.copy()
         if self.request.user.is_authenticated:
             keys += self.LOGIN_REQUIRED_KEYS
         return keys
