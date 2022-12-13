@@ -234,7 +234,7 @@ export default {
     left: 0;
     top: 0;
     width: 100%;
-    height: 300px;
+    //height: 300px;
     object-fit: cover;
   }
 
@@ -248,19 +248,6 @@ export default {
   }
 
   // tab content
-  #public-org-profile-tabs-content {
-    background-color: transparent;
-  }
-
-  .v-avatar-group > .v-avatar .v-btn .v-btn__content{
-    width: 20px;
-  }
-  .v-avatar-group > .v-avatar .v-image.disabled {
-    opacity: 0.5;
-  }
-  .v-avatar-group > .v-avatar {
-    margin-right: 20px;
-  }
 }
 
 </style>

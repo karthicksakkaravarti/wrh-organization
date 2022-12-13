@@ -324,7 +324,7 @@ CKEDITOR_5_CONFIGS = {
         'toolbar': [
             "heading", "|", "outdent", "indent", "|", "bold", "italic", "link", "underline", "strikethrough",
             "subscript", "superscript", "highlight", "|", "bulletedList", "numberedList", "todoList", "|",
-            "fontColor", "fontBackgroundColor", "removeFormat", "insertTable",
+            "fontColor", "fontBackgroundColor", "removeFormat", "insertTable", "sourceEditing",
         ]
     },
     'awesome': {
