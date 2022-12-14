@@ -3,10 +3,10 @@ from django.apps import AppConfig
 from django.conf import settings
 
 
-class BycingOrgConfig(AppConfig):
+class CyclingOrgConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'apps.cycling_org'
-    verbose_name = 'Bycing Org'
+    verbose_name = 'Cycling Org'
 
     def ready(self):
         # configure stripe
