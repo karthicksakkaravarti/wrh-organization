@@ -4,7 +4,7 @@
     persistent
     max-width="800px"
   >
-    <v-card>
+    <v-card class="profile-org-form">
       <v-card-title>
         <span class="headline">{{isEditMode? `Edit Organization #${record.id}`: 'New Organization'}}</span>
       </v-card-title>
@@ -156,6 +156,15 @@
               </p>
             </div>
           </v-card-text>
+          <v-divider></v-divider>
+          <v-card-text>
+            <v-row>
+              <v-col cols="12">
+                <h3 class="mb-2">Home page information board:</h3>
+                <ckeditor :editor="editor" v-model="prefs.information_board_content" :config="$const.DEFAULT_CKEDITOR_CONFIG"></ckeditor>
+              </v-col>
+            </v-row>
+          </v-card-text>
           <v-form @submit.prevent="savePrefs">
             <v-divider></v-divider>
             <v-card-actions class="pt-5">
@@ -186,8 +195,13 @@ import axios from "@/axios";
 import {internationalPhoneMask, notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import {emailValidator} from "@core/utils/validation";
 import {nextTick} from "@vue/composition-api/dist/vue-composition-api";
+import CKEditor from '@ckeditor/ckeditor5-vue2';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 export default {
+  components: {
+    ckeditor: CKEditor.component
+  },
   setup(props, context) {
     const isVisible = ref(false);
     const tab = ref(0);
@@ -366,6 +380,7 @@ export default {
       save,
       savePrefs,
       phoneMask,
+      editor: ClassicEditor,
       rules: {
         emailValidator
       },
@@ -385,11 +400,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
   .banner {
     border: 1px solid #e9e9e9;
   }
   .banner.no-banner{
     opacity: 0.2;
+  }
+</style>
+<style>
+  .profile-org-form .ck-editor .ck-editor__main .ck-content {
+    height: 200px;
   }
 </style>

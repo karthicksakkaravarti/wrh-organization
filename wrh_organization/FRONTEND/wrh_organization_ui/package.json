@@ -11,6 +11,8 @@
   "dependencies": {
     "@casl/ability": "^5.3.1",
     "@casl/vue": "1.x",
+    "@ckeditor/ckeditor5-build-classic": "^35.4.0",
+    "@ckeditor/ckeditor5-vue2": "^3.0.1",
     "@fullcalendar/core": "^5.11.3",
     "@fullcalendar/daygrid": "^5.11.3",
     "@fullcalendar/list": "^5.11.3",

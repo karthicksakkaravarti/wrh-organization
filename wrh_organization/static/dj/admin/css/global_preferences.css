@@ -1,0 +1,18 @@
+#globalpreferencemodel_form .module h1,
+#globalpreferencemodel_form .module h2,
+#globalpreferencemodel_form .module h3,
+#globalpreferencemodel_form .module h4
+{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+#globalpreferencemodel_form .module h2 {
+  font-size: 1rem;
+}
+#globalpreferencemodel_form .module h3 {
+  font-size: 0.875rem;
+}
+#globalpreferencemodel_form .module h4 {
+  font-size: 0.75rem;
+}

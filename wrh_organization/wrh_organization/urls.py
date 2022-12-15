@@ -20,6 +20,8 @@ from django.views.generic import RedirectView
 from django.views.static import serve
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from apps.cycling_org.views import ckeditor_upload_file
+
 VERSION_PARAM = settings.REST_FRAMEWORK.get('VERSION_PARAM', 'version')
 DEFAULT_VERSION = settings.REST_FRAMEWORK.get('DEFAULT_VERSION', 'v1')
 API_ENDPOINT = 'api/(?P<{}>v\d+)'.format(VERSION_PARAM)
@@ -31,7 +33,7 @@ urlpatterns = [
     re_path(r'^{}/cycling_org/'.format(API_ENDPOINT), include('apps.cycling_org.urls', namespace='cycling_org_rest_api')),
     re_path(r'^{}/usacycling/'.format(API_ENDPOINT), include('apps.usacycling.urls', namespace='usacycling_rest_api')),
     re_path(r'^admin/', admin.site.urls),
-    re_path(r'^ckeditor5/', include('django_ckeditor_5.urls')),
+    re_path('^ckeditor5/image_upload/', ckeditor_upload_file, name="ck_editor_5_upload_file"),
     re_path(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     re_path(r'^token/auth/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     re_path(r'^token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

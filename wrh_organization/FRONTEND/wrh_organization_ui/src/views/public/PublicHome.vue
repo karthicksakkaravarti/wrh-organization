@@ -76,6 +76,11 @@
 <!--      </v-card-text>-->
 <!--    </v-card>-->
     <v-row>
+      <v-col cols="12" v-if="$store.state.sitePrefs.site_ui__home_information_board">
+        <v-card class="d-flex">
+          <v-card-text v-html="$store.state.sitePrefs.site_ui__home_information_board" class="ck-content"></v-card-text>
+        </v-card>
+      </v-col>
       <v-col cols="12" md="6">
         <recent-race-results-widget class="home-widget"></recent-race-results-widget>
       </v-col>

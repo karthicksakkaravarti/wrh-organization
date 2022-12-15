@@ -147,3 +147,15 @@ export const EVENT_SOURCE_MAP = {};
 EVENT_SOURCE_OPTIONS.forEach(function(v) {
   EVENT_SOURCE_MAP[v.value] = v;
 });
+
+export const DEFAULT_CKEDITOR_CONFIG = {
+  toolbar: {
+    items: [
+      'heading', '|',
+      'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
+      'indent', 'outdent', '|',
+      'blockQuote', 'insertTable', '|',
+      'undo', 'redo'
+    ],
+  },
+};

@@ -175,6 +175,7 @@ class BasePrefsSerializer(serializers.Serializer):
 class OrganizationPrefsSerializer(BasePrefsSerializer):
     file_path = str(Path('uploads', 'cycling_org', 'organization'))
     banner_image = Base64ImageField(required=False, allow_null=True)
+    information_board_content = serializers.CharField(required=False, allow_null=True)
 
 
 class OrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -477,6 +478,7 @@ class RaceSeriesResultSerializer(DynamicFieldsSerializerMixin, serializers.Model
 class EventPrefsSerializer(BasePrefsSerializer):
     file_path = str(Path('uploads', 'cycling_org', 'event'))
     banner_image = Base64ImageField(required=False, allow_null=True)
+    information_board_content = serializers.CharField(required=False, allow_null=True)
 
 
 class EventSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):

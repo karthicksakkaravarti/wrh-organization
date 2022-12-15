@@ -13,10 +13,12 @@ import { version as AppVersion } from "../package.json";
 import Toast from "vue-toastification";
 import * as utils from "@/composables/utils"
 import VueMask from 'v-mask'
-import "vue-toastification/dist/index.css";
 import DatetimePicker from 'vuetify-datetime-picker'
 import Rollbar from 'rollbar';
 import {notifyDefaultServerError} from "@/composables/utils";
+
+import "vue-toastification/dist/index.css";
+import "../public/css/ckeditor-content-styles.css"
 
 Vue.use(VueMask);
 Vue.use(Toast, {

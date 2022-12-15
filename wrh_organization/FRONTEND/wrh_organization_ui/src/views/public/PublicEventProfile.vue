@@ -122,6 +122,11 @@
           </v-card-text>
         </v-card>
       </v-col>
+      <v-col cols="12" class="pt-0" v-if="event.prefs.information_board_content">
+        <v-card class="d-flex">
+          <v-card-text v-html="event.prefs.information_board_content" class="ck-content"></v-card-text>
+        </v-card>
+      </v-col>
       <v-col cols="12" md="6">
         <event-races-widget :event="event" class="home-widget"></event-races-widget>
       </v-col>

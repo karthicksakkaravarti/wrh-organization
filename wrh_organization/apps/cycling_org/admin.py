@@ -83,6 +83,11 @@ class FieldsTrackingAdmin(admin.ModelAdmin):
 
 
 class MyGlobalPreferenceAdmin(GlobalPreferenceAdmin):
+    class Media:
+        css = {
+            'all': ('dj/admin/css/global_preferences.css',)
+        }
+
     list_display = ('verbose_name', 'name', 'section_name', 'ellipsis_raw_value')
 
     def has_add_permission(self, request, obj=None):

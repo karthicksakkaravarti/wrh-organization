@@ -174,6 +174,12 @@
           </v-card-text>
         </v-card>
       </v-col>
+      <v-col cols="12" class="pt-0" v-if="organization.prefs.information_board_content">
+        <v-card class="d-flex">
+          <v-card-text v-html="organization.prefs.information_board_content" class="ck-content"></v-card-text>
+        </v-card>
+      </v-col>
+
 <!--      <v-col cols="12" md="6">-->
 <!--        <recent-race-results-widget :api-params="{organization: organization.id}" class="home-widget"></recent-race-results-widget>-->
 <!--      </v-col>-->

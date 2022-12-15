@@ -4,7 +4,7 @@
     persistent
     max-width="700px"
   >
-    <v-card>
+    <v-card class="event-org-form">
       <v-card-title>
         <span class="headline">{{isEditMode? `Edit Event #${record.id}`: 'New Event'}}</span>
       </v-card-title>
@@ -164,6 +164,15 @@
               </p>
             </div>
           </v-card-text>
+          <v-divider></v-divider>
+          <v-card-text>
+            <v-row>
+              <v-col cols="12">
+                <h3 class="mb-2">Event page information board:</h3>
+                <ckeditor :editor="editor" v-model="prefs.information_board_content" :config="$const.DEFAULT_CKEDITOR_CONFIG"></ckeditor>
+              </v-col>
+            </v-row>
+          </v-card-text>
           <v-form @submit.prevent="savePrefs">
             <v-divider></v-divider>
             <v-card-actions class="pt-5">
@@ -188,9 +197,8 @@ import {
 import {ref, computed} from '@vue/composition-api'
 import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
-import {watch} from "@vue/composition-api/dist/vue-composition-api";
-import _ from "lodash";
-import moment from "moment";
+import CKEditor from '@ckeditor/ckeditor5-vue2';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 export default {
   props: {
@@ -198,6 +206,9 @@ export default {
       type: Object,
       required: true
     }
+  },
+  components: {
+    ckeditor: CKEditor.component
   },
   setup(props, context) {
     const isVisible = ref(false);
@@ -376,6 +387,7 @@ export default {
       savePrefs,
       startDateMenu,
       endDateMenu,
+      editor: ClassicEditor,
       icons: {
         mdiDelete,
         mdiAlert,
@@ -394,5 +406,10 @@ export default {
   }
   .banner.no-banner{
     opacity: 0.2;
+  }
+</style>
+<style>
+  .event-org-form .ck-editor .ck-editor__main .ck-content {
+    height: 200px;
   }
 </style>

@@ -146,3 +146,16 @@ class SiteUiSignupPageCaption(types.StringPreference):
     name = 'signup_page_caption'
     verbose_name = 'Signup Page caption'
     default = 'Create your account and enjoy!'
+
+
+@global_preferences_registry.register
+class SiteUiHomeInfomationBoard(types.LongStringPreference):
+    field_kwargs = {
+        'required': False,
+        'help_text': 'home information board',
+        'widget': CKEditor5Widget(config_name='awesome')
+    }
+    section = site_ui
+    name = 'home_information_board'
+    verbose_name = 'Home Information Board'
+    default = ''
