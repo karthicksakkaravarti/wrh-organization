@@ -64,7 +64,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'wrh_organization.helpers.middleware.InjectUiVersionInHeadersMiddleware',
     'wrh_organization.helpers.middleware.ThreadLocalMiddleware',
-    'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
+    'wrh_organization.helpers.middleware.CustomRollbarNotifierMiddleware',
 ]
 
 ROOT_URLCONF = 'wrh_organization.urls'

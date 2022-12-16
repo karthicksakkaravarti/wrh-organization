@@ -8,6 +8,8 @@ from django.conf import settings
 from django.db import connection
 from threading import local
 
+from rollbar.contrib.django.middleware import RollbarNotifierMiddleware
+
 _thread_locals = local()
 
 
@@ -164,3 +166,15 @@ class RequestTimeLoggingMiddleware(object):
                 r += ' (%db)' % len(response.content)
             self.log_message(request, 'response', r)
         return response
+
+
+class CustomRollbarNotifierMiddleware(RollbarNotifierMiddleware):
+    def get_payload_data(self, request, exc):
+        payload_data = {}
+        if request.user.is_authenticated:
+            payload_data = {
+                'person': {
+                    'id': request.user.id, 'username': request.user.username, 'email': request.user.email
+                },
+            }
+        return payload_data
