@@ -442,3 +442,6 @@ ROLLBAR = {
      'root': str(BASE_DIR),
 }
 
+# Turnstile Cloudflare
+TURNSTILE_SECRET_KEY = '<TURNSTILE_SECRET_KEY>'
+TURNSTILE_SITE_KEY = '<TURNSTILE_SITE_KEY>'

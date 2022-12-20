@@ -89,6 +89,7 @@
           :type="isPasswordVisible ? 'text' : 'password'"
           label="Confirm Password"
           placeholder="Confirm Password"
+          class=""
           :append-icon="isPasswordVisible ? icons.mdiEyeOffOutline : icons.mdiEyeOutline"
           :rules="[rules.required, rules.confirmedValidator(registerForm.confirm_password, registerForm.password)]"
           dense
@@ -103,6 +104,8 @@
             item-value="value"
             label="Gender"
             dense
+            hide-details
+            class="mb-3"
             :rules="[rules.required]"
         ></v-select>
 
@@ -124,6 +127,8 @@
               v-on="on"
               :rules="[rules.required]"
               outlined
+              class="mb-3"
+              hide-details
               dense
             ></v-text-field>
           </template>
@@ -138,25 +143,25 @@
           ></v-date-picker>
         </v-menu>
 
-        <v-text-field
-            v-model="registerForm.member.phone"
-            v-mask="$utils.internationalPhoneMask"
-            :append-icon="icons.mdiPhoneOutline"
-            outlined
-            dense
-            label="Phone"
-        >
-        </v-text-field>
+<!--        <v-text-field-->
+<!--            v-model="registerForm.member.phone"-->
+<!--            v-mask="$utils.internationalPhoneMask"-->
+<!--            :append-icon="icons.mdiPhoneOutline"-->
+<!--            outlined-->
+<!--            dense-->
+<!--            label="Phone"-->
+<!--        >-->
+<!--        </v-text-field>-->
 
-        <v-autocomplete
-            v-model="registerForm.member.country"
-            outlined
-            dense
-            label="Country"
-            :items="$const.COUNTRY_OPTIONS"
-            item-text="name"
-            item-value="code"
-        ></v-autocomplete>
+<!--        <v-autocomplete-->
+<!--            v-model="registerForm.member.country"-->
+<!--            outlined-->
+<!--            dense-->
+<!--            label="Country"-->
+<!--            :items="$const.COUNTRY_OPTIONS"-->
+<!--            item-text="name"-->
+<!--            item-value="code"-->
+<!--        ></v-autocomplete>-->
 
         <v-checkbox
           hide-details
@@ -172,6 +177,11 @@
             </v-btn>
           </template>
         </v-checkbox>
+        <turnstile-component v-if="turnstileSiteKey" ref="turnstileCmpRef"
+                             id="signup-turnstile-widget"
+                             :sitekey="turnstileSiteKey"
+                             @verify="onVerifyTurnstile" @expire="$refs.turnstileCmpRef.reset()" @fail="onFailTurnstile"
+                             @timeout="onFailTurnstile"></turnstile-component>
 
         <v-btn
           block
@@ -179,7 +189,7 @@
           color="primary"
           class="mt-6"
           :loading="registering"
-          :disabled="!registerForm.agree_terms || !formValid"
+          :disabled="!registerForm.agree_terms || !registerForm.turnstile_token || !turnstileSiteKey || !formValid"
         >
           Sign Up
         </v-btn>
@@ -233,22 +243,23 @@ import {
   mdiEyeOutline,
   mdiEyeOffOutline
 } from '@mdi/js'
-import { ref, watch } from '@vue/composition-api'
+import {onBeforeUnmount, onMounted, ref, watch} from '@vue/composition-api'
 import themeConfig from '@themeConfig'
 import { required, emailValidator, passwordValidator, confirmedValidator } from '@core/utils/validation'
 import axios from "@/axios";
-import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
+import {notifyDefaultServerError, notifySuccess, notifyError, randomId} from "@/composables/utils";
 import TermsOfServiceDialog from "@/views/public/TermsOfServiceDialog.vue";
+import TurnstileComponent from "@/components/TurnstileComponent.vue";
 
 export default {
-  components: {TermsOfServiceDialog},
+  components: {TurnstileComponent, TermsOfServiceDialog},
   setup(props, context) {
     const isPasswordVisible = ref(false);
     const registering = ref(false);
     const formValid = ref(false);
     const showBirthDateMenu = ref(false);
     const birthDatePickerRef = ref(null);
-    const registerForm = ref({member: {country: "US"}});
+    const registerForm = ref({member: {country: "US"}, turnstile_token: null});
 
     const socialLink = [
       {
@@ -273,10 +284,36 @@ export default {
       },
     ];
 
+    const turnstileSiteKey = ref(null);
+
+    onMounted(() => {
+      loadTurnstileSiteKey();
+    });
+
     watch(showBirthDateMenu, val => {
       // eslint-disable-next-line no-return-assign
       val && setTimeout(() => (birthDatePickerRef.value.activePicker = 'YEAR'));
     });
+
+    const loadTurnstileSiteKey = () => {
+      axios.get("cycling_org/global_conf/TURNSTILE_SITE_KEY").then(
+        response => {
+          turnstileSiteKey.value = response.data;
+        },
+        error => {
+          notifyDefaultServerError(error, true);
+        }
+      );
+    };
+
+    const onVerifyTurnstile = (token) => {
+      registerForm.value.turnstile_token = token;
+    };
+
+    const onFailTurnstile = () => {
+      notifyError('Something is wrong. refresh the page and try again!')
+    };
+
     const register = () => {
       registering.value = true;
       axios.post("cycling_org/users/registration", registerForm.value).then((response) => {
@@ -299,7 +336,9 @@ export default {
       showBirthDateMenu,
       birthDatePickerRef,
       register,
-
+      turnstileSiteKey,
+      onVerifyTurnstile,
+      onFailTurnstile,
       rules: {
         required, emailValidator, confirmedValidator
       },

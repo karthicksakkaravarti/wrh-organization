@@ -421,7 +421,9 @@ class Member(models.Model):
         member_data.update(first_name=user.first_name, last_name=user.last_name, gender=user.gender,
                            birth_date=user.birth_date, user=user, email=user.email)
         for k, v in member_data.items():
-            if not getattr(self, k, None):
+            if k == 'gender' and v is not None:
+                setattr(self, k, v)
+            elif not getattr(self, k, None):
                 setattr(self, k, v)
 
         if commit:

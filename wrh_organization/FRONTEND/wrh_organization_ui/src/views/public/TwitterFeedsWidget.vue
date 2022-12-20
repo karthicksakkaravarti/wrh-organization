@@ -13,7 +13,7 @@
 
 <script>
 import {onMounted, onBeforeUnmount} from "@vue/composition-api";
-import {randomId} from "@/composables/utils";
+import {appendScriptToHeader, randomId} from "@/composables/utils";
 
 
 export default {
@@ -21,27 +21,8 @@ export default {
   },
   setup() {
     const twitterId = "twitter-wjs-" + randomId();
-    const loadTwitter = function (d, s, id) {
-      if (d.getElementById(id)) {
-        d.getElementById(id).remove();
-      }
-      var t = {};
-      var js, fjs = d.getElementsByTagName(s)[0];
-      js = d.createElement(s);
-      js.id = id;
-      js.src = "https://platform.twitter.com/widgets.js";
-      fjs.parentNode.insertBefore(js, fjs);
-
-      t._e = [];
-      t.ready = function (f) {
-        t._e.push(f);
-      };
-
-      return t;
-    };
-
     onMounted(() => {
-      loadTwitter(document, "script", twitterId);
+      appendScriptToHeader(document, "https://platform.twitter.com/widgets.js", twitterId)
     });
 
     onBeforeUnmount(() => {

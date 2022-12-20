@@ -41,6 +41,7 @@ module.exports = {
         res.redirect(PUBLIC_PATH);
       });
     },
+    disableHostCheck: true,
     watchOptions: {
       poll: true
     },

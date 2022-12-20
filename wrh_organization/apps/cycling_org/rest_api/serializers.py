@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -10,7 +11,8 @@ from rest_framework import serializers
 
 from apps.cycling_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
     FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult, Event
-from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField, get_random_upload_path
+from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField, get_random_upload_path, \
+    verify_turnstile, get_client_ip
 
 
 class NestedPublicUserAvatarSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -97,7 +99,7 @@ class NestedMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeri
     class Meta:
         model = Member
         fields = ('id', 'first_name', 'last_name', 'gender', 'email', 'phone', 'address1', 'address2', 'country',
-                  'city', 'state', 'zipcode', 'weight', 'height',  '_user')
+                  'city', 'state', 'zipcode', 'weight', 'height', '_user')
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
@@ -119,7 +121,7 @@ class NestedMember2Serializer(DynamicFieldsSerializerMixin, serializers.ModelSer
 
     class Meta:
         model = Member
-        fields = ('id', 'first_name', 'last_name', 'gender',  '_user')
+        fields = ('id', 'first_name', 'last_name', 'gender', '_user')
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
@@ -129,14 +131,12 @@ class NestedMember2Serializer(DynamicFieldsSerializerMixin, serializers.ModelSer
 
 
 class NestedOrganizationSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-
     class Meta:
         model = Organization
         exclude = ('members', 'member_orgs', 'member_fields_schema', 'membership_plans')
 
 
 class NestedOrganizationShortSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-
     class Meta:
         model = Organization
         fields = ('id', 'name', 'type')
@@ -145,6 +145,7 @@ class NestedOrganizationShortSerializer(DynamicFieldsSerializerMixin, serializer
 class BasePrefsSerializer(serializers.Serializer):
     file_path = ''
     prefs_field_name = 'prefs'
+
     def save(self, **kwargs):
         data = self.validated_data
 
@@ -219,6 +220,7 @@ class OrganizationJoinSerializer(DynamicFieldsSerializerMixin, serializers.Seria
 class MyOrganizationMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     is_expiring = serializers.BooleanField(read_only=True)
     is_expired = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = OrganizationMember
         fields = "__all__"
@@ -292,12 +294,27 @@ class ActivationEmailSerializer(serializers.Serializer):
     email = serializers.EmailField(allow_null=False, required=True, allow_blank=False)
 
 
-class SignupUserSerializer(serializers.ModelSerializer):
+class TurnstileCheckSerializerMixin:
+
+    def validate(self, attrs):
+        turnstile_token = attrs.pop('turnstile_token', None)
+        request = self.context['request']
+        remote_ip = get_client_ip(request)
+        resp = verify_turnstile(turnstile_token, remote_ip, secret_key=settings.TURNSTILE_SECRET_KEY)
+        print(f'turnstile response for token [{turnstile_token}]: {resp}')
+        if not resp.get('success'):
+            raise serializers.ValidationError({'turnstile_token': 'Invalid token!'})
+        return attrs
+
+
+class SignupUserSerializer(TurnstileCheckSerializerMixin, serializers.ModelSerializer):
+    turnstile_token = serializers.CharField(write_only=True, required=True)
+
     member = SignupMemberSerializer(allow_null=True, required=False)
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'first_name', 'last_name', 'birth_date', 'gender', 'member')
+        fields = ('email', 'password', 'first_name', 'last_name', 'birth_date', 'gender', 'member', 'turnstile_token')
         extra_kwargs = {
             'password': {'write_only': True, 'required': True, 'style': {'input_type': 'password'}},
             'first_name': {'required': True, 'allow_null': False, 'allow_blank': False},
@@ -353,7 +370,6 @@ class NestedUserSerializer(serializers.ModelSerializer):
 
 
 class FieldsTrackingSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-
     _user = NestedUserSerializer(read_only=True, source='user')
     _content_type = NestedContentTypeSerializer(read_only=True, source='content_type')
 
@@ -405,7 +421,6 @@ class RaceResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerial
 
 
 class CategorySerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-
     _create_by = NestedUserAvatarSerializer(source='create_by', read_only=True)
 
     class Meta:
@@ -436,14 +451,12 @@ class RaceSeriesSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerial
 
 
 class NestedRaceSeriesSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-
     class Meta:
         model = RaceSeries
         fields = ['id', 'name']
 
 
 class NestedRaceResultSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-
     _rider = NestedMember2Serializer(read_only=True, source='rider')
     _race = RaceSerializer(read_only=True, source='race')
 

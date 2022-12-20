@@ -14,6 +14,7 @@ import json
 
 import cerberus
 import pyotp
+import requests
 from django import forms
 from django.conf import settings
 from django.contrib import messages
@@ -1133,3 +1134,10 @@ class PatchedGlobalPrefFileSerializer(dynamic_preferences.serializers.FileSerial
         if f and getattr(f, 'closed', False):
             return os.path.join(self.preference.get_upload_path(), f.name)
         return super().to_db(f, **kwargs)
+
+
+def verify_turnstile(token, remote_ip, secret_key, as_response=False):
+    url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+    data = {'secret': secret_key, 'response': token, 'remoteip': remote_ip}
+    resp = requests.post(url, data=data)
+    return resp if as_response else resp.json()
