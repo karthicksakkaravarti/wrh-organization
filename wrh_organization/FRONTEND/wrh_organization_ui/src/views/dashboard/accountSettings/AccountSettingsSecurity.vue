@@ -137,6 +137,7 @@ import { passwordValidator, confirmedValidator } from '@core/utils/validation'
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import axios from "@/axios";
 import EventBus from "@/EventBus";
+import store from '@/store';
 
 export default {
   setup() {
@@ -151,7 +152,7 @@ export default {
     const changePassword = () => {
       changingPassword.value = true;
       axios.put("account/me/password", passwords).then(() => {
-          EventBus.emit("user:session-expired");
+          store.commit('currentUser', {});
           resetPasswordForm();
           changingPassword.value = false;
           notifySuccess("Password changed successfully. please login again");

@@ -106,7 +106,7 @@
               </v-tooltip>
               <v-tooltip bottom v-else>
                 <template #activator="{ on, attrs }">
-                  <v-btn color="success" v-on="on" v-bind="attrs" @click="$refs.joinDialogRef.show()">
+                  <v-btn color="success" v-on="on" v-bind="attrs" :to="{name: $rns.PUBLIC_SIGNUP_AND_JOIN_ORG, params:{record_id: organization.id}}">
                     Join <v-icon right>{{icons.mdiAccountPlus}}</v-icon>
                   </v-btn>
                 </template>
@@ -187,10 +187,6 @@
 <!--        <upcoming-events-widget :api-params="{organization: organization.id}" class="home-widget"></upcoming-events-widget>-->
 <!--      </v-col>-->
     </v-row>
-    <join-organization-dialog :organization="organization"
-                              v-if="organization.my_level && !organization.my_level.is_member"
-                              ref="joinDialogRef" @join-successed="$router.push({name: $rns.DASHBOARD_ORGANIZATION_PROFILE, params: {record_id: organization.id}})">
-    </join-organization-dialog>
   </div>
 </template>
 
@@ -217,14 +213,12 @@ import OrganizationRaceResultsTab from "../dashboard/organizationProfile/Organiz
 import {useRouter} from "@core/utils";
 import RecentRaceResultsWidget from "@/views/public/RecentRaceResultsWidget";
 import UpcomingEventsWidget from "@/views/public/UpcomingEventsWidget";
-import JoinOrganizationDialog from "./JoinOrganizationDialog"
 
 export default {
   components: {
     UpcomingEventsWidget,
     RecentRaceResultsWidget,
     OrganizationRaceResultsTab,
-    JoinOrganizationDialog,
   },
   setup() {
     const { rootThemeClasses } = useVuetify();

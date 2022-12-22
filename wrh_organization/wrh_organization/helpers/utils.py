@@ -1141,3 +1141,11 @@ def verify_turnstile(token, remote_ip, secret_key, as_response=False):
     data = {'secret': secret_key, 'response': token, 'remoteip': remote_ip}
     resp = requests.post(url, data=data)
     return resp if as_response else resp.json()
+
+
+def check_turnstile_request(turnstile_token, request):
+    remote_ip = get_client_ip(request)
+    resp = verify_turnstile(turnstile_token, remote_ip, secret_key=settings.TURNSTILE_SECRET_KEY)
+    print(f'turnstile response for token [{turnstile_token}]: {resp}')
+    if not resp.get('success'):
+        raise serializers.ValidationError({'turnstile_token': 'Invalid token!'})

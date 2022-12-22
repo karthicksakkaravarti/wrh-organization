@@ -136,6 +136,7 @@
               <v-date-picker
                 ref="birthDatePickerRef"
                 v-model="accountData.birth_date"
+                :active-picker.sync="birthDateActivePicker"
                 :max="new Date().toISOString().slice(0, 10)"
                 min="1940-01-01"
                 color="primary"
@@ -298,6 +299,7 @@ export default {
   },
   setup(props) {
     const { router } = useRouter();
+    const birthDateActivePicker = ref(null);
     const accountDataOrig = ref({user: {}});
     const accountData = ref({user: {}});
     const loading = ref(false);
@@ -311,7 +313,7 @@ export default {
 
     watch(showBirthDateMenu, val => {
       // eslint-disable-next-line no-return-assign
-      val && setTimeout(() => (birthDatePickerRef.value.activePicker = 'YEAR'));
+      val && setTimeout(() => (birthDateActivePicker.value = 'YEAR'));
     });
 
     const cloneData = () => {
@@ -394,6 +396,7 @@ export default {
     });
 
     return {
+      birthDateActivePicker,
       accountData,
       accountDataOrig,
       loading,

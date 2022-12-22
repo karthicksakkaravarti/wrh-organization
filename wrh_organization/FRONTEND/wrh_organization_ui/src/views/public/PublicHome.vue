@@ -15,66 +15,27 @@
           <v-img :src="appLogo"></v-img>
         </v-avatar>
         <div class="text-center pt-6">
-<!--          <div>-->
-            <p class="text-2xl font-weight-semibold primary--text mb-2">
+            <p class="text-3xl font-weight-semibold primary--text mb-2">
               {{appName}}
             </p>
-<!--            <p>-->
-<!--              Manage bicycling races, race series for organizations!-->
-<!--            </p>-->
-<!--            <p class="mb-5">-->
-<!--              Create Your Account, Select Your Region, Find a Team or Club!-->
-<!--            </p>-->
-<!--          </div>-->
           <div>
-            <span class="subtitle-1 font-weight-bold">Step 1, Create a user account: </span>
-            <v-btn color="primary" :to="{name: $rns.AUTH, query:{page: 'Register'}}" class="action-btn"
+            <v-btn outlined color="primary" :to="{name: $rns.AUTH, query:{page: 'Register'}}" class="action-btn ma-1"
                    :disabled="$store.getters.isAuthenticated">
-              Sign Up
+              Create a user account
               <v-icon right>{{icons.mdiAccount}}</v-icon>
             </v-btn>
-          </div>
-          <div class="mt-1">
-            <span class="subtitle-1 font-weight-bold">Step 2, Join {{defaultOrg.name}}: </span>
-            <v-btn color="primary" class="action-btn"
-                   :disabled="!$store.getters.isAuthenticated" @click="$refs.joinDialogRef.show()">
-              Join
+            <v-btn outlined color="success" class="action-btn ma-1"
+                   :to="{name: $rns.PUBLIC_SIGNUP_AND_JOIN_ORG, params:{record_id: defaultOrg.id}}">
+              Join {{defaultOrg.name}}
               <v-icon right>{{icons.mdiAccountPlus}}</v-icon>
             </v-btn>
+
+          </div>
+          <div class="mt-1">
           </div>
         </div>
       </v-card-text>
     </v-card>
-<!--    <v-card flat class="banner d-flex align-center justify-center text-center mb-7" v-if="defaultOrg">-->
-<!--      <img :src="$store.state.sitePrefs.site_ui__banner_image || require(`@/assets/images/misc/public-banner-bg-light.jpeg`)">-->
-<!--      <v-card-text class="pb-0 content-text">-->
-<!--        <p class="text-2xl font-weight-semibold primary&#45;&#45;text mb-2">-->
-<!--          WRH, We Race Here!-->
-<!--        </p>-->
-<!--        <p>-->
-<!--          Manage bicycling races, race series for organizations!-->
-<!--        </p>-->
-<!--        <p class="mb-5">-->
-<!--          Create Your Account, Select Your Region, Find a Team or Club!-->
-<!--        </p>-->
-<!--        <div>-->
-<!--          <span class="subtitle-1 font-weight-bold">Step 1, Create a user account: </span>-->
-<!--          <v-btn outlined color="error" :to="{name: $rns.AUTH, query:{page: 'Register'}}" large class="action-btn"-->
-<!--                 :disabled="$store.getters.isAuthenticated">-->
-<!--            Sign Up-->
-<!--            <v-icon right>{{icons.mdiAccount}}</v-icon>-->
-<!--          </v-btn>-->
-<!--        </div>-->
-<!--        <div class="mt-1">-->
-<!--          <span class="subtitle-1 font-weight-bold">Step 2, Join {{defaultOrg.name}}: </span>-->
-<!--          <v-btn outlined color="error" large class="action-btn"-->
-<!--                 :disabled="!$store.getters.isAuthenticated" @click="$refs.joinDialogRef.show()">-->
-<!--            Join-->
-<!--            <v-icon right>{{icons.mdiAccountPlus}}</v-icon>-->
-<!--          </v-btn>-->
-<!--        </div>-->
-<!--      </v-card-text>-->
-<!--    </v-card>-->
     <v-row>
       <v-col cols="12" v-if="$store.state.sitePrefs.site_ui__home_information_board">
         <v-card class="d-flex">
@@ -94,10 +55,6 @@
         <twitter-feeds-widget class="home-widget"></twitter-feeds-widget>
       </v-col>
     </v-row>
-    <join-organization-dialog :organization="defaultOrg" ref="joinDialogRef" v-if="defaultOrg"
-                              @join-duplicated="navigateToDefaultOrg()"
-                              @join-successed="navigateToDefaultOrg()">
-    </join-organization-dialog>
   </div>
 </template>
 
@@ -108,7 +65,6 @@ import UpcomingEventsWidget from "@/views/public/UpcomingEventsWidget";
 import TwitterFeedsWidget from "@/views/public/TwitterFeedsWidget";
 import OrganizationsWidget from "@/views/public/OrganizationsWidget";
 import {mdiApps, mdiAccount, mdiAccountPlus} from "@mdi/js";
-import JoinOrganizationDialog from "@/views/public/JoinOrganizationDialog";
 import {onMounted, ref, set} from "@vue/composition-api";
 import axios from "@/axios";
 import {notifyDefaultServerError} from "@/composables/utils";
@@ -118,7 +74,6 @@ import themeConfig from '@themeConfig'
 
 export default {
   components: {
-    JoinOrganizationDialog,
     OrganizationsWidget, TwitterFeedsWidget, UpcomingEventsWidget, RecentRaceResultsWidget},
   setup() {
     const { router } = useRouter();
@@ -175,7 +130,7 @@ export default {
     min-height: 425px;
   }
   .banner .v-btn.action-btn {
-    width: 130px;
+    width: 230px;
   }
 }
 

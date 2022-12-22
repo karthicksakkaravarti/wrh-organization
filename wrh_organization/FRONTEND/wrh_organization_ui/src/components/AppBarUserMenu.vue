@@ -154,19 +154,16 @@ import {
 import axios from "@/axios";
 import EventBus from "@/EventBus";
 import store from "@/store";
+import {notifyDefaultServerError} from "@/composables/utils";
 
 export default {
   setup() {
     const logout = () => {
       axios.delete("account/session").then(() => {
-        EventBus.emit(
-          "user:session-expired",
-          store.state.currentUser
-        );
+        store.commit('currentUser', {});
       }, (error) => {
-        alert('Error: ' + error);
+        notifyDefaultServerError(error, true);
       });
-
     };
     return {
       logout,

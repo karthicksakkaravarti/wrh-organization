@@ -66,29 +66,28 @@ let app = new Vue({
   vuetify,
   render: h => h(App),
   created: () => {
-      axios.get("cycling_org/global_pref").then(
-        (response) => {
-          store.state.sitePrefs = response.data;
-          app.$rollbar.configure({
-            accessToken: store.state.sitePrefs.rollbar_client__access_token,
-            environment: store.state.sitePrefs.rollbar_client__environment,
-            enabled: app.$rollbar.options.enabled? store.state.sitePrefs.rollbar_client__enabled: false,
-          });
-        }, (error) => {
-          notifyDefaultServerError(error, true);
-        }
-      );
-      store.watch((state) => state.currentUser, (newUser) => {
+    axios.get("cycling_org/global_pref").then(
+      (response) => {
+        store.state.sitePrefs = response.data;
         app.$rollbar.configure({
-          payload: {
-            person: {
-              id: newUser.id || null,
-              username: newUser.username || null,
-            }
-          }
+          accessToken: store.state.sitePrefs.rollbar_client__access_token,
+          environment: store.state.sitePrefs.rollbar_client__environment,
+          enabled: app.$rollbar.options.enabled? store.state.sitePrefs.rollbar_client__enabled: false,
         });
+      }, (error) => {
+        notifyDefaultServerError(error, true);
       }
     );
+    EventBus.on("user:change-state", ({newUser, oldUser}) => {
+      app.$rollbar.configure({
+        payload: {
+          person: {
+            id: newUser.id || null,
+            username: newUser.username || null,
+          }
+        }
+      });
+    });
   }
 }).$mount('#app');
 

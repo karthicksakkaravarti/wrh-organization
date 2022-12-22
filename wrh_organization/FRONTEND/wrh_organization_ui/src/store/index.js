@@ -2,6 +2,7 @@ import appConfigStoreModule from '@core/@app-config/appConfigStoreModule'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import app from './app'
+import EventBus from "@/EventBus";
 
 Vue.use(Vuex);
 
@@ -13,6 +14,16 @@ export default new Vuex.Store({
     sitePrefs: {},
   },
   mutations: {
+    currentUser: function(state, user) {
+      const oldState = state.currentUser;
+      state.currentUser = user || {};
+      if (state.currentUser.id) {
+        EventBus.emit("user:login", state.currentUser);
+      } else {
+        EventBus.emit("user:logout", oldState);
+      }
+      EventBus.emit("user:change-state", {newUser: state.currentUser, oldUser: oldState});
+    }
   },
   actions: {
   },

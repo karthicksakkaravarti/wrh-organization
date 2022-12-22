@@ -45,13 +45,13 @@ export default {
     };
 
     onMounted(() => {
-      EventBus.on("user:session-expired", onSessionExpired);
+      EventBus.on("user:logout", onSessionExpired);
       if (!store.getters.isAuthenticated) {
         onSessionExpired();
       }
     });
     onUnmounted(() => {
-      EventBus.off("user:session-expired", onSessionExpired);
+      EventBus.off("user:logout", onSessionExpired);
     });
 
 

@@ -136,6 +136,7 @@
           <v-date-picker
             ref="birthDatePickerRef"
             v-model="registerForm.birth_date"
+            :active-picker.sync="birthDateActivePicker"
             :max="new Date().toISOString().slice(0, 10)"
             min="1940-01-01"
             color="primary"
@@ -254,6 +255,7 @@ import TurnstileComponent from "@/components/TurnstileComponent.vue";
 export default {
   components: {TurnstileComponent, TermsOfServiceDialog},
   setup(props, context) {
+    const birthDateActivePicker = ref(null);
     const isPasswordVisible = ref(false);
     const registering = ref(false);
     const formValid = ref(false);
@@ -291,8 +293,7 @@ export default {
     });
 
     watch(showBirthDateMenu, val => {
-      // eslint-disable-next-line no-return-assign
-      val && setTimeout(() => (birthDatePickerRef.value.activePicker = 'YEAR'));
+      val && setTimeout(() => (birthDateActivePicker.value = 'YEAR'))
     });
 
     const loadTurnstileSiteKey = () => {
@@ -328,6 +329,7 @@ export default {
 
 
     return {
+      birthDateActivePicker,
       isPasswordVisible,
       registerForm,
       socialLink,

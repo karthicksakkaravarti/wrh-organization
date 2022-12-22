@@ -12,7 +12,7 @@ from rest_framework import serializers
 from apps.cycling_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
     FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult, Event
 from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField, get_random_upload_path, \
-    verify_turnstile, get_client_ip
+    verify_turnstile, get_client_ip, check_turnstile_request
 
 
 class NestedPublicUserAvatarSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -90,7 +90,7 @@ class MyMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializ
 class NestedUserAvatarSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'avatar')
+        fields = ('id', 'username', 'avatar', 'is_active')
 
 
 class NestedMemberSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -295,15 +295,14 @@ class ActivationEmailSerializer(serializers.Serializer):
 
 
 class TurnstileCheckSerializerMixin:
+    _turnstile_token_name = 'turnstile_token'
 
     def validate(self, attrs):
-        turnstile_token = attrs.pop('turnstile_token', None)
+        if self._turnstile_token_name not in self.fields:
+            return attrs
+        turnstile_token = attrs.pop(self._turnstile_token_name, None)
         request = self.context['request']
-        remote_ip = get_client_ip(request)
-        resp = verify_turnstile(turnstile_token, remote_ip, secret_key=settings.TURNSTILE_SECRET_KEY)
-        print(f'turnstile response for token [{turnstile_token}]: {resp}')
-        if not resp.get('success'):
-            raise serializers.ValidationError({'turnstile_token': 'Invalid token!'})
+        check_turnstile_request(turnstile_token, request)
         return attrs
 
 
@@ -336,6 +335,26 @@ class SignupUserSerializer(TurnstileCheckSerializerMixin, serializers.ModelSeria
         user.more_data = {'member_data': member_data}
         user.save()
         return user
+
+
+class SignupAndJoinUserSerializer(SignupUserSerializer):
+    turnstile_token = serializers.CharField(write_only=True, required=False)
+    member = SignupMemberSerializer(allow_null=True, required=False)
+
+    class Meta:
+        model = User
+        fields = ('email', 'password', 'first_name', 'last_name', 'birth_date', 'gender', 'member')
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': True, 'style': {'input_type': 'password'}},
+            'first_name': {'required': True, 'allow_null': False, 'allow_blank': False},
+            'last_name': {'required': True, 'allow_null': False, 'allow_blank': False},
+            'birth_date': {'required': True, 'allow_null': False},
+        }
+
+class OrganizationSignupAndJoinSerializer(TurnstileCheckSerializerMixin, serializers.Serializer):
+    turnstile_token = serializers.CharField(required=True)
+    membership = serializers.DictField(required=False)
+    register = serializers.DictField(required=False)
 
 
 class MemberOTPVerifySerializer(serializers.Serializer):

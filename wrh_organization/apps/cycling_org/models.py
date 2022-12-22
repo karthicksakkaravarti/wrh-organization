@@ -366,6 +366,7 @@ class Member(models.Model):
     social_media = models.JSONField(null=True, blank=True)
     more_data = models.JSONField(null=True, encoder=JSONEncoder)
     is_verified = models.BooleanField(default=None, null=True)
+    draft = models.BooleanField(default=False, null=False, editable=False)
     user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='member', null=True)
 
     @property
@@ -414,6 +415,7 @@ class Member(models.Model):
     def set_as_verified(self, user, commit=True):
         self.email_verified = True
         self.is_verified = True
+        self.draft = False
         self.user = user
         member_data = (user.more_data or {}).get('member_data') or {}
         fields = ('phone', 'address1', 'address2', 'country', 'city', 'state', 'zipcode')

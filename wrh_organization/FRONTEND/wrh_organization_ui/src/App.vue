@@ -54,14 +54,11 @@ export default {
     const onSessionRefresh = () => {
       axios.get("account/session").then(
         (response) => {
-          store.state.currentUser = response.data;
+          store.commit('currentUser', response.data);
         }, (error) => {
           notifyDefaultServerError(error, true);
         }
       );
-    };
-    const onSessionExpired = () => {
-      store.state.currentUser = {};
     };
     const onMismatchVersion = (newVersion) => {
       mismatchVersion.value = true;
@@ -78,7 +75,6 @@ export default {
     });
 
     onMounted(() => {
-      EventBus.on("user:session-expired", onSessionExpired);
       EventBus.on("user:session-refresh", onSessionRefresh);
       EventBus.on("ui:mismatch-version", onMismatchVersion);
       const externalCss = getQueryParams('_css', window.location);
@@ -92,7 +88,6 @@ export default {
     });
 
     onUnmounted(() => {
-      EventBus.off("user:session-expired", onSessionExpired);
       EventBus.off("user:session-refresh", onSessionRefresh);
       EventBus.off("ui:mismatch-version", onMismatchVersion);
     });

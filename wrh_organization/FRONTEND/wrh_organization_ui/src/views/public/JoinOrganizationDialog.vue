@@ -39,7 +39,7 @@
           <p class="mb-1">
             You are an <v-chip small color="warning">Admin</v-chip> member of this organization.
           </p>
-          <p class="mb-1">Your membership plan will not expire, unless the organization drop your grant!</p>
+          <p class="mb-1">Your membership plan won't expire unless the organization drops your grant!</p>
           <p class="mb-1">
             You dont need to renew your membership!
           </p>

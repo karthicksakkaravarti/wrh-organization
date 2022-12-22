@@ -165,7 +165,7 @@ export default {
     const login = () => {
       logining.value = true;
       axios.post("account/session", loginForm.value).then((response) => {
-        store.state.currentUser = response.data;
+        store.commit('currentUser', response.data);
         logining.value = false;
         var next = (route.value.query.next || '').startsWith('/')? route.value.query.next: {name: route.value.query.next || routeNames.ROOT};
         router.push(next);

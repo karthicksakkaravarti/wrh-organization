@@ -28,6 +28,7 @@ class User(AbstractUser):
     avatar = models.ImageField(blank=True, null=True, upload_to=avatar_file_path_func)
     more_data = models.JSONField(null=True, encoder=JSONEncoder, editable=False)
     prefs = models.JSONField(null=True, encoder=JSONEncoder, editable=False)
+    draft = models.BooleanField(default=False, null=False, editable=False)
     # verified_email = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):

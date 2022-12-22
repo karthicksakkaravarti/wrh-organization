@@ -30,7 +30,8 @@ def activate_member(modeladmin, request, queryset):
 
 
 class UserAdmin(BaseUserAdmin):
-    list_display = ['username', 'email', 'first_name', 'last_name', 'gender', 'is_active', 'has_rider_member_account']
+    list_display = ['id', 'username', 'email', 'first_name', 'last_name', 'gender', 'is_active',
+                    'has_rider_member_account', 'date_joined', 'draft']
     actions = [activate_member]
 
     @admin.display(boolean=True)

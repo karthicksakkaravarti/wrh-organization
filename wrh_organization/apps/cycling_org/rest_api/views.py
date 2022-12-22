@@ -36,10 +36,11 @@ from apps.cycling_org.rest_api.serializers import MemberSerializer, Organization
     CsvFileImportSerializer, OrganizationMemberMyRequestsSerializer, OrganizationMemberOrgSerializer, \
     NestedOrganizationSerializer, FieldsTrackingSerializer, RaceSerializer, RaceResultSerializer, CategorySerializer, \
     RaceSeriesSerializer, RaceSeriesResultSerializer, EventSerializer, PublicMemberSerializer, \
-    OrganizationJoinSerializer, MyOrganizationMemberSerializer, OrganizationPrefsSerializer, EventPrefsSerializer
+    OrganizationJoinSerializer, MyOrganizationMemberSerializer, OrganizationPrefsSerializer, EventPrefsSerializer, \
+    OrganizationSignupAndJoinSerializer, SignupAndJoinUserSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
     IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token, to_dict, IsMemberPermission, random_id, \
-    APICodeException
+    APICodeException, check_turnstile_request
 
 global_pref = global_preferences_registry.manager()
 
@@ -132,6 +133,18 @@ class GlobalConfView(viewsets.ViewSet):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+def _send_activation_email(user, request):
+    subject = 'Activate Your Account'
+    message = render_to_string('cycling_org/email/user_activation.html', {
+        'user': user,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': account_activation_token.make_token(user),
+        'request': request
+    })
+
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message,
+              fail_silently=False)
+
 class UserRegistrationView(viewsets.ViewSet):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
@@ -163,6 +176,7 @@ class UserRegistrationView(viewsets.ViewSet):
             return self._activate_get(request, user, *args, **kwargs)
 
         user.is_active = True
+        user.draft = False
         member = getattr(user, 'member', None)
         if not member or not member.email_verified:
             existing_member = Member.objects.exclude(user=user).filter(email=user.email
@@ -172,7 +186,7 @@ class UserRegistrationView(viewsets.ViewSet):
         member = Member() if member is None else member
 
         member.set_as_verified(user)
-        user.save(update_fields=['is_active'])
+        user.save(update_fields=['is_active', 'draft'])
 
         login(request, user)
         next = request.GET.get('redirect') or settings.SIGNUP_ACTIVATION_REDIRECT_URL
@@ -190,21 +204,10 @@ class UserRegistrationView(viewsets.ViewSet):
                             status=status.HTTP_404_NOT_FOUND)
         if user.is_active:
             return Response({'error': 'User with this email is already activated.'}, status=status.HTTP_409_CONFLICT)
-        self._send_activation_email(user)
+        _send_activation_email(user, request)
         return Response({'message': 'email activation sent'}, status=status.HTTP_200_OK)
 
-    def _send_activation_email(self, user):
-        subject = 'Activate Your Account'
-        message = render_to_string('cycling_org/email/user_activation.html', {
-            'user': user,
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-            'token': account_activation_token.make_token(user),
-            'request': self.request
-        })
-
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message,
-                  fail_silently=False)
-
+    @transaction.atomic()
     def post(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return Response({'error': 'You are already signed up'}, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -214,8 +217,13 @@ class UserRegistrationView(viewsets.ViewSet):
 
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        user = serializer.save(is_active=False)
-        self._send_activation_email(user)
+        user = serializer.save(is_active=False, draft=True)
+        member = Member.objects.filter(user__isnull=True, email=user.email).order_by('email_verified').first()
+        member = Member(draft=True) if member is None else member
+        member.user = user
+        member.save()
+
+        _send_activation_email(user, request)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['POST'], serializer_class=UserSendRecoverPasswordSerializer)
@@ -426,11 +434,10 @@ class OrganizationView(viewsets.ModelViewSet):
         OrganizationMember.objects.create(organization=serializer.instance, is_master_admin=True,
                                           member=self.request.user.member)
 
-    def process_payment(self, org, token, price):
+    def process_payment(self, org, user, token, price):
         if not token:
             raise APICodeException(status_code=status.HTTP_400_BAD_REQUEST, detail='payment token not provided')
 
-        user = self.request.user
         try:
             charge = stripe.Charge.create(
                 amount=int(price * 100),
@@ -448,25 +455,12 @@ class OrganizationView(viewsets.ModelViewSet):
         FinancialTransaction.objects.create(user_id=user.id, amount=price, payment_id=payment_id,
                                             type=FinancialTransaction.TYPE_ORG_REGISTER)
 
-    @action(detail=True, methods=['GET', 'POST'], permission_classes=(IsMemberPermission,),
-            serializer_class=OrganizationJoinSerializer)
-    @transaction.atomic()
-    def join(self, request, *args, **kwargs):
-        org = self.get_object()
-        om = OrganizationMember.objects.filter(organization=org, member=request.user.member, is_active=True).first()
-        if request.method == 'GET':
-            if not om:
-                return Response({'detail': 'Not joined'}, status=status.HTTP_404_NOT_FOUND)
-            return Response({
-                'is_admin': om.is_admin or om.is_master_admin, 'membership_plan': om.membership_plan,
-                'member_fields': om.member_fields, 'start_date': om.start_date, 'exp_date': om.exp_date,
-                'status': om.status, 'is_expired': om.is_expired(), 'is_expiring': om.is_expiring()
-            })
-
+    def _join(self, org, user, current_org_member, data, serializer_class=OrganizationJoinSerializer):
+        om = current_org_member
         if om and (om.is_admin or om.is_master_admin):
-            return Response({'detail': 'admin members dont need to renew membership'}, status=status.HTTP_403_FORBIDDEN)
+            raise PermissionDenied({'detail': 'admin members dont need to renew membership'})
 
-        serializer = self.get_serializer(data=request.data)
+        serializer = serializer_class(data=data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         membership_plans = (org.membership_plans or [])
@@ -476,7 +470,8 @@ class OrganizationView(viewsets.ModelViewSet):
         plan_id = data.get('plan_id')
         plan = plan_id and next((p for p in membership_plans if p.get('id') == plan_id), None)  # find the plan
         if not plan:
-            return Response({'detail': 'Invalid membership plan'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError('Invalid membership plan')
+
         if om:
             if om.status not in (OrganizationMember.STATUS_REJECT, OrganizationMember.STATUS_WAITING):
                 start_date = max(start_date, om.exp_date)
@@ -489,20 +484,73 @@ class OrganizationView(viewsets.ModelViewSet):
         membership_price = decimal.Decimal(plan.get('price') or 0) + plan['donation']
 
         new_om = OrganizationMember.objects.create(
-            member=request.user.member, organization=org, start_date=start_date, exp_date=exp_date,
+            member=user.member, organization=org, start_date=start_date, exp_date=exp_date,
             member_fields=member_fields, org_member_uid=org_member_uid, membership_plan=plan
         )
 
-        user_prefs = request.user.prefs or {}
+        user_prefs = user.prefs or {}
         if (not user_prefs.get('default_regional_org')) and (org.type == Organization.TYPE_REGIONAL):
             user_prefs['default_regional_org'] = org.id
-            self.request.user.prefs = user_prefs
-            self.request.user.save(update_fields=['prefs'])
+            user.prefs = user_prefs
+            user.save(update_fields=['prefs'])
 
         if membership_price:
             token = data.get('token')
-            self.process_payment(org, token, membership_price)
+            self.process_payment(org, user, token, membership_price)
 
+        return new_om
+
+    @action(detail=True, methods=['GET', 'POST'], permission_classes=(IsMemberPermission,),
+            serializer_class=OrganizationJoinSerializer)
+    @transaction.atomic()
+    def join(self, request, *args, **kwargs):
+        org = self.get_object()
+        user = request.user
+        om = OrganizationMember.objects.filter(organization=org, member=user.member, is_active=True).first()
+        if request.method == 'GET':
+            if not om:
+                return Response({'detail': 'Not joined'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({
+                'is_admin': om.is_admin or om.is_master_admin, 'membership_plan': om.membership_plan,
+                'member_fields': om.member_fields, 'start_date': om.start_date, 'exp_date': om.exp_date,
+                'status': om.status, 'is_expired': om.is_expired(), 'is_expiring': om.is_expiring()
+            })
+
+        new_om = self._join(org, user, om, request.data)
+        return Response(OrganizationMemberSerializer(instance=new_om, context={'request': request}).data)
+
+    def _signup(self, data):
+        serializer = SignupAndJoinUserSerializer(data=data, context={'request': self.request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save(is_active=False, draft=True)
+        member = Member.objects.filter(user__isnull=True, email=user.email).order_by('email_verified').first()
+        member = Member(draft=True) if member is None else member
+        member.user = user
+        member.save()
+
+        _send_activation_email(user, self.request)
+        return member
+
+    @action(detail=True, methods=['POST'], permission_classes=(permissions.AllowAny,),
+            serializer_class=OrganizationSignupAndJoinSerializer)
+    @transaction.atomic()
+    def signup_and_join(self, request, *args, **kwargs):
+        if global_pref.get('user_account__disabled_signup'):
+            raise PermissionDenied({'detail': 'Signup is disabled by admin'})
+
+        turnstile_token = request.data.get('turnstile_token', None)
+        check_turnstile_request(turnstile_token, request)
+
+        org = self.get_object()
+
+        if not request.user.is_authenticated:
+            member = self._signup(request.data.get('register') or {})
+        else:
+            member = request.user.member
+
+        user = member.user
+        om = OrganizationMember.objects.filter(organization=org, member=member, is_active=True).first()
+        new_om = self._join(org, user, om, request.data.get('membership') or {})
         return Response(OrganizationMemberSerializer(instance=new_om, context={'request': request}).data)
 
     @action(detail=True, methods=['GET', 'PUT'], permission_classes=(IsMemberPermission,))

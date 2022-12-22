@@ -19,7 +19,7 @@ class OrganizationMemberOrgAdmin(admin.ModelAdmin):
 
 
 class MemberAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'email', 'phone', 'user')
+    list_display = ('id', 'first_name', 'last_name', 'email', 'phone', 'user', 'draft')
     search_fields = ('first_name', 'last_name')
     list_filter = ('email_verified', 'phone_verified')
 

@@ -16,6 +16,7 @@ export const routeNames = {
   PUBLIC_ORG_PROFILE: "public_org_profile",
   PUBLIC_EVENT_PROFILE: "public_event_profile",
   PUBLIC_EVENTS: "public_events",
+  PUBLIC_SIGNUP_AND_JOIN_ORG: "public_signup_and_join_org",
 
   WIDGET_ORG_PROFILE: "widget_org_profile",
   WIDGET_ORG_EVENTS_CALENDAR: "widget_org_events_calendar",
@@ -105,6 +106,12 @@ const routes = [
     path: '/events',
     name: routeNames.PUBLIC_EVENTS,
     component: () => import('@/views/public/PublicEvents'),
+    meta: {},
+  },
+  {
+    path: '/signup-and-join-org/:record_id',
+    name: routeNames.PUBLIC_SIGNUP_AND_JOIN_ORG,
+    component: () => import('@/views/public/SignupAndJoinOrganization'),
     meta: {},
   },
   {
@@ -234,11 +241,12 @@ router.beforeEach((to, from, next) => {
     return next();
   }
   axios.get("account/session").then((response) => {
-    store.state.currentUser = response.data;
+    store.commit('currentUser', response.data);
   }, (error) => {
     if (401 !== (error.response && error.response.status)) {
       alert(error);
     }
+    store.commit('currentUser', {});
   }).finally(() => {
     store.state.checkedAuthentication = true;
     next();
