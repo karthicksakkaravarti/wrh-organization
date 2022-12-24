@@ -29,10 +29,18 @@
               </span>
             </h3>
             <v-row>
-              <v-col cols="12" class="pb-0">
-                <v-text-field v-model="registerForm.email" outlined :append-icon="icons.mdiEmailOutline" label="E-mail"
-                              placeholder="E-mail" hide-details
+              <v-col cols="12" md="6" class="pb-0">
+                <v-text-field v-model="registerForm.email" outlined :append-icon="icons.mdiEmailOutline" label="E-mail (Username)"
+                              placeholder="E-mail (Username)" persistent-hint
+                              hint="The E-mail will be used as your username on the login"
                               :rules="[rules.required, rules.emailValidator]" dense>
+                </v-text-field>
+              </v-col>
+              <v-col cols="12" md="6" class="pb-0">
+                <v-text-field v-model="registerForm.confirm_email" outlined :append-icon="icons.mdiEmailOutline" label="Confirm E-mail"
+                              placeholder="Enter E-mail again" persistent-hint
+                              :rules="[rules.required, rules.emailValidator, rules.confirmedValidator(registerForm.confirm_email, registerForm.email, 'The Confirm E-mail field confirmation does not match')]"
+                              dense>
                 </v-text-field>
               </v-col>
               <v-col cols="12" md="6" class="pb-0">
@@ -388,9 +396,9 @@ export default {
         joining.value = false;
         var msg = `You ${alreadyJoined.value? 'Renewed membership': 'Joined'} successfully.`;
         if (!response.data._member._user.is_active) {
-          msg += ' We Sent you an activation email. please activate your account!'
+          msg += ' You have to activate your account before login. Activation link sent to your email! please check your email.'
         }
-        notifySuccess(msg);
+        notifySuccess(msg, 0);
         router.push({name: routeNames.PUBLIC_ORG_PROFILE, params: {record_id: orgId}});
       }, (error) => {
         joining.value = false;

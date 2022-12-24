@@ -6,6 +6,7 @@ from django.db import transaction
 
 from .models import User
 from ..cycling_org.models import Member
+from ..cycling_org.rest_api.views import _send_activation_email
 
 
 @admin.action(description='Activate rider member account')
@@ -29,10 +30,16 @@ def activate_member(modeladmin, request, queryset):
             traceback.print_exc()
 
 
+@admin.action(description='Send E-mail activation link')
+def send_activation_link(modeladmin, request, queryset):
+    for user in queryset.exclude(is_active=True):
+        _send_activation_email(user, request)
+
+
 class UserAdmin(BaseUserAdmin):
-    list_display = ['id', 'username', 'email', 'first_name', 'last_name', 'gender', 'is_active',
+    list_display = ['id', 'username', 'first_name', 'last_name', 'gender', 'is_active',
                     'has_rider_member_account', 'date_joined', 'draft']
-    actions = [activate_member]
+    actions = [activate_member, send_activation_link]
 
     @admin.display(boolean=True)
     def has_rider_member_account(self, obj):

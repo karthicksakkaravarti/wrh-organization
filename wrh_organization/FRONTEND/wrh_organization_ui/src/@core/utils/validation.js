@@ -29,9 +29,9 @@ export const passwordValidator = password => {
   )
 }
 
-export const confirmedValidator = (value, target) =>
+export const confirmedValidator = (value, target, msg) =>
   // eslint-disable-next-line implicit-arrow-linebreak
-  value === target || 'The Confirm Password field confirmation does not match'
+  value === target || msg || 'The Confirm Password field confirmation does not match'
 
 export const between = (value, min, max) => () => {
   const valueAsNumber = Number(value)

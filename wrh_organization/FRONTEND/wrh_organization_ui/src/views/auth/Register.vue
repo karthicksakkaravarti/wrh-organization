@@ -38,11 +38,22 @@
           v-model="registerForm.email"
           outlined
           :append-icon="icons.mdiEmailOutline"
-          label="E-mail"
-          placeholder="E-mail"
-          hide-details
+          label="E-mail (Username)"
+          placeholder="E-mail (Username)"
           class="mb-3"
+          persistent-hint
+          hint="The E-mail will be used as your username on the login"
           :rules="[rules.required, rules.emailValidator]"
+          dense
+        ></v-text-field>
+        <v-text-field
+          v-model="registerForm.confirm_email"
+          outlined
+          :append-icon="icons.mdiEmailOutline"
+          label="Confirm E-mail"
+          placeholder="Enter E-mail again"
+          class="mb-3"
+          :rules="[rules.required, rules.emailValidator, rules.confirmedValidator(registerForm.confirm_email, registerForm.email, 'The Confirm E-mail field confirmation does not match')]"
           dense
         ></v-text-field>
 
@@ -319,7 +330,7 @@ export default {
       registering.value = true;
       axios.post("cycling_org/users/registration", registerForm.value).then((response) => {
         registering.value = false;
-        notifySuccess("Activation link sent to your email! please check your email.");
+        notifySuccess("You have to activate your account before login. Activation link sent to your email! please check your email.", 0);
         context.emit("change-page", "Login");
       }, (error) => {
         registering.value = false;
