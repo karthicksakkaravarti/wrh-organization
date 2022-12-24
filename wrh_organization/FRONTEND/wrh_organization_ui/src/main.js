@@ -32,7 +32,7 @@ Vue.prototype.$rollbar = new Rollbar({
   // accessToken: '',
   captureUncaught: true,
   captureUnhandledRejections: true,
-  codeVersion: AppVersion,
+  // codeVersion: AppVersion,
   enabled: process.env.VUE_APP_ROLLBAR_ENABLED === 'true' || process.env.NODE_ENV === 'production',
   environment: process.env.NODE_ENV,
   payload: {
@@ -41,6 +41,13 @@ Vue.prototype.$rollbar = new Rollbar({
     person: {
       id: null,
       username: null,
+    },
+    client: {
+      javascript: {
+        code_version: AppVersion,
+        source_map_enabled: true,
+        guess_uncaught_frames: true,
+      }
     }
   }
 });

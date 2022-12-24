@@ -6,7 +6,7 @@ const BACKEND_URL = process.env.VUE_APP_SERVER_BASE_URL || "http://localhost:800
 
 module.exports = {
   publicPath: PUBLIC_PATH,
-  productionSourceMap: false,
+  productionSourceMap: true,
   lintOnSave: false,
   transpileDependencies: ['vuetify'],
   configureWebpack: {
