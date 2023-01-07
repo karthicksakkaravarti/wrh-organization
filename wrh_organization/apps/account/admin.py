@@ -25,7 +25,8 @@ def activate_member(modeladmin, request, queryset):
 
                 member.set_as_verified(user)
                 user.is_active = True
-                user.save()
+                user.draft = False
+                user.save(update_fields=['is_active', 'draft'])
         except Exception:
             traceback.print_exc()
 
