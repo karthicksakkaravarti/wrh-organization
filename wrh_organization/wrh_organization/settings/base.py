@@ -18,6 +18,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 EXTERNAL_CONFIG_PATH = '/opt/webapps/wrh_organization/etc/external_config.py'
 
+import environ
+env = environ.Env()
+environ.Env.read_env()
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -101,14 +105,10 @@ ASGI_APPLICATION = 'wrh_organization.asgi.application'
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'wrh_organization',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-        'USER': 'postgres',
-        'PASSWORD': 'a',
-    }
+     "default": env.db(
+        "DATABASE_URL",
+        default="postgres:///backend",
+    ),
 }
 
 DOMAIN = 'localhost'
