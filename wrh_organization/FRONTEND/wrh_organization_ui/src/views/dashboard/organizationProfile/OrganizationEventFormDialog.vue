@@ -14,7 +14,7 @@
         <v-tab-item class="pt-6">
           <v-card-text class="d-flex">
             <v-avatar rounded size="80" class="me-6 v-avatar-light-bg" color="grey">
-              <v-img :src="logoChosenFileData || record.logo || require('@/assets/images/misc/no-photo.png')"></v-img>
+              <v-img :src="logoChosenFileData || record.logo || $store.state.sitePrefs.site_ui__default_event_logo || require('@/assets/images/misc/no-photo.png')"></v-img>
             </v-avatar>
 
             <!-- upload photo -->
