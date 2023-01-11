@@ -47,6 +47,8 @@ COPY nginx.conf /home/jenkins/
 
 COPY default.conf /home/jenkins/
 
+COPY dist /home/jenkins/
+
 WORKDIR /home/jenkins/
 
 USER root

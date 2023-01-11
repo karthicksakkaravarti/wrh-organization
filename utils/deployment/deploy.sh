@@ -8,6 +8,8 @@ sudo cp -rf ../nginx.conf  /etc/nginx/nginx.conf
 sudo cp -rf ../default.conf  /etc/nginx/sites-available/default
 cp ../.env /home/jenkins/wrh-organization/wrh_organization/wrh_organization/settings
 cp ../local.py /home/jenkins/wrh-organization/wrh_organization/wrh_organization/settings
+cp -rf ../dist /home/jenkins/wrh-organization/wrh_organization/FRONTEND/wrh_organization_ui
+
 pip install uwsgi
 
 #Running Build
