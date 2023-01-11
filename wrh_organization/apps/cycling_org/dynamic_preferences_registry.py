@@ -159,3 +159,12 @@ class SiteUiHomeInfomationBoard(types.LongStringPreference):
     name = 'home_information_board'
     verbose_name = 'Home Information Board'
     default = ''
+
+@global_preferences_registry.register
+class SiteUiDefaultEventLogo(types.FilePreference):
+    section = site_ui
+    name = 'default_event_logo'
+    verbose_name = 'Default Event Logo'
+    default = ''
+
+
