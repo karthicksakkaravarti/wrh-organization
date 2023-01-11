@@ -47,7 +47,6 @@ COPY nginx.conf /home/jenkins/
 
 COPY default.conf /home/jenkins/
 
-COPY dist /home/jenkins/
 
 WORKDIR /home/jenkins/
 
@@ -60,5 +59,7 @@ RUN pip install uwsgi
 RUN git config --global credential.helper store
 
 COPY --chown=jenkins:jenkins deploy.sh /home/jenkins/
+
+COPY dist /home/jenkins/
 
 ENTRYPOINT ["/bin/sh","/home/jenkins/deploy.sh"]
