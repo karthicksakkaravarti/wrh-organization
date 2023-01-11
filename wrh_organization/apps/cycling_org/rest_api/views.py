@@ -204,7 +204,7 @@ class UserRegistrationView(viewsets.ViewSet):
                             status=status.HTTP_404_NOT_FOUND)
         if user.is_active:
             return Response({'error': 'User with this email is already activated.'}, status=status.HTTP_409_CONFLICT)
-        # _send_activation_email(user, request)
+        _send_activation_email(user, request)
         return Response({'message': 'email activation sent'}, status=status.HTTP_200_OK)
 
     @transaction.atomic()
@@ -223,7 +223,7 @@ class UserRegistrationView(viewsets.ViewSet):
         member.user = user
         member.save()
 
-        # _send_activation_email(user, request)
+        _send_activation_email(user, request)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['POST'], serializer_class=UserSendRecoverPasswordSerializer)
