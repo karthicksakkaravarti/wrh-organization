@@ -66,7 +66,7 @@ class ExportViewMixin(object):
 
 class GlobalPreferencesView(viewsets.ViewSet):
     PUBLIC_KEYS = [
-        'site_ui__terms_of_service', 'site_ui__banner_image', 'site_ui__default_event_banner_image',
+        'site_ui__terms_of_service', 'site_ui__banner_image', 'site_ui__default_event_banner_image','site_ui__event_tags',
         'site_ui__signup_page_title', 'site_ui__signup_page_caption', 'site_ui__home_information_board',
         'rollbar_client__access_token', 'rollbar_client__environment', 'rollbar_client__enabled',
         'user_account__disabled_signup',
@@ -204,7 +204,7 @@ class UserRegistrationView(viewsets.ViewSet):
                             status=status.HTTP_404_NOT_FOUND)
         if user.is_active:
             return Response({'error': 'User with this email is already activated.'}, status=status.HTTP_409_CONFLICT)
-        _send_activation_email(user, request)
+        # _send_activation_email(user, request)
         return Response({'message': 'email activation sent'}, status=status.HTTP_200_OK)
 
     @transaction.atomic()
@@ -223,7 +223,7 @@ class UserRegistrationView(viewsets.ViewSet):
         member.user = user
         member.save()
 
-        _send_activation_email(user, request)
+        # _send_activation_email(user, request)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['POST'], serializer_class=UserSendRecoverPasswordSerializer)
