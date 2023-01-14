@@ -3,7 +3,7 @@ from dynamic_preferences.preferences import Section
 from dynamic_preferences import types
 from dynamic_preferences.registries import global_preferences_registry
 
-from wrh_organization.helpers.utils import PatchedGlobalPrefFileSerializer
+from wrh_organization.helpers.utils import PatchedGlobalPrefFileSerializer, JSONPreference
 
 site_ui = Section('site_ui')
 rollbar_client = Section('rollbar_client')
@@ -160,86 +160,26 @@ class SiteUiHomeInfomationBoard(types.LongStringPreference):
     verbose_name = 'Home Information Board'
     default = ''
 
+
 # 138  Global setting to edit event tags
 @global_preferences_registry.register
-class EventTags(types.MultipleChoicePreference):
-    section = site_ui
+class CoreBackendEventTags(JSONPreference):
+    section = core_backend
     name = 'event_tags'
     verbose_name = 'Event Tags on ORG event page'
-    choices = [
-        ('bike tour', 'bike tour'),
-        ('bmx freestyle', 'bmx freestyle'),
-        ('bmx race', 'bmx race'),
-        ('bmx racing', 'bmx racing'),
-        ('camp', 'camp'),
-        ('chariot race', 'chariot race'),
-        ('clinic', 'clinic'),
-        ('club membership', 'club membership'),
-        ('criterium', 'criterium'),
-        ('cross country', 'cross country'),
-        ('cx race', 'cx race'),
-        ('cycling camp', 'cycling camp'),
-        ('cyclocross', 'cyclocross'),
-        ('cyclocross racing', 'cyclocross racing'),
-        ('derny race', 'derny race'),
-        ('downhill', 'downhill'),
-        ('dual slalom', 'dual slalom'),
-        ('elimination', 'elimination'),
-        ('enduro', 'enduro'),
-        ('fat bike', 'fat bike'),
-        ('freestyle', 'freestyle'),
-        ('fun rides', 'fun rides'),
-        ('gran fondo', 'gran fondo'),
-        ('gravel', 'gravel'),
-        ('gravel grinder', 'gravel grinder'),
-        ('handicap', 'handicap'),
-        ('hill climb', 'hill climb'),
-        ('international omnium', 'international omnium'),
-        ('italian pursuit', 'italian pursuit'),
-        ('keirin', 'keirin'),
-        ('longest lap', 'longest lap'),
-        ('madison', 'madison'),
-        ('match sprint', 'match sprint'),
-        ('miss n out', 'miss n out'),
-        ('motorpaced scratch', 'motorpaced scratch'),
-        ('mountain bike racing', 'mountain bike racing'),
-        ('mtb', 'mtb'),
-        ('mtb enduro', 'mtb enduro'),
-        ('multisport', 'multisport'),
-        ('nebra', 'nebra'),
-        ('off road', 'off road'),
-        ('omnium', 'omnium'),
-        ('other', 'other'),
-        ('point a lap', 'point a lap'),
-        ('points race', 'points race'),
-        ('pursuit', 'pursuit'),
-        ('recreational', 'recreational'),
-        ('road', 'road'),
-        ('road race', 'road race'),
-        ('road race or circuit race', 'road race or circuit race'),
-        ('road racing', 'road racing'),
-        ('scratch race', 'scratch race'),
-        ('series', 'series'),
-        ('snowball', 'snowball'),
-        ('special event', 'special event'),
-        ('stage race', 'stage race'),
-        ('team pursuit', 'team pursuit'),
-        ('team sprint', 'team sprint'),
-        ('tempo', 'tempo'),
-        ('time trial', 'time trial'),
-        ('track', 'track'),
-        ('track racing', 'track racing'),
-        ('training rides', 'training rides'),
-        ('training series', 'training series'),
-        ('trials', 'trials'),
-        ('unknown distance', 'unknown distance'),
-        ('virtual', 'virtual'),
-        ('virtual challenge', 'virtual challenge'),
-        ('virtual race', 'virtual race'),
-        ('virtual road race', 'virtual road race'),
-        ('win n out', 'win n out'),
+    default = [
+        'bike tour', 'bmx freestyle', 'bmx race', 'bmx racing', 'camp', 'chariot race', 'clinic', 'club membership',
+        'criterium', 'cross country', 'cx race', 'cycling camp', 'cyclocross', 'cyclocross racing', 'derny race',
+        'downhill', 'dual slalom', 'elimination', 'enduro', 'fat bike', 'freestyle', 'fun rides', 'gran fondo',
+        'gravel', 'gravel grinder', 'handicap', 'hill climb', 'international omnium', 'italian pursuit', 'keirin',
+        'longest lap', 'madison', 'match sprint', 'miss n out', 'motorpaced scratch', 'mountain bike racing', 'mtb',
+        'mtb enduro', 'multisport', 'nebra', 'off road', 'omnium', 'other', 'point a lap', 'points race', 'pursuit',
+        'recreational', 'road', 'road race', 'road race or circuit race', 'road racing', 'scratch race', 'series',
+        'snowball', 'special event', 'stage race', 'team pursuit', 'team sprint', 'tempo', 'time trial', 'track',
+        'track racing', 'training rides', 'training series', 'trials', 'unknown distance', 'virtual',
+        'virtual challenge', 'virtual race', 'virtual road race', 'win n out'
     ]
-    default = ""
+
 
 @global_preferences_registry.register
 class SiteUiDefaultEventLogo(types.FilePreference):
@@ -247,5 +187,3 @@ class SiteUiDefaultEventLogo(types.FilePreference):
     name = 'default_event_logo'
     verbose_name = 'Default Event Logo'
     default = ''
-
-
