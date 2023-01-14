@@ -28,6 +28,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.core.mail.backends.filebased import EmailBackend
 from django.db import IntegrityError
 from django.db.models import ProtectedError, Q
+from django.forms import JSONField
 from django.http import Http404, QueryDict, HttpResponseForbidden
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -42,6 +43,7 @@ from django_filters import OrderingFilter
 from django_filters.filters import EMPTY_VALUES
 from django_filters import filters
 import dynamic_preferences.serializers
+import dynamic_preferences.types
 from phonenumber_field.phonenumber import PhoneNumber
 from rest_framework import status, parsers, serializers, permissions
 from rest_framework.exceptions import APIException
@@ -1149,3 +1151,22 @@ def check_turnstile_request(turnstile_token, request):
     print(f'turnstile response for token [{turnstile_token}]: {resp}')
     if not resp.get('success'):
         raise serializers.ValidationError({'turnstile_token': 'Invalid token!'})
+
+
+class JSONPreferenceSerializer(dynamic_preferences.types.BaseSerializer):
+
+    @classmethod
+    def clean_to_db_value(cls, value):
+        return json.dumps(value)
+
+    @classmethod
+    def to_python(cls, value, **kwargs):
+        try:
+            return json.loads(value)
+        except:
+            raise cls.exception("Cannot deserialize value {0} to json".format(value))
+
+
+class JSONPreference(dynamic_preferences.types.LongStringPreference):
+    field_class = JSONField
+    serializer = JSONPreferenceSerializer
