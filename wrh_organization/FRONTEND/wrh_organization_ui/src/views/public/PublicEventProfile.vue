@@ -37,6 +37,9 @@
                   <v-icon size="15" class="mr-1">{{icons.mdiMapMarker}}</v-icon>
                   <span>{{ event.country || '' }}{{ event.state? `, ${event.state}`:'' }}{{event.city? `, ${event.city}`:'' }}</span>
                 </v-card-subtitle>
+                <v-card-subtitle class="text-xs pa-0 pt-1">
+                  <GoogleMap sty="width: 100px; height: 100px" :isEditMode="true" :more_data="event.more_data"></GoogleMap>
+                </v-card-subtitle>
               </div>
               <div class="d-flex me-8 mb-4">
                 <v-avatar
@@ -165,6 +168,7 @@ import RecentRaceResultsWidget from "@/views/public/RecentRaceResultsWidget";
 import UpcomingEventsWidget from "@/views/public/UpcomingEventsWidget";
 import EventRacesWidget from "@/views/public/EventRacesWidget";
 import EventRaceSeriesWidget from "@/views/public/EventRaceSeriesWidget";
+import GoogleMap from '@/components/GoogleMap.vue'
 
 export default {
   components: {
@@ -173,6 +177,7 @@ export default {
     UpcomingEventsWidget,
     RecentRaceResultsWidget,
     OrganizationRaceResultsTab,
+    GoogleMap
   },
   setup() {
     const { rootThemeClasses } = useVuetify();

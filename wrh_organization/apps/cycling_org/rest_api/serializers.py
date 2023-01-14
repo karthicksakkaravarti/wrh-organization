@@ -518,7 +518,7 @@ class EventSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer)
     summary = serializers.SerializerMethodField(read_only=True)
     _organization = NestedOrganizationShortSerializer(read_only=True, source='organization')
 
-    extra_fields = ['summary', 'more_data']
+    extra_fields = ['summary']
 
     def get_summary(self, obj):
         races_count = obj.races.count()
