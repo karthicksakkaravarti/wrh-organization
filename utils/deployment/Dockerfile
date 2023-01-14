@@ -1,9 +1,8 @@
-
-FROM python:3.8
+FROM python:3.8.12
 
 RUN apt-get update && apt-get install vim sudo -y
 
-RUN curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+RUN curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 
 RUN apt-get update && apt-get install build-essential -y
 
@@ -19,7 +18,9 @@ RUN apt-get update && apt-get install lcov -y
 
 RUN apt-get update && apt-get install valgrind -y
 
-RUN apt-get install nodejs nginx -y
+RUN apt-get update && apt-get install nodejs nginx  -y
+
+RUN npm install --global yarn
 
 RUN useradd -ms /bin/bash jenkins ; usermod -aG sudo jenkins
 
@@ -32,29 +33,33 @@ EXPOSE 8001
 
 USER jenkins
 
-#Copying deploy script to the container
-COPY ./requirement.txt /home/jenkins/
+COPY ./requirements.txt /home/jenkins/
 
 COPY .git-credentials /root/
 
 COPY .git-credentials /home/jenkins/
 
+COPY .env /home/jenkins/
+
+COPY local.py /home/jenkins/
+
 COPY nginx.conf /home/jenkins/
 
 COPY default.conf /home/jenkins/
 
+
 WORKDIR /home/jenkins/
 
 USER root
-
-RUN pip install -r requirement.txt
+RUN pip install -r requirements.txt
 
 RUN pip install uwsgi
 
-RUN apt-get install cron -y
 
 RUN git config --global credential.helper store
 
 COPY --chown=jenkins:jenkins deploy.sh /home/jenkins/
+
+COPY dist /home/jenkins/dist
 
 ENTRYPOINT ["/bin/sh","/home/jenkins/deploy.sh"]

@@ -14,7 +14,7 @@
         <v-tab-item class="pt-6">
           <v-card-text class="d-flex">
             <v-avatar rounded size="80" class="me-6 v-avatar-light-bg" color="grey">
-              <v-img :src="logoChosenFileData || record.logo || require('@/assets/images/misc/no-photo.png')"></v-img>
+              <v-img :src="logoChosenFileData || record.logo || $store.state.sitePrefs.site_ui__default_event_logo || require('@/assets/images/misc/no-photo.png')"></v-img>
             </v-avatar>
 
             <!-- upload photo -->
@@ -88,8 +88,7 @@
                     <v-text-field v-model="record.registration_website" dense outlined hide-details label="Registration Website"></v-text-field>
                   </v-col>
                   <v-col cols="12">
-                    <v-combobox v-model="record.tags" :items="$const.EVENT_TAGS_PREDEFINED" dense outlined hide-details label="Tags" clearable multiple small-chips deletable-chips></v-combobox>
-                  </v-col>
+                    <v-combobox v-model="record.tags" :items="$store.state.sitePrefs.site_ui__event_tags || []" dense outlined hide-details label="Tags" clearable multiple small-chips deletable-chips></v-combobox>                  </v-col>
                   <v-col cols="12" md="4">
                     <v-autocomplete v-model="record.country" dense outlined hide-details label="Country" :items="$const.COUNTRY_OPTIONS"
                                     item-text="name" item-value="code"></v-autocomplete>

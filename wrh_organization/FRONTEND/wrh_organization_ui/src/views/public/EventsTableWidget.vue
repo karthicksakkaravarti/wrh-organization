@@ -91,6 +91,7 @@
           <div class="d-flex align-center">
             <v-avatar color="success" class="v-avatar-light-bg success--text" size="30">
               <v-img v-if="item.logo" :src="item.logo"></v-img>
+              <v-img v-else-if="$store.state.sitePrefs.site_ui__default_event_logo" :src="$store.state.sitePrefs.site_ui__default_event_logo"></v-img>
               <span v-else class="font-weight-medium">
                 {{ avatarText(item.name) }}
               </span>
