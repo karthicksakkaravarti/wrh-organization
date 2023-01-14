@@ -101,6 +101,10 @@
                     <v-text-field v-model="record.city" dense outlined hide-details label="City"></v-text-field>
                   </v-col>
 
+                  <v-col cols="12" sm="12" >
+                   <GoogleMap @coordinates="set_coordinates" :more_data="record.more_data"></GoogleMap>
+                  </v-col>
+                  
                 </v-row>
               </v-container>
             </v-card-text>
@@ -198,6 +202,7 @@ import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import CKEditor from '@ckeditor/ckeditor5-vue2';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import GoogleMap from '@/components/GoogleMap.vue'
 
 export default {
   props: {
@@ -207,7 +212,8 @@ export default {
     }
   },
   components: {
-    ckeditor: CKEditor.component
+    ckeditor: CKEditor.component,
+    GoogleMap
   },
   setup(props, context) {
     const isVisible = ref(false);
@@ -227,7 +233,10 @@ export default {
     const bannerChosenFileData = ref(null);
     const bannerImageRef = ref(null);
     const isEditMode = computed(() => !!record.value.id);
-
+    const set_coordinates = (coordinates) => {
+      record.value.more_data.lat = coordinates.lat
+      record.value.more_data.lng = coordinates.lng
+    }
     const clearChosenLogo = () => {
       logoChosenFile.value = null;
       logoChosenFileData.value = null;
@@ -344,7 +353,7 @@ export default {
     };
     const show = (r, event) => {
       tab.value = 0;
-      record.value = Object.assign({country: "US", state: "Colorado"}, r);
+      record.value = Object.assign({country: "US", state: "Colorado", more_data: {lat: '', lng: ''}}, r);
       prefs.value = Object.assign({}, record.value.prefs);
       if (isEditMode.value) {
         loadRecord();
@@ -386,6 +395,7 @@ export default {
       savePrefs,
       startDateMenu,
       endDateMenu,
+      set_coordinates,
       editor: ClassicEditor,
       icons: {
         mdiDelete,
