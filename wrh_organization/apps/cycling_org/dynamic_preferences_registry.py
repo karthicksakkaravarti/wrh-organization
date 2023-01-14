@@ -3,7 +3,7 @@ from dynamic_preferences.preferences import Section
 from dynamic_preferences import types
 from dynamic_preferences.registries import global_preferences_registry
 
-from wrh_organization.helpers.utils import PatchedGlobalPrefFileSerializer
+from wrh_organization.helpers.utils import PatchedGlobalPrefFileSerializer, JSONPreference
 
 site_ui = Section('site_ui')
 rollbar_client = Section('rollbar_client')
@@ -158,4 +158,32 @@ class SiteUiHomeInfomationBoard(types.LongStringPreference):
     section = site_ui
     name = 'home_information_board'
     verbose_name = 'Home Information Board'
+    default = ''
+
+
+# 138  Global setting to edit event tags
+@global_preferences_registry.register
+class CoreBackendEventTags(JSONPreference):
+    section = core_backend
+    name = 'event_tags'
+    verbose_name = 'Event Tags on ORG event page'
+    default = [
+        'bike tour', 'bmx freestyle', 'bmx race', 'bmx racing', 'camp', 'chariot race', 'clinic', 'club membership',
+        'criterium', 'cross country', 'cx race', 'cycling camp', 'cyclocross', 'cyclocross racing', 'derny race',
+        'downhill', 'dual slalom', 'elimination', 'enduro', 'fat bike', 'freestyle', 'fun rides', 'gran fondo',
+        'gravel', 'gravel grinder', 'handicap', 'hill climb', 'international omnium', 'italian pursuit', 'keirin',
+        'longest lap', 'madison', 'match sprint', 'miss n out', 'motorpaced scratch', 'mountain bike racing', 'mtb',
+        'mtb enduro', 'multisport', 'nebra', 'off road', 'omnium', 'other', 'point a lap', 'points race', 'pursuit',
+        'recreational', 'road', 'road race', 'road race or circuit race', 'road racing', 'scratch race', 'series',
+        'snowball', 'special event', 'stage race', 'team pursuit', 'team sprint', 'tempo', 'time trial', 'track',
+        'track racing', 'training rides', 'training series', 'trials', 'unknown distance', 'virtual',
+        'virtual challenge', 'virtual race', 'virtual road race', 'win n out'
+    ]
+
+
+@global_preferences_registry.register
+class SiteUiDefaultEventLogo(types.FilePreference):
+    section = site_ui
+    name = 'default_event_logo'
+    verbose_name = 'Default Event Logo'
     default = ''
