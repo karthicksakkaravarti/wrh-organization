@@ -73,7 +73,7 @@
                     <v-menu v-model="endDateMenu" :close-on-content-click="false"
                         :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                       <template v-slot:activator="{ on, attrs }">
-                        <v-text-field class="pt-0 pb-0" v-model="record.end_date" label="Exp Date"
+                        <v-text-field class="pt-0 pb-0" v-model="record.end_date" label="End Date"
                                       v-bind="attrs" v-on="on" readonly dense outlined hide-details>
                         </v-text-field>
                       </template>
