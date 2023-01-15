@@ -27,10 +27,10 @@
                     :search-input.sync="memberSearchInput"
                     :loading="findingMembers"
                     :items="members"
-                    no-data-text="Enter part of name or email."
+                    no-data-text="Enter member E-mail (No member found!)"
                     chips
                     label="Linked Rider"
-                    item-text="first_name"
+                    item-text="email"
                     item-value="id"
                     :menu-props="{contentClass:'list-style'}"
                     return-object
@@ -142,7 +142,7 @@ import {
 } from '@mdi/js'
 import {ref, computed} from '@vue/composition-api'
 import axios from "@/axios";
-import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
+import {emailIsValid, notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import {watch} from "@vue/composition-api/dist/vue-composition-api";
 import _ from "lodash";
 import AppCardActions from "@core/components/app-card-actions/AppCardActions";
@@ -179,8 +179,8 @@ export default {
       return moreData;
     });
 
-    const findMembers = (search) => {
-      if (findingMembers.value || (search || '').length < 3) {
+    const findMembers = (email) => {
+      if (findingMembers.value || !emailIsValid(email)) {
         members.value = [];
         if (record.value._rider) {
           members.value = [record.value._rider]
@@ -188,13 +188,13 @@ export default {
         return;
       }
       findingMembers.value = true;
-      axios.get("cycling_org/member/find", {params: {search: search}}).then((response) => {
+      axios.get("cycling_org/member/find", {params: {email: email}}).then((response) => {
         findingMembers.value = false;
-        members.value = response.data.results;
-        if (record.value._rider) {
-          members.value = [record.value._rider]
-        }
-
+        const membersRecords = record.value._rider? [record.value._rider]: response.data.results;
+        members.value = membersRecords.map(r => {
+          r.email = email;
+          return r;
+        });
       }, (error) => {
         findingMembers.value = false;
         notifyDefaultServerError(error, true)

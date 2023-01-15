@@ -636,7 +636,7 @@ def custom_rest_exception_handler(exc, context):
 
     if response is None:
         if isinstance(exc, ValidationError):
-            return Response(exc.message_dict, status=status.HTTP_400_BAD_REQUEST)
+            return Response(exc.messages, status=status.HTTP_400_BAD_REQUEST)
         traceback.print_exc()
         return
 

@@ -8,6 +8,7 @@ import stripe
 from django.conf import settings
 from django.contrib.auth import login
 from django.core.mail import send_mail
+from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
@@ -402,14 +403,13 @@ class MemberView(viewsets.ModelViewSet):
             return Response({'error': 'phone is already verified'}, status=status.HTTP_409_CONFLICT)
         return self._verify(request, me, 'phone')
 
-    @action(detail=False, methods=['GET'], permission_classes=(IsAuthenticated,),
-            serializer_class=NestedMemberSerializer, filter_backends=(SearchFilter,),
+    @action(detail=False, methods=['GET'], permission_classes=(IsAuthenticated, ),
+            serializer_class=NestedMemberSerializer,
             search_fields=['email', 'first_name', 'last_name'])
     def find(self, request, *args, **kwargs):
-        search = request.GET.get('search') or ''
-        if not search or len(search) < 3:
-            raise ValidationError('Insufficient search keyword!')
-        qs = self.filter_queryset(self.get_queryset())[:5]
+        email = (request.GET.get('email') or '').lower()
+        validate_email(email)
+        qs = self.get_queryset().filter(email=email)[:20]
         return Response({'results': self.get_serializer(qs, many=True).data})
 
 
