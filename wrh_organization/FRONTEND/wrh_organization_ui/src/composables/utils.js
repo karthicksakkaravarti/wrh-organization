@@ -346,27 +346,31 @@ export const appendStyleToHeader = (cssText) => {
   document.head.appendChild(style)
 };
 
-export const appendScriptToHeader = function (container, src, id, async=false, defer=false) {
-      if (container.getElementById(id)) {
-        container.getElementById(id).remove();
-      }
-      var t = {};
-      var js, fjs = container.getElementsByTagName('script')[0];
-      js = container.createElement('script');
-      js.id = id;
-      js.src = src;
-      if (async) {
-        js.async = true;
-      }
-      if (defer) {
-        js.defer = true;
-      }
-      fjs.parentNode.insertBefore(js, fjs);
+export const appendScriptToHeader = (container, src, id, async=false, defer=false) => {
+  if (container.getElementById(id)) {
+    container.getElementById(id).remove();
+  }
+  var t = {};
+  var js, fjs = container.getElementsByTagName('script')[0];
+  js = container.createElement('script');
+  js.id = id;
+  js.src = src;
+  if (async) {
+    js.async = true;
+  }
+  if (defer) {
+    js.defer = true;
+  }
+  fjs.parentNode.insertBefore(js, fjs);
 
-      t._e = [];
-      t.ready = function (f) {
-        t._e.push(f);
-      };
+  t._e = [];
+  t.ready = function (f) {
+    t._e.push(f);
+  };
 
-      return t;
-    };
+  return t;
+};
+
+export const emailIsValid = (email) => {
+  return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
+};

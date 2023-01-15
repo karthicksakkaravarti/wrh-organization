@@ -113,11 +113,11 @@
                     :search-input.sync="memberSearchInput"
                     :loading="findingMembers"
                     :items="members"
-                    no-data-text="Enter part of name or email."
+                    no-data-text="Enter member E-mail (No member found!)"
                     chips
                     hide-details
                     label="Member"
-                    item-text="first_name"
+                    item-text="email"
                     item-value="id"
                     :menu-props="{contentClass:'list-style'}"
                     return-object
@@ -356,7 +356,7 @@ import {
 import _ from 'lodash';
 import {ref, computed, watch, set} from '@vue/composition-api'
 import axios from "@/axios";
-import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
+import {emailIsValid, notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import AppCardActions from "@core/components/app-card-actions/AppCardActions";
 import {required} from "@core/utils/validation";
 import moment from "moment";
@@ -450,15 +450,18 @@ export default {
       });
     };
 
-    const findMembers = (search) => {
-      if (findingMembers.value || (search || '').length < 3) {
+    const findMembers = (email) => {
+      if (findingMembers.value || !emailIsValid(email)) {
         members.value = [];
         return;
       }
       findingMembers.value = true;
-      axios.get("cycling_org/member/find", {params: {search: search}}).then((response) => {
+      axios.get("cycling_org/member/find", {params: {email: email}}).then((response) => {
         findingMembers.value = false;
-        members.value = response.data.results;
+        members.value = response.data.results.map(r => {
+          r.email = email;
+          return r;
+        });
       }, (error) => {
         findingMembers.value = false;
         notifyDefaultServerError(error, true)
