@@ -79,9 +79,7 @@ export default {
           .then((coordinates) => {
             this.crd = coordinates;
           })
-          .catch((err) => {
-            alert(err);
-          });
+        
       }
     },
     updateCoordinates(location) {
@@ -135,6 +133,10 @@ export default {
   mounted() {
     this.getCurrentLocation();
     this.updateCoordinates();
+    if (this.more_data && this.more_data.lat && this.more_data.lng) {
+        this.crd.lat = this.more_data.lat;
+        this.crd.lng = this.more_data.lng;
+      }
   },
 };
 </script>

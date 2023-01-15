@@ -37,9 +37,7 @@
                   <v-icon size="15" class="mr-1">{{icons.mdiMapMarker}}</v-icon>
                   <span>{{ event.country || '' }}{{ event.state? `, ${event.state}`:'' }}{{event.city? `, ${event.city}`:'' }}</span>
                 </v-card-subtitle>
-                <v-card-subtitle class="text-xs pa-0 pt-1">
-                  <GoogleMap sty="width: 100px; height: 100px" :isEditMode="true" :more_data="event.more_data"></GoogleMap>
-                </v-card-subtitle>
+              
               </div>
               <div class="d-flex me-8 mb-4">
                 <v-avatar
@@ -131,11 +129,21 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="6">
+        <v-card>
+          <v-card-title>Event Location</v-card-title>
+          <v-card-text class="pa-2">
+                    <GoogleMap  :isEditMode="true" :more_data="event.more_data"></GoogleMap>
+
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="6">
         <event-races-widget :event="event" class="home-widget"></event-races-widget>
       </v-col>
       <v-col cols="12" md="6">
         <event-race-series-widget :event="event" class="home-widget"></event-race-series-widget>
       </v-col>
+      
 
     </v-row>
   </div>
