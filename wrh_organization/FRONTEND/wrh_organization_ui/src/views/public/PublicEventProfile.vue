@@ -132,8 +132,7 @@
         <v-card>
           <v-card-title>Event Location</v-card-title>
           <v-card-text class="pa-2">
-                    <GoogleMap  :isEditMode="true" :more_data="event.more_data"></GoogleMap>
-
+            <GoogleMap  :isEditMode="true"  :locationLat="event.location_lat" :locationLng="event.location_lon"></GoogleMap>
           </v-card-text>
         </v-card>
       </v-col>
