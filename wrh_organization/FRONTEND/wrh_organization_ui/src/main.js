@@ -16,6 +16,8 @@ import VueMask from 'v-mask'
 import DatetimePicker from 'vuetify-datetime-picker'
 import Rollbar from 'rollbar';
 import {notifyDefaultServerError} from "@/composables/utils";
+import VueGeolocation  from 'vue-browser-geolocation'
+import GmapVue from 'gmap-vue'
 
 import "vue-toastification/dist/index.css";
 import "../public/css/ckeditor-content-styles.css"
@@ -27,7 +29,8 @@ Vue.use(Toast, {
   newestOnTop: true
 });
 Vue.use(DatetimePicker);
-
+Vue.use(VueGeolocation);
+Vue.use(GmapVue);
 Vue.prototype.$rollbar = new Rollbar({
   // accessToken: '',
   captureUncaught: true,

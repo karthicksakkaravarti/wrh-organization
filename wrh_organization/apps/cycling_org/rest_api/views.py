@@ -106,7 +106,7 @@ class GlobalPreferencesView(viewsets.ViewSet):
 
 class GlobalConfView(viewsets.ViewSet):
     PUBLIC_KEYS = [
-        'TIME_ZONE', 'TURNSTILE_SITE_KEY', 'STRIPE_PUBLISHABLE_KEY',
+        'TIME_ZONE', 'TURNSTILE_SITE_KEY', 'STRIPE_PUBLISHABLE_KEY', 'GOOGLE_MAP_API_TOKEN'
     ]
     LOGIN_REQUIRED_KEYS = []
     permission_classes = (permissions.AllowAny,)

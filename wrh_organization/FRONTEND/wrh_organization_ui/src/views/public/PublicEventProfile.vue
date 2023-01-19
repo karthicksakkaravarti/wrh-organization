@@ -37,6 +37,7 @@
                   <v-icon size="15" class="mr-1">{{icons.mdiMapMarker}}</v-icon>
                   <span>{{ event.country || '' }}{{ event.state? `, ${event.state}`:'' }}{{event.city? `, ${event.city}`:'' }}</span>
                 </v-card-subtitle>
+              
               </div>
               <div class="d-flex me-8 mb-4">
                 <v-avatar
@@ -128,11 +129,22 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="6">
+        <v-card>
+          <v-card-title class="align-start pb-3 pt-5">Event Location</v-card-title>
+          <v-divider></v-divider>
+          <v-card-text class="pa-1">
+            <GoogleMap v-if="gmapApiKey" :api-key="gmapApiKey" :latitude.sync="event.location_lat" :longitude.sync="event.location_lon" readonly class="gmap-widget">
+            </GoogleMap>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="6">
         <event-races-widget :event="event" class="home-widget"></event-races-widget>
       </v-col>
       <v-col cols="12" md="6">
         <event-race-series-widget :event="event" class="home-widget"></event-race-series-widget>
       </v-col>
+      
 
     </v-row>
   </div>
@@ -165,6 +177,7 @@ import RecentRaceResultsWidget from "@/views/public/RecentRaceResultsWidget";
 import UpcomingEventsWidget from "@/views/public/UpcomingEventsWidget";
 import EventRacesWidget from "@/views/public/EventRacesWidget";
 import EventRaceSeriesWidget from "@/views/public/EventRaceSeriesWidget";
+import GoogleMap from '@/components/GoogleMap.vue'
 
 export default {
   components: {
@@ -173,14 +186,27 @@ export default {
     UpcomingEventsWidget,
     RecentRaceResultsWidget,
     OrganizationRaceResultsTab,
+    GoogleMap
   },
   setup() {
-    const { rootThemeClasses } = useVuetify();
     const { route } = useRouter();
     const tab = ref(null);
+    const gmapApiKey = ref(null);
 
     const event = ref({});
     const orgId = route.value.params.record_id;
+
+    const loadGmapApiKey = () => {
+      axios.get("cycling_org/global_conf/GOOGLE_MAP_API_TOKEN").then(
+        response => {
+          gmapApiKey.value = response.data;
+        },
+        error => {
+          notifyDefaultServerError(error, true);
+        }
+      );
+    };
+
     const loadEvent = () => {
       axios.get(`cycling_org/event/${orgId}`, {params: {exfields: 'summary'}}).then((response) => {
         const e = response.data;
@@ -196,13 +222,14 @@ export default {
     onMounted(() => {
       tab.value = route.value.params.tab !== undefined? route.value.params.tab: 0 ;
       loadEvent();
+      loadGmapApiKey();
     });
 
     return {
-      rootThemeClasses,
       event,
       loadEvent,
       tab,
+      gmapApiKey,
       icons: {
         mdiFlagCheckered,
         mdiAccountPlus,
@@ -229,6 +256,10 @@ export default {
 
 // user view
 #public-org-profile-view {
+  .gmap-widget {
+    border: none;
+    padding: 0;
+  }
   .avatar-center {
     top: -2rem;
     left: 1rem;
