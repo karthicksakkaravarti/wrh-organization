@@ -17,7 +17,7 @@
       color="secondary"
       item-color="secondary"
       return-object
-      @change="selected_address"
+      @change="selectedAddress"
     ></v-autocomplete>
 
     <GmapMap
@@ -45,7 +45,8 @@ import geolocation from "vue-browser-geolocation";
 
 export default {
   props: {
-    more_data: { default: null },
+    locationLat: {},
+    locationLng: {},
     isEditMode: { default: false },
     sty: { default: "width: 640px; height: 360px" },
   },
@@ -79,9 +80,7 @@ export default {
           .then((coordinates) => {
             this.crd = coordinates;
           })
-          .catch((err) => {
-            alert(err);
-          });
+        
       }
     },
     updateCoordinates(location) {
@@ -103,7 +102,7 @@ export default {
 
       this.$emit("coordinates", this.eventCoordinate);
     },
-    selected_address() {
+    selectedAddress() {
       this.crd.lat = this.address.value.geometry.location.lat;
       this.crd.lng = this.address.value.geometry.location.lng;
       this.updateCoordinates(this.address.value.geometry.location);
@@ -135,6 +134,10 @@ export default {
   mounted() {
     this.getCurrentLocation();
     this.updateCoordinates();
+    if (this.locationLat && this.locationLng) {
+        this.crd.lat = Number(this.locationLat);
+        this.crd.lng = Number(this.locationLng);
+      }
   },
 };
 </script>

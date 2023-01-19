@@ -102,7 +102,7 @@
                   </v-col>
 
                   <v-col cols="12" sm="12" >
-                   <GoogleMap @coordinates="set_coordinates" :more_data="record.more_data"></GoogleMap>
+                   <GoogleMap @coordinates="setCoordinates" :locationLat="record.location_lat" :locationLng="record.location_lon"></GoogleMap>
                   </v-col>
                   
                 </v-row>
@@ -233,9 +233,9 @@ export default {
     const bannerChosenFileData = ref(null);
     const bannerImageRef = ref(null);
     const isEditMode = computed(() => !!record.value.id);
-    const set_coordinates = (coordinates) => {
-      record.value.more_data.lat = coordinates.lat
-      record.value.more_data.lng = coordinates.lng
+    const setCoordinates = (coordinates) => {
+      record.value.location_lat = coordinates.lat
+      record.value.location_lon = coordinates.lng
     }
     const clearChosenLogo = () => {
       logoChosenFile.value = null;
@@ -353,7 +353,7 @@ export default {
     };
     const show = (r, event) => {
       tab.value = 0;
-      record.value = Object.assign({country: "US", state: "Colorado", more_data: {lat: '', lng: ''}}, r);
+      record.value = Object.assign({country: "US", state: "Colorado", location_lat: "", location_lon: ""}, r);
       prefs.value = Object.assign({}, record.value.prefs);
       if (isEditMode.value) {
         loadRecord();
@@ -395,7 +395,7 @@ export default {
       savePrefs,
       startDateMenu,
       endDateMenu,
-      set_coordinates,
+      setCoordinates,
       editor: ClassicEditor,
       icons: {
         mdiDelete,
