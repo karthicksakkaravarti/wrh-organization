@@ -2,40 +2,43 @@
   <v-dialog
     v-model="isVisible"
     persistent
-    max-width="700px"
+    max-width="1000px"
   >
     <v-card class="event-org-form">
       <v-card-title>
-        <span class="headline">{{isEditMode? `Edit Event #${record.id}`: 'New Event'}}</span>
+        <span class="headline">{{ isEditMode ? `Edit Event #${record.id}` : 'New Event' }}</span>
       </v-card-title>
       <v-tabs class="mb-5" v-model="tab">
         <v-tab>Basic Info</v-tab>
+        <v-tab :disabled="!isEditMode">Attachments</v-tab>
         <v-tab :disabled="!isEditMode">UI Preferences</v-tab>
         <v-tab-item class="pt-6">
           <v-card-text class="d-flex">
             <v-avatar rounded size="80" class="me-6 v-avatar-light-bg" color="grey">
-              <v-img :src="logoChosenFileData || record.logo || $store.state.sitePrefs.site_ui__default_event_logo || require('@/assets/images/misc/no-photo.png')"></v-img>
+              <v-img
+                  :src="logoChosenFileData || record.logo || $store.state.sitePrefs.site_ui__default_event_logo || require('@/assets/images/misc/no-photo.png')"></v-img>
             </v-avatar>
 
             <!-- upload photo -->
             <div>
               <v-btn small color="primary" class="me-3 mt-5" @click="logoImageRef.click()">
-                <v-icon class="d-sm-none">
+                <v-icon left>
                   {{ icons.mdiCloudUploadOutline }}
                 </v-icon>
                 <span class="d-none d-sm-block">Choose Logo</span>
               </v-btn>
 
               <input
-                ref="logoImageRef"
-                type="file"
-                accept=".jpeg,.png,.jpg,GIF"
-                :hidden="true"
-                @change="onChangeLogoFile"
+                  ref="logoImageRef"
+                  type="file"
+                  accept=".jpeg,.png,.jpg,GIF"
+                  :hidden="true"
+                  @change="onChangeLogoFile"
               />
 
               <v-btn
-                  small color="warning" outlined class="mt-5 mr-2" @click="clearChosenLogo()" :disabled="!logoChosenFile">
+                  small color="warning" outlined class="mt-5 mr-2" @click="clearChosenLogo()"
+                  :disabled="!logoChosenFile">
                 Reset
               </v-btn>
               <v-btn small color="error" outlined class="mt-5 mr-2" @click="clearChosenLogo(); record.logo=null">
@@ -55,11 +58,12 @@
                     <v-text-field v-model="record.name" label="Name" dense outlined hide-details></v-text-field>
                   </v-col>
                   <v-col cols="12">
-                    <v-textarea v-model="record.description" label="Description" dense outlined hide-details rows="3"></v-textarea>
+                    <v-textarea v-model="record.description" label="Description" dense outlined hide-details
+                                rows="3"></v-textarea>
                   </v-col>
                   <v-col cols="12" md="6">
                     <v-menu v-model="startDateMenu" :close-on-content-click="false"
-                        :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                            :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                       <template v-slot:activator="{ on, attrs }">
                         <v-text-field class="pt-0 pb-0" v-model="record.start_date" label="Start Date"
                                       v-bind="attrs" v-on="on" readonly dense outlined hide-details>
@@ -71,9 +75,9 @@
                   </v-col>
                   <v-col cols="12" md="6">
                     <v-menu v-model="endDateMenu" :close-on-content-click="false"
-                        :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                            :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                       <template v-slot:activator="{ on, attrs }">
-                        <v-text-field class="pt-0 pb-0" v-model="record.end_date" label="Exp Date"
+                        <v-text-field class="pt-0 pb-0" v-model="record.end_date" label="End Date"
                                       v-bind="attrs" v-on="on" readonly dense outlined hide-details>
                         </v-text-field>
                       </template>
@@ -85,12 +89,17 @@
                     <v-text-field v-model="record.website" dense outlined hide-details label="Website"></v-text-field>
                   </v-col>
                   <v-col cols="12" md="6">
-                    <v-text-field v-model="record.registration_website" dense outlined hide-details label="Registration Website"></v-text-field>
+                    <v-text-field v-model="record.registration_website" dense outlined hide-details
+                                  label="Registration Website"></v-text-field>
                   </v-col>
                   <v-col cols="12">
-                    <v-combobox v-model="record.tags" :items="$store.state.sitePrefs.site_ui__event_tags || []" dense outlined hide-details label="Tags" clearable multiple small-chips deletable-chips></v-combobox>                  </v-col>
+                    <v-combobox v-model="record.tags" :items="$store.state.sitePrefs.core_backend__event_tags || []"
+                                dense outlined hide-details label="Tags" clearable multiple small-chips
+                                deletable-chips></v-combobox>
+                  </v-col>
                   <v-col cols="12" md="4">
-                    <v-autocomplete v-model="record.country" dense outlined hide-details label="Country" :items="$const.COUNTRY_OPTIONS"
+                    <v-autocomplete v-model="record.country" dense outlined hide-details label="Country"
+                                    :items="$const.COUNTRY_OPTIONS"
                                     item-text="name" item-value="code"></v-autocomplete>
                   </v-col>
                   <v-col cols="12" md="4">
@@ -101,10 +110,12 @@
                     <v-text-field v-model="record.city" dense outlined hide-details label="City"></v-text-field>
                   </v-col>
 
-                  <v-col cols="12" sm="12" >
-                   <GoogleMap @coordinates="setCoordinates" :locationLat="record.location_lat" :locationLng="record.location_lon"></GoogleMap>
+                  <v-col cols="12" sm="12">
+                    <span class="font-weight-bold">Choose Event Location:</span>
+                    <GoogleMap v-if="gmapApiKey" :api-key="gmapApiKey" :latitude.sync="record.location_lat"
+                               :longitude.sync="record.location_lon"></GoogleMap>
                   </v-col>
-                  
+
                 </v-row>
               </v-container>
             </v-card-text>
@@ -117,9 +128,10 @@
               </v-alert>
             </v-card-text>
             <v-card-actions>
-              <template v-if="isEditMode" >
+              <template v-if="isEditMode">
                 <v-btn color="error" outlined @click="confirmDelete=true" :disabled="confirmDelete">
-                  <v-icon>{{icons.mdiDelete}}</v-icon>Delete
+                  <v-icon>{{ icons.mdiDelete }}</v-icon>
+                  Delete
                 </v-btn>
               </template>
               <v-spacer></v-spacer>
@@ -130,12 +142,22 @@
         </v-tab-item>
         <v-tab-item class="pt-6">
           <v-card-text>
+            <event-attachments-tab v-if="record && record.id" :event="record"></event-attachments-tab>
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions class="pt-5">
+            <v-spacer></v-spacer>
+            <v-btn color="secondary" outlined @click="hide()">Close</v-btn>
+          </v-card-actions>
+        </v-tab-item>
+        <v-tab-item class="pt-6">
+          <v-card-text>
             <h3 class="mb-2">Upload site banner image:</h3>
             <v-img
-              :src="bannerChosenFileData || prefs.banner_image || $store.state.sitePrefs.site_ui__default_event_banner_image || require(`@/assets/images/misc/public-banner-bg-light.jpeg`)"
-              height="200"
-              class="grey darken-4 banner"
-              :class="{'no-banner': !bannerChosenFileData && !prefs.banner_image}"
+                :src="bannerChosenFileData || prefs.banner_image || $store.state.sitePrefs.site_ui__default_event_banner_image || require(`@/assets/images/misc/public-banner-bg-light.jpeg`)"
+                height="200"
+                class="grey darken-4 banner"
+                :class="{'no-banner': !bannerChosenFileData && !prefs.banner_image}"
             ></v-img>
             <!-- upload photo -->
             <div>
@@ -147,18 +169,20 @@
               </v-btn>
 
               <input
-                ref="bannerImageRef"
-                type="file"
-                accept=".jpeg,.png,.jpg,GIF"
-                :hidden="true"
-                @change="onChangeBannerFile"
+                  ref="bannerImageRef"
+                  type="file"
+                  accept=".jpeg,.png,.jpg,GIF"
+                  :hidden="true"
+                  @change="onChangeBannerFile"
               />
 
               <v-btn
-                  small color="warning" outlined class="mt-5 mr-2" @click="clearChosenBanner()" :disabled="!bannerChosenFile">
+                  small color="warning" outlined class="mt-5 mr-2" @click="clearChosenBanner()"
+                  :disabled="!bannerChosenFile">
                 Reset
               </v-btn>
-              <v-btn small color="error" outlined class="mt-5 mr-2" @click="clearChosenBanner(); prefs.banner_image=null">
+              <v-btn small color="error" outlined class="mt-5 mr-2"
+                     @click="clearChosenBanner(); prefs.banner_image=null">
                 Delete
               </v-btn>
 
@@ -172,7 +196,8 @@
             <v-row>
               <v-col cols="12">
                 <h3 class="mb-2">Event page information board:</h3>
-                <ckeditor :editor="editor" v-model="prefs.information_board_content" :config="$const.DEFAULT_CKEDITOR_CONFIG"></ckeditor>
+                <ckeditor :editor="editor" v-model="prefs.information_board_content"
+                          :config="$const.DEFAULT_CKEDITOR_CONFIG"></ckeditor>
               </v-col>
             </v-row>
           </v-card-text>
@@ -195,14 +220,16 @@ import {
   mdiDelete,
   mdiAlert,
   mdiCalendar,
-  mdiClock
+  mdiClock,
+  mdiCloudUploadOutline
 } from '@mdi/js'
 import {ref, computed} from '@vue/composition-api'
 import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import CKEditor from '@ckeditor/ckeditor5-vue2';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import GoogleMap from '@/components/GoogleMap.vue'
+import GoogleMap from '@/components/GoogleMap.vue';
+import EventAttachmentsTab from "@/views/dashboard/organizationProfile/EventAttachmentsTab.vue";
 
 export default {
   props: {
@@ -213,12 +240,13 @@ export default {
   },
   components: {
     ckeditor: CKEditor.component,
-    GoogleMap
+    GoogleMap,
+    EventAttachmentsTab,
   },
   setup(props, context) {
     const isVisible = ref(false);
     const tab = ref(0);
-    const record = ref({});
+    const record = ref({location_lat: null, location_lon: null});
     const prefs = ref({});
     const saving = ref(false);
     const savingPrefs = ref(false);
@@ -233,10 +261,19 @@ export default {
     const bannerChosenFileData = ref(null);
     const bannerImageRef = ref(null);
     const isEditMode = computed(() => !!record.value.id);
-    const setCoordinates = (coordinates) => {
-      record.value.location_lat = coordinates.lat
-      record.value.location_lon = coordinates.lng
-    }
+    const gmapApiKey = ref(null);
+
+    const loadGmapApiKey = () => {
+      axios.get("cycling_org/global_conf/GOOGLE_MAP_API_TOKEN").then(
+        response => {
+          gmapApiKey.value = response.data;
+        },
+        error => {
+          notifyDefaultServerError(error, true);
+        }
+      );
+    };
+
     const clearChosenLogo = () => {
       logoChosenFile.value = null;
       logoChosenFileData.value = null;
@@ -257,7 +294,7 @@ export default {
       if (event.target.files.length > 0) {
         logoChosenFile.value = event.target.files[0];
         var f = logoChosenFile.value,
-          r = new FileReader();
+            r = new FileReader();
         r.onloadend = (e) => {
           logoChosenFileData.value = e.target.result;
         };
@@ -269,7 +306,7 @@ export default {
       if (event.target.files.length > 0) {
         bannerChosenFile.value = event.target.files[0];
         var f = bannerChosenFile.value,
-          r = new FileReader();
+            r = new FileReader();
         r.onloadend = (e) => {
           bannerChosenFileData.value = e.target.result;
         };
@@ -329,7 +366,9 @@ export default {
       }
       axios.patch(`cycling_org/event/${record.value.id}/prefs`, data).then((response) => {
         savingPrefs.value = false;
-        record.value.prefs = prefs.value = response.data;
+        const prefsData = response.data || {};
+        prefsData.information_board_content = prefsData.information_board_content || '';
+        record.value.prefs = prefs.value = prefsData;
         notifySuccess('Preferences Saved successfully.');
         hide();
         context.emit('save-successed', record.value);
@@ -342,7 +381,9 @@ export default {
     const loadRecord = () => {
       axios.get(`cycling_org/event/${record.value.id}`).then((response) => {
         record.value = response.data || {};
-        prefs.value = record.value.prefs || {};
+        const prefsData = record.value.prefs || {};
+        prefsData.information_board_content = prefsData.information_board_content || '';
+        prefs.value = prefsData;
       }, (error) => {
         notifyDefaultServerError(error, true);
       });
@@ -350,13 +391,19 @@ export default {
 
     const hide = () => {
       isVisible.value = false;
+      record.value = {};
     };
     const show = (r, event) => {
       tab.value = 0;
-      record.value = Object.assign({country: "US", state: "Colorado", location_lat: "", location_lon: ""}, r);
-      prefs.value = Object.assign({}, record.value.prefs);
+      record.value = Object.assign({country: "US", state: "Colorado"}, r);
+      const prefsData = record.value.prefs || {};
+      prefsData.information_board_content = prefsData.information_board_content || '';
+      prefs.value = Object.assign({}, prefsData);
       if (isEditMode.value) {
         loadRecord();
+      }
+      if (!gmapApiKey.value) {
+        loadGmapApiKey()
       }
       confirmDelete.value = false;
       deleting.value = false;
@@ -378,6 +425,7 @@ export default {
       saving,
       savingPrefs,
       deleting,
+      gmapApiKey,
       deleteRecord,
       clearChosenLogo,
       clearChosenBanner,
@@ -395,13 +443,13 @@ export default {
       savePrefs,
       startDateMenu,
       endDateMenu,
-      setCoordinates,
       editor: ClassicEditor,
       icons: {
         mdiDelete,
         mdiAlert,
         mdiCalendar,
-        mdiClock
+        mdiClock,
+        mdiCloudUploadOutline
       },
     }
   },
@@ -410,15 +458,16 @@ export default {
 
 <style lang="scss" scoped>
 
-  .banner {
-    border: 1px solid #e9e9e9;
-  }
-  .banner.no-banner{
-    opacity: 0.2;
-  }
+.banner {
+  border: 1px solid #e9e9e9;
+}
+
+.banner.no-banner {
+  opacity: 0.2;
+}
 </style>
 <style>
-  .event-org-form .ck-editor .ck-editor__main .ck-content {
-    height: 200px;
-  }
+.event-org-form .ck-editor .ck-editor__main .ck-content {
+  height: 200px;
+}
 </style>

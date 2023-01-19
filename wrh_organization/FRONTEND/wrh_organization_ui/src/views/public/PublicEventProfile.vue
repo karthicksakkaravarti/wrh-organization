@@ -121,18 +121,33 @@
             </div>
 
           </v-card-text>
-        </v-card>
-      </v-col>
-      <v-col cols="12" class="pt-0" v-if="event.prefs.information_board_content">
-        <v-card class="d-flex">
-          <v-card-text v-html="event.prefs.information_board_content" class="ck-content"></v-card-text>
+          <template v-if="event.prefs.information_board_content">
+            <v-divider></v-divider>
+            <v-card-text v-html="event.prefs.information_board_content" class="ck-content"></v-card-text>
+          </template>
+          <template v-if="event.attachments && event.attachments.length">
+            <v-divider></v-divider>
+            <v-card-text>
+              <h3 class="mb-2">File Attachments:</h3>
+              <v-row>
+                <v-col cols="12" sm="6" md="4" v-for="a in event.attachments" :key="a.id" class="pa-1">
+                  <v-btn plain :href="a.file" target="_blank" color="primary">
+                    {{a.title || a.file_name}}
+                    <v-icon right>{{icons.mdiDownload}}</v-icon>
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </template>
         </v-card>
       </v-col>
       <v-col cols="12" md="6">
         <v-card>
-          <v-card-title>Event Location</v-card-title>
-          <v-card-text class="pa-2">
-            <GoogleMap  :isEditMode="true"  :locationLat="event.location_lat" :locationLng="event.location_lon"></GoogleMap>
+          <v-card-title class="align-start pb-3 pt-5">Event Location</v-card-title>
+          <v-divider></v-divider>
+          <v-card-text class="pa-1">
+            <GoogleMap v-if="gmapApiKey" :api-key="gmapApiKey" :latitude.sync="event.location_lat" :longitude.sync="event.location_lon" readonly class="gmap-widget">
+            </GoogleMap>
           </v-card-text>
         </v-card>
       </v-col>
@@ -164,6 +179,7 @@ import {
   mdiCalendar,
   mdiMapMarker,
   mdiWeb,
+  mdiDownload,
 } from '@mdi/js'
 import axios from "@/axios";
 import {notifyDefaultServerError} from "@/composables/utils";
@@ -187,14 +203,26 @@ export default {
     GoogleMap
   },
   setup() {
-    const { rootThemeClasses } = useVuetify();
     const { route } = useRouter();
     const tab = ref(null);
+    const gmapApiKey = ref(null);
 
     const event = ref({});
     const orgId = route.value.params.record_id;
+
+    const loadGmapApiKey = () => {
+      axios.get("cycling_org/global_conf/GOOGLE_MAP_API_TOKEN").then(
+        response => {
+          gmapApiKey.value = response.data;
+        },
+        error => {
+          notifyDefaultServerError(error, true);
+        }
+      );
+    };
+
     const loadEvent = () => {
-      axios.get(`cycling_org/event/${orgId}`, {params: {exfields: 'summary'}}).then((response) => {
+      axios.get(`cycling_org/event/${orgId}`, {params: {exfields: 'summary,attachments'}}).then((response) => {
         const e = response.data;
         if (!e.summary) {
           e.summary = {};
@@ -208,13 +236,14 @@ export default {
     onMounted(() => {
       tab.value = route.value.params.tab !== undefined? route.value.params.tab: 0 ;
       loadEvent();
+      loadGmapApiKey();
     });
 
     return {
-      rootThemeClasses,
       event,
       loadEvent,
       tab,
+      gmapApiKey,
       icons: {
         mdiFlagCheckered,
         mdiAccountPlus,
@@ -227,6 +256,7 @@ export default {
         mdiCalendar,
         mdiMapMarker,
         mdiWeb,
+        mdiDownload,
       }
     }
   },
@@ -241,6 +271,10 @@ export default {
 
 // user view
 #public-org-profile-view {
+  .gmap-widget {
+    border: none;
+    padding: 0;
+  }
   .avatar-center {
     top: -2rem;
     left: 1rem;

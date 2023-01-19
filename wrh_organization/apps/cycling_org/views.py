@@ -1,3 +1,5 @@
+import traceback
+
 from PIL import Image
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -16,7 +18,8 @@ def ckeditor_upload_file(request):
     try:
         Image.open(request.FILES["upload"]).verify()
     except OSError as ex:
-        return JsonResponse({"error": {"message": f"{str(ex)}"}})
+        traceback.print_exc()
+        return JsonResponse({"error": {"message": "unexpected error on reading the file!"}})
     if form.is_valid():
         f = request.FILES["upload"]
         fs = ck_storage()

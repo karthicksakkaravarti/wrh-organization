@@ -30,12 +30,7 @@ Vue.use(Toast, {
 });
 Vue.use(DatetimePicker);
 Vue.use(VueGeolocation);
-Vue.use(GmapVue, {
-  load: {
-    key: process.env.VUE_APP_GMAP_TOKEN,
-    libraries: 'places'
-  }
-})
+Vue.use(GmapVue);
 Vue.prototype.$rollbar = new Rollbar({
   // accessToken: '',
   captureUncaught: true,

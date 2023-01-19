@@ -42,18 +42,18 @@
           <v-card-text v-html="$store.state.sitePrefs.site_ui__home_information_board" class="ck-content"></v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" md="6">
-        <recent-race-results-widget class="home-widget"></recent-race-results-widget>
-      </v-col>
-      <v-col cols="12" md="6">
-        <upcoming-events-widget class="home-widget"></upcoming-events-widget>
-      </v-col>
+<!--      <v-col cols="12" md="6">-->
+<!--        <recent-race-results-widget class="home-widget"></recent-race-results-widget>-->
+<!--      </v-col>-->
       <v-col cols="12" md="6">
         <organizations-widget class="home-widget"></organizations-widget>
       </v-col>
       <v-col cols="12" md="6">
-        <twitter-feeds-widget class="home-widget"></twitter-feeds-widget>
+        <upcoming-events-widget class="home-widget"></upcoming-events-widget>
       </v-col>
+<!--      <v-col cols="12" md="6">-->
+<!--        <twitter-feeds-widget class="home-widget"></twitter-feeds-widget>-->
+<!--      </v-col>-->
     </v-row>
   </div>
 </template>

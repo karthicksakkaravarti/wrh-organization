@@ -28,6 +28,11 @@ def event_logo_file_path_func(instance, filename):
     return get_random_upload_path(str(Path('uploads', 'cycling_org', 'event', 'logo')), filename)
 
 
+def event_attachment_file_path_func(instance, filename):
+    from wrh_organization.helpers.utils import get_random_upload_path
+    return get_random_upload_path(str(Path('uploads', 'cycling_org', 'event_attachment')), filename)
+
+
 class FieldsTracking(BaseFieldsTracking):
     pass
 
@@ -47,12 +52,12 @@ class OrganizationMember(models.Model):
     is_admin = models.BooleanField(default=False)
     is_master_admin = models.BooleanField(default=False)
     membership_price = models.DecimalField(max_digits=8, decimal_places=2, null=True) # TODO: Drop me!
-    membership_plan = models.JSONField(null=True, encoder=JSONEncoder, editable=False)
+    membership_plan = models.JSONField(null=True, blank=True, encoder=JSONEncoder, editable=False)
     is_active = models.BooleanField(default=True, null=True)
     org_member_uid = models.CharField(max_length=256, null=True, blank=True)
     start_date = models.DateField(null=True)
     exp_date = models.DateField(null=True)
-    member_fields = models.JSONField(null=True, encoder=JSONEncoder)
+    member_fields = models.JSONField(null=True, blank=True, encoder=JSONEncoder)
     status = models.CharField(max_length=16, null=True, choices=STATUS_CHOICES)
     datetime = models.DateTimeField(auto_now_add=True)
     _tracker = FieldTracker()
@@ -123,7 +128,7 @@ class OrganizationMemberOrg(models.Model):
     is_active = models.BooleanField(default=True, null=True)
     start_date = models.DateField(null=True)
     exp_date = models.DateField(null=True)
-    member_fields = models.JSONField(null=True, encoder=JSONEncoder)
+    member_fields = models.JSONField(null=True, blank=True, encoder=JSONEncoder)
     status = models.CharField(max_length=16, null=True, choices=STATUS_CHOICES)
     datetime = models.DateTimeField(auto_now_add=True)
     _tracker = FieldTracker()
@@ -225,11 +230,11 @@ class Organization(models.Model):
     zipcode = models.CharField(max_length=10, blank=True, null=True)
     about = models.TextField(null=True, blank=True)
     logo = models.ImageField(null=True, blank=True, upload_to=organization_logo_file_path_func)
-    signup_config = models.JSONField(null=True)
-    membership_plans = models.JSONField(null=True, encoder=JSONEncoder)
-    member_fields_schema = models.JSONField(null=True)
+    signup_config = models.JSONField(null=True, blank=True)
+    membership_plans = models.JSONField(null=True, blank=True, encoder=JSONEncoder)
+    member_fields_schema = models.JSONField(null=True, blank=True)
     verified = models.BooleanField(default=False)
-    prefs = models.JSONField(null=True, encoder=JSONEncoder, editable=False)
+    prefs = models.JSONField(null=True, blank=True, encoder=JSONEncoder, editable=False)
     members = models.ManyToManyField('Member', related_name='organizations', through=OrganizationMember)
     member_orgs = models.ManyToManyField('Organization', related_name='organizations', through=OrganizationMemberOrg)
     _tracker = FieldTracker()
@@ -364,7 +369,7 @@ class Member(models.Model):
                                  validators=[MinValueValidator(1), MaxValueValidator(3)])
 
     social_media = models.JSONField(null=True, blank=True)
-    more_data = models.JSONField(null=True, encoder=JSONEncoder)
+    more_data = models.JSONField(null=True, blank=True, encoder=JSONEncoder)
     is_verified = models.BooleanField(default=None, null=True)
     draft = models.BooleanField(default=False, null=False, editable=False)
     user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='member', null=True)
@@ -456,15 +461,15 @@ class Event(models.Model):
         null=True,
         blank=True
     )
-    more_data = models.JSONField(null=True, encoder=JSONEncoder)
+    more_data = models.JSONField(null=True, blank=True, encoder=JSONEncoder)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, related_name='events')
     source = models.CharField(max_length=16, null=True, editable=False)
-    prefs = models.JSONField(null=True, encoder=JSONEncoder, editable=False)
+    prefs = models.JSONField(null=True, blank=True, encoder=JSONEncoder, editable=False)
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
     update_datetime = models.DateTimeField(auto_now=True)
-    location_lat = models.CharField(max_length=200, null=True, blank=True)
-    location_lon = models.CharField(max_length=200, null=True, blank=True)
+    location_lat = models.FloatField(null=True, blank=True)
+    location_lon = models.FloatField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.end_date and (self.end_date < self.start_date):
@@ -475,12 +480,28 @@ class Event(models.Model):
         return self.name
 
 
+class EventAttachment(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(upload_to=event_attachment_file_path_func)
+    file_name = models.CharField(max_length=256)
+    title = models.CharField(max_length=256, null=True, blank=True)
+    create_datetime = models.DateTimeField(auto_now_add=True)
+    upload_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    def save(self, *args, **kwargs):
+        self.file_name = self.file.name
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.file_name
+
+
 class Race(models.Model):
     name = models.CharField(max_length=256)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='races')
     start_datetime = models.DateTimeField(null=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, related_name='races')
-    more_data = models.JSONField(null=True, encoder=JSONEncoder)
+    more_data = models.JSONField(null=True, blank=True, encoder=JSONEncoder)
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
 
@@ -505,7 +526,7 @@ class RaceResult(models.Model):
     race = models.ForeignKey(Race, on_delete=models.CASCADE)
     place = models.IntegerField(validators=[MinValueValidator(1)], null=True)
     finish_status = models.CharField(max_length=16, default=FINISH_STATUS_OK, choices=FINISH_STATUS_CHOICES)
-    more_data = models.JSONField(null=True, encoder=JSONEncoder)
+    more_data = models.JSONField(null=True, blank=True, encoder=JSONEncoder)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
@@ -543,7 +564,7 @@ class RaceSeries(models.Model):
     events = models.ManyToManyField(Event, related_name='race_series')
     races = models.ManyToManyField(Race, related_name='race_series')
     categories = models.ManyToManyField(Category, related_name='race_series')
-    points_map = models.JSONField(null=True)
+    points_map = models.JSONField(null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='race_series')
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
@@ -560,7 +581,7 @@ class RaceSeriesResult(models.Model):
     race_result = models.ForeignKey(RaceResult, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     place = models.IntegerField(validators=[MinValueValidator(1)], null=True)
-    more_data = models.JSONField(null=True, encoder=JSONEncoder)
+    more_data = models.JSONField(null=True, blank=True, encoder=JSONEncoder)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
