@@ -1,40 +1,39 @@
 <template>
-  <div>
+  <div class="gmap-container">
     <v-autocomplete
-      v-if="!isEditMode"
-      outlined
-      dense
-      v-model="address"
-      :items="items"
-      clerable
-      name="address"
-      :search-input.sync="search"
-      label="Address"
-      placeholder="Address"
-      class="pa-3"
-      autocomplete="off"
-      :filter="(d) => d"
-      color="secondary"
-      item-color="secondary"
-      return-object
-      @change="selectedAddress"
+        v-if="!readonly"
+        outlined
+        dense
+        v-model="address"
+        :items="searchResult"
+        clerable
+        name="address"
+        :search-input.sync="search"
+        label="Locate Address"
+        placeholder="Locate Address"
+        autocomplete="off"
+        item-text="formatted_address"
+        return-object
+        @change="selectAddress"
+        hide-details
+        class="mb-1"
     ></v-autocomplete>
 
     <GmapMap
-      :center="{
-        lat: crd.lat,
-        lng: crd.lng,
+        :center="{
+        lat: latitude || 0,
+        lng: longitude || 0,
       }"
-      :zoom="7"
-      :style="sty"
+        :zoom="7"
+        :style="mapStyle"
     >
       <GmapMarker
-        :position="{
-          lat: crd.lat,
-          lng: crd.lng,
+          :position="{
+          lat: latitude || 0,
+          lng: longitude || 0,
         }"
-        :draggable="true"
-        @drag="updateCoordinates"
+          :draggable="!readonly"
+          @dragend="location => updateCoordinates({lat: location.latLng.lat(), lng: location.latLng.lng()})"
       ></GmapMarker>
     </GmapMap>
   </div>
@@ -42,105 +41,118 @@
 
 <script>
 import geolocation from "vue-browser-geolocation";
+import {onMounted, ref, watch, nextTick} from "@vue/composition-api";
+import {notifyDefaultServerError} from "@/composables/utils";
+import { helpers, getGoogleMapsAPI } from 'gmap-vue';
+const { googleMapsApiInitializer } = helpers;
+window.getGoogleMapsAPI = getGoogleMapsAPI;
 
 export default {
   props: {
-    locationLat: {},
-    locationLng: {},
-    isEditMode: { default: false },
-    sty: { default: "width: 640px; height: 360px" },
-  },
-  data() {
-    return {
-      crd: { lat: 0, lng: 0 },
-      eventCoordinate: { lat: 0, lng: 0 },
-      items: [],
-      search: null,
-      address: null,
-    };
-  },
-  watch: {
-    search(value) {
-      //Optional: here you can add some delay
-      this.googleSearch(value);
+    latitude: {
+      type: Number,
+      default: 0
     },
-    more_data(value) {
-      console.log(value);
-      if (value && value.lat && value.lng) {
-        this.crd.lat = value.lat;
-        this.crd.lng = value.lng;
-      }
+    longitude: {
+      type: Number,
+      default: 0
+    },
+    readonly: {
+      type: Boolean,
+      default: false
+    },
+    apiKey: {
+      type: String,
+      required: true
+    },
+    mapStyle: {
+      default: "width: auto; height: 360px"
     },
   },
-  methods: {
-    getCurrentLocation() {
-      if (!this.isEditMode) {
-        geolocation
-          .getLocation({})
-          .then((coordinates) => {
-            this.crd = coordinates;
-          })
-        
-      }
-    },
-    updateCoordinates(location) {
-      if (location && location.latLng) {
-        try {
-          this.eventCoordinate.lat = location.latLng.lat();
-          this.eventCoordinate.lng = location.latLng.lng();
-        } catch (err) {
-          err;
-        }
-      } else {
-        try {
-          this.eventCoordinate.lat = location.lat;
-          this.eventCoordinate.lng = location.lng;
-        } catch (err) {
-          err;
-        }
-      }
+  emits: {
+    'update:latitude': null,
+    'update:longitude': null,
+  },
+  setup(props, context) {
+    const search = ref(null);
+    const address = ref(null);
+    const searchResult = ref([]);
 
-      this.$emit("coordinates", this.eventCoordinate);
-    },
-    selectedAddress() {
-      this.crd.lat = this.address.value.geometry.location.lat;
-      this.crd.lng = this.address.value.geometry.location.lng;
-      this.updateCoordinates(this.address.value.geometry.location);
-    },
-    googleSearch(value) {
-      if (value) {
-        let url =
-          "https://maps.googleapis.com/maps/api/geocode/json?key="+process.env.VUE_APP_GMAP_TOKEN+"&address=";
-        fetch(url + value)
-          .then((response) => {
-            return response.json();
-          })
+    watch(search, val => {
+      googleSearch(val)
+    });
+
+    onMounted(() => {
+      googleMapsApiInitializer({
+        key: props.apiKey,
+        libraries: 'places'
+      }, false);
+      setTimeout(getCurrentLocation, 300)
+    });
+
+    const updateCoordinates = (location) => {
+      context.emit('update:latitude', location.lat);
+      context.emit('update:longitude', location.lng);
+    };
+
+    const getCurrentLocation = (force) => {
+      if (props.readonly) {
+        return;
+      }
+      if (!force && props.latitude && props.longitude) {
+        return;
+      }
+      geolocation.getLocation({}).then((coordinates) => {
+        updateCoordinates({lat: coordinates.lat, lng: coordinates.lng});
+      })
+    };
+
+    const selectAddress = () => {
+      if (!address.value) {
+        return;
+      }
+      updateCoordinates({lat: address.value.geometry.location.lat, lng: address.value.geometry.location.lng});
+      nextTick(()=> {
+        address.value = null;
+      })
+    };
+
+    const googleSearch = (value) => {
+      if (!value) {
+        return;
+      }
+      let url =
+          "https://maps.googleapis.com/maps/api/geocode/json?key=" + props.apiKey + "&address=";
+      fetch(url + value)
+          .then((response) => response.json())
           .then((jsonResult) => {
-            this.items = jsonResult.results.map((item) => {
-              //You can explore and use other information inside "item" like latitude, longitude, country, City, zipCode
-              return {
-                text: item.formatted_address,
-                value: item,
-              };
-            });
+            searchResult.value = jsonResult.results;
           })
           .catch((err) => {
-            //handle errors
-            console.log(err);
+            notifyDefaultServerError(err);
           });
-      }
-    },
-  },
-  mounted() {
-    this.getCurrentLocation();
-    this.updateCoordinates();
-    if (this.locationLat && this.locationLng) {
-        this.crd.lat = Number(this.locationLat);
-        this.crd.lng = Number(this.locationLng);
-      }
-  },
+    };
+
+
+    return {
+      search,
+      address,
+      searchResult,
+      selectAddress,
+      getCurrentLocation,
+      updateCoordinates,
+    }
+
+  }
+
 };
 </script>
 
-<style>
+<style scoped>
+  .gmap-container {
+    border: 1px solid lightgray;
+    padding: 10px;
+    border-radius: 5px;
+
+  }
 </style>

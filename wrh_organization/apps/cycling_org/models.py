@@ -463,8 +463,8 @@ class Event(models.Model):
     create_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
     update_datetime = models.DateTimeField(auto_now=True)
-    location_lat = models.CharField(max_length=200, null=True, blank=True)
-    location_lon = models.CharField(max_length=200, null=True, blank=True)
+    location_lat = models.FloatField(null=True, blank=True)
+    location_lon = models.FloatField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.end_date and (self.end_date < self.start_date):
