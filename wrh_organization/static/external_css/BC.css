@@ -1,9 +1,13 @@
 
 .v-application a {
- color: #5EC6C6;
+ color: #5EC6C6 !important;
   text-transform: uppercase;
-
 }
+
+.v-application .primary--text {
+ color: #5EC6C6 !important;
+}
+
 .body{
   text-transform: uppercase;
 }

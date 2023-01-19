@@ -23,6 +23,7 @@ export const routeNames = {
   WIDGET_RIDER_PROFILE: "widget_rider_profile",
   WIDGET_RACE_RESULTS: "widget_race_results",
   WIDGET_EVENTS_CALENDAR: "widget_events_calendar",
+  WIDGET_EVENT_PROFILE: "widget_event_profile",
 
   USAC_EVENTS: "usac_events",
   USAC_CLUB: "usac_club",
@@ -201,6 +202,14 @@ const routes = [
     path: '/widgets/events-calendar/:org_id',
     name: routeNames.WIDGET_ORG_EVENTS_CALENDAR,
     component: () => import('@/views/widgets/EventsCalendarWidget'),
+    meta: {
+      layout: 'BlankLayout',
+    },
+  },
+  {
+    path: '/widgets/event-profile/:record_id',
+    name: routeNames.WIDGET_EVENT_PROFILE,
+    component: () => import('@/views/widgets/EventsProfileWidget'),
     meta: {
       layout: 'BlankLayout',
     },

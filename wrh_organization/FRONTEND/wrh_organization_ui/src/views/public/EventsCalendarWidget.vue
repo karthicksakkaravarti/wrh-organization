@@ -4,7 +4,7 @@
       <template #eventContent="item">
         <v-tooltip bottom z-index="9999">
           <template  v-slot:activator="{ on, attrs }" class="text-truncate">
-            <router-link :to="{name: routeNames.PUBLIC_EVENT_PROFILE, params: {record_id: item.event.id}}">
+            <router-link :to="{name: routeNames.WIDGET_EVENT_PROFILE, params: {record_id: item.event.id}}">
             <div v-bind="attrs" v-on="on" class="fc-event-main text-truncate">
               <div class="fc-event-main-frame">
                 <div class="fc-event-title-container">
