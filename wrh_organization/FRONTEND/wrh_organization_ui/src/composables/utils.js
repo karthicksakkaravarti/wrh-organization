@@ -252,7 +252,7 @@ export const removeTrailingZero = (n, decimalPoint) => {
 export const ageFormat = (birth_date, showLabel, decimalCount) => {
   showLabel = showLabel === undefined ? true : showLabel;
   var age = moment().diff(birth_date, "years", !!decimalCount);
-  age = decimalCount? this.removeTrailingZero(age, decimalCount): Math.floor(age);
+  age = decimalCount? removeTrailingZero(age, decimalCount): Math.floor(age);
   return `${age}${
     showLabel ? " years" : ""
   }`;
@@ -374,4 +374,43 @@ export const appendScriptToHeader = (container, src, id, async=false, defer=fals
 export const emailIsValid = (email) => {
   const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   return re.test(email);
+};
+
+
+export const convertModelToFormData = (model, form, namespace, filter) => {
+  var formData = form || new FormData();
+  var formKey;
+  filter = filter === undefined ? k => k.startsWith("_") : filter;
+
+  for (var propertyName in model) {
+    if (
+        !Object.prototype.hasOwnProperty.call(model, propertyName) ||
+        model[propertyName] === undefined ||
+        (filter && filter(propertyName))
+    ) {
+      continue;
+    }
+    if (namespace === undefined || (model instanceof FileList) || (model instanceof Array)) {
+      formKey = namespace || propertyName
+    } else {
+      formKey = `${namespace}[${propertyName}]`;
+    }
+    if (model[propertyName] === null) {
+      formData.append(formKey, "");
+    } else if (model[propertyName] instanceof Date) {
+      formData.append(formKey, model[propertyName].toISOString());
+    } else if (model[propertyName] instanceof File) {
+      formData.append(formKey, model[propertyName]);
+    } else if (typeof model[propertyName] === "object") {
+      convertModelToFormData(
+          model[propertyName],
+          formData,
+          formKey,
+          filter
+      );
+    } else {
+      formData.append(formKey, model[propertyName].toString());
+    }
+  }
+  return formData;
 };

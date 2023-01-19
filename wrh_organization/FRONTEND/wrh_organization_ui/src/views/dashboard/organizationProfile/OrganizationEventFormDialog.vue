@@ -1,8 +1,8 @@
 <template>
   <v-dialog
-      v-model="isVisible"
-      persistent
-      max-width="700px"
+    v-model="isVisible"
+    persistent
+    max-width="1000px"
   >
     <v-card class="event-org-form">
       <v-card-title>
@@ -10,6 +10,7 @@
       </v-card-title>
       <v-tabs class="mb-5" v-model="tab">
         <v-tab>Basic Info</v-tab>
+        <v-tab :disabled="!isEditMode">Attachments</v-tab>
         <v-tab :disabled="!isEditMode">UI Preferences</v-tab>
         <v-tab-item class="pt-6">
           <v-card-text class="d-flex">
@@ -21,7 +22,7 @@
             <!-- upload photo -->
             <div>
               <v-btn small color="primary" class="me-3 mt-5" @click="logoImageRef.click()">
-                <v-icon class="d-sm-none">
+                <v-icon left>
                   {{ icons.mdiCloudUploadOutline }}
                 </v-icon>
                 <span class="d-none d-sm-block">Choose Logo</span>
@@ -141,6 +142,16 @@
         </v-tab-item>
         <v-tab-item class="pt-6">
           <v-card-text>
+            <event-attachments-tab v-if="record && record.id" :event="record"></event-attachments-tab>
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions class="pt-5">
+            <v-spacer></v-spacer>
+            <v-btn color="secondary" outlined @click="hide()">Close</v-btn>
+          </v-card-actions>
+        </v-tab-item>
+        <v-tab-item class="pt-6">
+          <v-card-text>
             <h3 class="mb-2">Upload site banner image:</h3>
             <v-img
                 :src="bannerChosenFileData || prefs.banner_image || $store.state.sitePrefs.site_ui__default_event_banner_image || require(`@/assets/images/misc/public-banner-bg-light.jpeg`)"
@@ -209,14 +220,16 @@ import {
   mdiDelete,
   mdiAlert,
   mdiCalendar,
-  mdiClock
+  mdiClock,
+  mdiCloudUploadOutline
 } from '@mdi/js'
 import {ref, computed} from '@vue/composition-api'
 import axios from "@/axios";
 import {notifyDefaultServerError, notifySuccess} from "@/composables/utils";
 import CKEditor from '@ckeditor/ckeditor5-vue2';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import GoogleMap from '@/components/GoogleMap.vue'
+import GoogleMap from '@/components/GoogleMap.vue';
+import EventAttachmentsTab from "@/views/dashboard/organizationProfile/EventAttachmentsTab.vue";
 
 export default {
   props: {
@@ -227,7 +240,8 @@ export default {
   },
   components: {
     ckeditor: CKEditor.component,
-    GoogleMap
+    GoogleMap,
+    EventAttachmentsTab,
   },
   setup(props, context) {
     const isVisible = ref(false);
@@ -352,7 +366,9 @@ export default {
       }
       axios.patch(`cycling_org/event/${record.value.id}/prefs`, data).then((response) => {
         savingPrefs.value = false;
-        record.value.prefs = prefs.value = response.data;
+        const prefsData = response.data || {};
+        prefsData.information_board_content = prefsData.information_board_content || '';
+        record.value.prefs = prefs.value = prefsData;
         notifySuccess('Preferences Saved successfully.');
         hide();
         context.emit('save-successed', record.value);
@@ -365,7 +381,9 @@ export default {
     const loadRecord = () => {
       axios.get(`cycling_org/event/${record.value.id}`).then((response) => {
         record.value = response.data || {};
-        prefs.value = record.value.prefs || {};
+        const prefsData = record.value.prefs || {};
+        prefsData.information_board_content = prefsData.information_board_content || '';
+        prefs.value = prefsData;
       }, (error) => {
         notifyDefaultServerError(error, true);
       });
@@ -373,11 +391,14 @@ export default {
 
     const hide = () => {
       isVisible.value = false;
+      record.value = {};
     };
     const show = (r, event) => {
       tab.value = 0;
-      record.value = Object.assign({country: "US", state: "Colorado", location_lat: "", location_lon: ""}, r);
-      prefs.value = Object.assign({}, record.value.prefs);
+      record.value = Object.assign({country: "US", state: "Colorado"}, r);
+      const prefsData = record.value.prefs || {};
+      prefsData.information_board_content = prefsData.information_board_content || '';
+      prefs.value = Object.assign({}, prefsData);
       if (isEditMode.value) {
         loadRecord();
       }
@@ -427,7 +448,8 @@ export default {
         mdiDelete,
         mdiAlert,
         mdiCalendar,
-        mdiClock
+        mdiClock,
+        mdiCloudUploadOutline
       },
     }
   },

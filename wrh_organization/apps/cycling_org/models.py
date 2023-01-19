@@ -28,6 +28,11 @@ def event_logo_file_path_func(instance, filename):
     return get_random_upload_path(str(Path('uploads', 'cycling_org', 'event', 'logo')), filename)
 
 
+def event_attachment_file_path_func(instance, filename):
+    from wrh_organization.helpers.utils import get_random_upload_path
+    return get_random_upload_path(str(Path('uploads', 'cycling_org', 'event_attachment')), filename)
+
+
 class FieldsTracking(BaseFieldsTracking):
     pass
 
@@ -473,6 +478,22 @@ class Event(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class EventAttachment(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(upload_to=event_attachment_file_path_func)
+    file_name = models.CharField(max_length=256)
+    title = models.CharField(max_length=256, null=True, blank=True)
+    create_datetime = models.DateTimeField(auto_now_add=True)
+    upload_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    def save(self, *args, **kwargs):
+        self.file_name = self.file.name
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.file_name
 
 
 class Race(models.Model):

@@ -11,7 +11,7 @@ from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 from django.shortcuts import redirect, render, get_object_or_404
 from django.template.loader import render_to_string
 from django.utils import dateparse, timezone
@@ -38,7 +38,7 @@ from apps.cycling_org.rest_api.serializers import MemberSerializer, Organization
     NestedOrganizationSerializer, FieldsTrackingSerializer, RaceSerializer, RaceResultSerializer, CategorySerializer, \
     RaceSeriesSerializer, RaceSeriesResultSerializer, EventSerializer, PublicMemberSerializer, \
     OrganizationJoinSerializer, MyOrganizationMemberSerializer, OrganizationPrefsSerializer, EventPrefsSerializer, \
-    OrganizationSignupAndJoinSerializer, SignupAndJoinUserSerializer
+    OrganizationSignupAndJoinSerializer, SignupAndJoinUserSerializer, EventAttachmentSerializer
 from wrh_organization.helpers.utils import account_activation_token, send_sms, IsMemberVerifiedPermission, \
     IsAdminOrganizationOrReadOnlyPermission, account_password_reset_token, to_dict, IsMemberPermission, random_id, \
     APICodeException, check_turnstile_request
@@ -63,6 +63,63 @@ class ExportViewMixin(object):
             raise NotImplementedError
         records = self.get_export_records(request, *args, **kwargs)
         return export_method(records)
+
+
+class AttachmentViewMixin(object):
+    attachment_field_related = None
+    attachment_serializer_class = None
+
+    @action(detail=True, methods=['delete', 'get'], url_path='attachment/(?P<attachment_pk>[0-9]+)')
+    def attachment_object(self, request, *args, **kwargs):
+        obj = self.get_object()
+        attachment_pk = kwargs.get('attachment_pk')
+        attachment = get_object_or_404(obj.attachments, pk=attachment_pk)
+        if request.method == 'GET':
+            response = Response(self.attachment_serializer_class(attachment, context={'request': request}).data)
+        elif request.method == 'DELETE':
+            attachment.delete()
+            response = Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            response = Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return response
+
+    @action(detail=True, methods=['get', 'post'], url_path='attachment')
+    @transaction.atomic()
+    def attachment_list(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if request.method == 'GET':
+            qs = obj.attachments.all().order_by('-id')
+            qs = self.paginate_queryset(qs)
+            serializer = self.attachment_serializer_class(qs, many=True, context={'request': request})
+            results = serializer.data
+            return self.get_paginated_response(results)
+
+        attachments = self._attach_files(obj)
+        return Response({'attachments': attachments})
+
+    def _attach_files(self, obj):
+        if isinstance(self.request.data, QueryDict):
+            files = self.request.data.getlist('files')
+        else:
+            files = self.request.data.get('files') or []
+        title = self.request.data.get('attachment_title', None) or None
+        attachments = []
+        for file in files:
+            s = self.attachment_serializer_class(data={'file': file, 'title': title}, context={'request': self.request})
+            s.is_valid(raise_exception=True)
+            s.save(**{self.attachment_field_related: obj})
+            attachments.append(s.data)
+        return attachments
+    #
+    # @transaction.atomic()
+    # def perform_create(self, serializer):
+    #     super(AttachmentViewMixin, self).perform_create(serializer)
+    #     self._attach_files(serializer.instance)
+    #
+    # @transaction.atomic()
+    # def perform_update(self, serializer):
+    #     super(AttachmentViewMixin, self).perform_update(serializer)
+    #     self._attach_files(serializer.instance)
 
 
 class GlobalPreferencesView(viewsets.ViewSet):
@@ -1158,7 +1215,10 @@ class RaceSeriesResultView(AdminOrganizationActionsViewMixin, viewsets.ModelView
         return Response({'results': result})
 
 
-class EventView(AdminOrganizationActionsViewMixin, viewsets.ModelViewSet):
+class EventView(AdminOrganizationActionsViewMixin, AttachmentViewMixin, viewsets.ModelViewSet):
+    attachment_field_related = 'event'
+    attachment_serializer_class = EventAttachmentSerializer
+
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     filterset_class = EventFilter

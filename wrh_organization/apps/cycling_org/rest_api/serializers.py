@@ -10,9 +10,9 @@ from django.db import transaction
 from rest_framework import serializers
 
 from apps.cycling_org.models import Member, Organization, User, OrganizationMember, OrganizationMemberOrg, \
-    FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult, Event
+    FieldsTracking, Race, RaceResult, Category, RaceSeries, RaceSeriesResult, Event, EventAttachment
 from wrh_organization.helpers.utils import DynamicFieldsSerializerMixin, Base64ImageField, get_random_upload_path, \
-    verify_turnstile, get_client_ip, check_turnstile_request
+    verify_turnstile, get_client_ip, check_turnstile_request, SetCurrentUserDefaultSerializerMixin
 
 
 class NestedPublicUserAvatarSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
@@ -513,12 +513,30 @@ class EventPrefsSerializer(BasePrefsSerializer):
     information_board_content = serializers.CharField(required=False, allow_null=True)
 
 
+class EventAttachmentSerializer(SetCurrentUserDefaultSerializerMixin,
+                                DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    current_user_default_create_field = 'upload_by'
+    current_user_default_update_field = 'upload_by'
+    _upload_by = NestedUserSerializer(read_only=True, source='upload_by')
+    class Meta:
+        model = EventAttachment
+        read_only_fields = ('file_name', 'upload_by', 'event')
+        fields = '__all__'
+
+
+class NestedEventAttachmentSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = EventAttachment
+        fields = ('id', 'file_name', 'title', 'file', 'event')
+
+
 class EventSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     logo = Base64ImageField(required=False, allow_null=True)
     summary = serializers.SerializerMethodField(read_only=True)
     _organization = NestedOrganizationShortSerializer(read_only=True, source='organization')
+    attachments = NestedEventAttachmentSerializer(read_only=True, many=True)
 
-    extra_fields = ['summary', 'more_data']
+    extra_fields = ['summary', 'more_data', 'attachments']
 
     def get_summary(self, obj):
         races_count = obj.races.count()
