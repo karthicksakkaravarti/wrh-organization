@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     # project apps
     'apps.account',
     'apps.cycling_org',
-    'apps.usacycling'
+    'apps.usacycling',
+    'apps.constant_contact'
 ]
 
 MIDDLEWARE = [
