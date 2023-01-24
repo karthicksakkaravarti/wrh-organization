@@ -41,6 +41,8 @@
           <v-tab-item>
             <organization-members-tab v-if="selectedTab.id == 'individual-members'"
                                       :organization="organization"></organization-members-tab>
+             <organization-contant-contact-list v-if="selectedTab.id == 'contanmt-contact-list'"
+                                      :organization="organization"></organization-contant-contact-list>
             <organization-member-orgs-tab v-if="selectedTab.id == 'org-members'"
                                           :organization="organization"></organization-member-orgs-tab>
             <organization-membership-form-tab v-else-if="selectedTab.id == 'membership-form' && organization.my_level.is_admin"
@@ -94,6 +96,7 @@ import axios from "@/axios";
 import {notifyDefaultServerError} from "@/composables/utils";
 import {onMounted} from "@vue/composition-api/dist/vue-composition-api";
 import OrganizationMembersTab from "./OrganizationMembersTab";
+import OrganizationContantContactList from "./OrganizationContantContactList";
 import OrganizationRaceResultsTab from "./OrganizationRaceResultsTab";
 import {useRouter} from "@core/utils";
 import ProfileOrganizationFormDialog from "@/views/dashboard/memberProfile/ProfileOrganizationFormDialog";
@@ -120,6 +123,8 @@ export default {
     OrganizationMembersTab,
     OrganizationRacesTab,
     OrganizationBioPanel,
+    OrganizationContantContactList
+    
   },
   setup() {
     const { route, router } = useRouter();
@@ -132,6 +137,7 @@ export default {
           {id: 'individual-members', title:  'Individual Members', icon: mdiAccountMultipleOutline},
           {id: 'org-members', title:  'Org Members', icon: mdiHomeGroup},
           {id: 'membership-form', title:  'Membership Form', icon: mdiFormatListText, admin_required: true},
+          {id: 'contanmt-contact-list', title:  'Constant Contact', icon: mdiAccountMultipleOutline, admin_required: true},
         ]
       },
       {

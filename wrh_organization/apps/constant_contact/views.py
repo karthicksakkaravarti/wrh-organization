@@ -30,8 +30,13 @@ def callback(request):
 
                             }
                             )
-        return JsonResponse(get_all_contact_list(res.json().get('access_token')))
+        save_user_toek(request, res.json().get('access_token'))
+        return HttpResponseRedirect("/#/dashboard/member-profile")
 
+def save_user_toek(request, token):
+    current_user = request.user
+    current_user.more_data['cc_token'] = token
+    current_user.save()
 
 def get_all_contact_list(token):
     url = f"https://api.cc.email/v3/contact_lists?include_count=true&include_membership_count=all"
