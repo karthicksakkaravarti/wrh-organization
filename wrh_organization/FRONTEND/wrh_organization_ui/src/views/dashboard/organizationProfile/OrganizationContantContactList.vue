@@ -44,7 +44,7 @@
               v-model="ccListSelect"
               v-if="ccList.length >= 1"
               :items="ccList"
-              label="CC List"
+              label="Choose List"
               item-value="list_id"
               item-text="name"
             ></v-autocomplete>
@@ -128,7 +128,7 @@ export default {
         .then(
           (response) => {
             loading.value = false;
-            ccList.value = response.data.is_singin;
+            records.value = response.data.contacts;
           },
           (error) => {
             loading.value = false;
