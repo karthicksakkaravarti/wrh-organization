@@ -5,6 +5,34 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
+class CCSignOutView(APIView):
+    permission_classes = []
+    def get(self, request , *args, **kwargs):
+        try:
+            if request.user.more_data and request.user.more_data.get('cc_token'):
+                # User already authenticated
+                current_user = request.user
+                more_data = current_user.more_data
+                del more_data['cc_token']
+                current_user.more_data = more_data
+                current_user.save()
+                return Response({"message": "Logged out successfully"}, status= status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"message": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CCStatusView(APIView):
+    permission_classes = []
+    def get(self, request , *args, **kwargs):
+        try:
+            if request.user.more_data and request.user.more_data.get('cc_token'):
+                # User already authenticated
+                return Response({"is_singin": True}, status= status.HTTP_200_OK)
+            else:
+                return Response({"is_singin": False}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({})
+
 class CCContactListView(APIView):
     permission_classes = []
     def get(self, request , *args, **kwargs):

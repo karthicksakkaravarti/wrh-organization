@@ -1,8 +1,8 @@
 import requests
 from django.http import HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
 # Create your views here.
 from django.conf import settings
+import base64
 
 
 def authorization_request(request):
@@ -11,13 +11,11 @@ def authorization_request(request):
     return HttpResponseRedirect(base_url)
 
 def callback(request):
-    import base64
     message_bytes = f"{str(settings.CC_CLIENT_ID)}:{str(settings.CC_CLIENT_SECRET)}".encode('ascii')
-
     base64_bytes = base64.b64encode(message_bytes)
     base64_string = base64_bytes.decode("ascii")
-
     code = request.GET.get('code', None)
+
     if code:
         url = f"https://authz.constantcontact.com/oauth2/default/v1/token"
         res = requests.post(url, data={
@@ -25,11 +23,8 @@ def callback(request):
             'redirect_uri': settings.CC_REDIRECT_URL,
             'grant_type': 'authorization_code'
         },
-                            headers={
-                                'Authorization': f"Basic {base64_string}"
-
-                            }
-                            )
+        headers={'Authorization': f"Basic {base64_string}"}
+        )
         save_user_toek(request, res.json().get('access_token'))
         return HttpResponseRedirect("/#/dashboard/member-profile")
 
@@ -38,9 +33,3 @@ def save_user_toek(request, token):
     current_user.more_data['cc_token'] = token
     current_user.save()
 
-def get_all_contact_list(token):
-    url = f"https://api.cc.email/v3/contact_lists?include_count=true&include_membership_count=all"
-    res = requests.get(url, headers={
-        'Authorization': f"Bearer {token}"
-    })
-    return res.json()
